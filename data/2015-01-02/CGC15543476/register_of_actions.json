@@ -1,1 +1,100 @@
-[]
+{
+  "metadata": {
+    "total_entries": 13,
+    "total_links": 13,
+    "scraped_links": 13
+  },
+  "actions": [
+    {
+      "date": "2015-06-26",
+      "proceedings": "CASE MANAGEMENT CONFERENCE OF JUL-15-2015 IS OFF CALENDAR. DISMISSAL ON FILE. NOTICE SENT BY COURT.",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-06-26_Unknown.pdf"
+    },
+    {
+      "date": "2015-06-16",
+      "proceedings": "PROOF OF SERVICE (TRANSACTION ID # 100000719) FILED BY PLAINTIFF ZAPANTA, JESUS",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-06-16_Unknown.pdf"
+    },
+    {
+      "date": "2015-06-16",
+      "proceedings": "DISMISSAL OF ENTIRE ACTION OF ALL PARTIES AND ALL CAUSES OF ACTION WITH PREJUDICE ALSO AS TO CROSS-COMPLAINT FILED BY C.B.F., INC. ON MARCH 2, 2015. (TRANSACTION ID # 100000719)",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-06-16_Unknown.pdf"
+    },
+    {
+      "date": "2015-05-19",
+      "proceedings": "PROOF OF SERVICE (TRANSACTION ID # 15138076) FILED BY PLAINTIFF ZAPANTA, JESUS",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-05-19_Unknown.pdf"
+    },
+    {
+      "date": "2015-05-19",
+      "proceedings": "NOTICE OF SETTLEMENT (TRANSACTION ID # 15138076) FILED BY PLAINTIFF ZAPANTA, JESUS",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-05-19_Unknown.pdf"
+    },
+    {
+      "date": "2015-05-18",
+      "proceedings": "CASE MANAGEMENT CONFERENCE OF JUN-03-2015 CONTINUED TO JUL-15-2015 AT 10:30 AM IN DEPARTMENT 610 FOR CROSS COMPLAINANT(S) TO BRING CROSS COMPLAINT(S) AT ISSUE. NOTICE SENT BY COURT.",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-05-18_Unknown.pdf"
+    },
+    {
+      "date": "2015-03-13",
+      "proceedings": "NOTICE OF UNAVAILABILITY OF HAESLOOP, MARK ON OCT-01-2015 THROUGH OCT-30-2015 (TRANSACTION ID # 15071150) FILED BY DEFENDANT C.B.F., INC C.B.F., INC",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-03-13_Unknown.pdf"
+    },
+    {
+      "date": "2015-03-02",
+      "proceedings": "CROSS COMPLAINT (TRANSACTION ID # 15057166) FILED BY CROSS COMPLAINANT C.B.F., INC AS TO CROSS DEFENDANT ZAPANTA, JESUS WALSH, JOHN WALSH, MICHELLE GOFF, LEANNE SEFLARDS, DAVID TEJADA, NOVELYNN DOES 1 THROUGH 100N, INCLUSIVE",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-03-02_Unknown.pdf"
+    },
+    {
+      "date": "2015-03-02",
+      "proceedings": "ANSWER TO COMPLAINT (TRANSACTION ID # 15057166) FILED BY DEFENDANT C.B.F., INC",
+      "fee": "$450.00",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-03-02_Unknown.pdf"
+    },
+    {
+      "date": "2015-01-14",
+      "proceedings": "SUMMONS ON COMPLAINT PROOF OF SERVICE BY MAIL ATTACHED (TRANSACTION ID # 15013004), PROOF OF SERVICE ONLY, FILED BY PLAINTIFF ZAPANTA, JESUS SERVED JAN-07-2015, SUBSTITUTE SERVICE ON NATURAL PERSON AS TO DEFENDANT C.B.F., INC",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-01-14_Unknown.pdf"
+    },
+    {
+      "date": "2015-01-06",
+      "proceedings": "NOTICE OF RELATED CASES (TRANSACTION ID # 15005128) FILED BY PLAINTIFF ZAPANTA, JESUS",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-01-06_Unknown.pdf"
+    },
+    {
+      "date": "2015-01-02",
+      "proceedings": "NOTICE TO PLAINTIFF",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-01-02_Unknown.pdf"
+    },
+    {
+      "date": "2015-01-02",
+      "proceedings": "OTHER NON EXEMPT COMPLAINTS, COMPLAINT FILED BY PLAINTIFF ZAPANTA, JESUS AS TO DEFENDANT C.B.F., INC SUMMONS ISSUED, JUDICIAL COUNCIL CIVIL CASE COVER SHEET FILED CASE MANAGEMENT CONFERENCE SCHEDULED FOR JUN-03-2015 PROOF OF SERVICE DUE ON MAR-03-2015 CASE MANAGEMENT STATEMENT DUE ON MAY-11-2015",
+      "fee": "$450.00",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-01-02_Unknown.pdf"
+    }
+  ]
+}

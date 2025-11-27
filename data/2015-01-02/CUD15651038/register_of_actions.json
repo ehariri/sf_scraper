@@ -1,1 +1,72 @@
-[]
+{
+  "metadata": {
+    "total_entries": 9,
+    "total_links": 7,
+    "scraped_links": 7
+  },
+  "actions": [
+    {
+      "date": "2015-04-22",
+      "proceedings": "DISMISSAL OF ENTIRE ACTION OF ALL PARTIES AND ALL CAUSES OF ACTION WITH PREJUDICE",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-04-22_Unknown.pdf"
+    },
+    {
+      "date": "2015-04-03",
+      "proceedings": "REMOVED FROM UD COURT TRIAL CALENDAR SET FOR APR-06-2015 - CASE SETTLED PER PLAINTIFF'S COUNSEL. D501.",
+      "fee": "",
+      "doc_id": null,
+      "doc_filename": null
+    },
+    {
+      "date": "2015-03-30",
+      "proceedings": "UD COURT TRIAL SET FOR MAR-30-2015 CONTINUED TO APR-06-2015 AT 9:00 AM IN 501 FOR SETTLEMENT PROTECTIVE DATE. PLAINTIFF COUNSEL TO GIVE NOTICE. JUDGE RICHARD B ULMER, CLERK:N. WONG, NOT REPORTED, D501.",
+      "fee": "",
+      "doc_id": null,
+      "doc_filename": null
+    },
+    {
+      "date": "2015-03-13",
+      "proceedings": "NOTICE OF TIME AND PLACE OF TRIAL",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-03-13_Unknown.pdf"
+    },
+    {
+      "date": "2015-03-13",
+      "proceedings": "REQUEST TO SET CASE FOR COURT TRIAL FILED BY PLAINTIFF 1656 LEAVENWORTH STREET, LLC HEARING SET FOR MAR-30-2015 AT 09:00 AM IN DEPT 501",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-03-13_Unknown.pdf"
+    },
+    {
+      "date": "2015-02-04",
+      "proceedings": "SUBSTITUTION OF ATTORNEY: SINGER, JR., EDWARD C. SUBSTITUTED FOR SINGER, JR., EDWARD C. AS ATTORNEY FOR 1656 LEAVENWORTH STREET, LLC",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-02-04_Unknown.pdf"
+    },
+    {
+      "date": "2015-01-07",
+      "proceedings": "ANSWER TO COMPLAINT FILED BY DEFENDANT SCHAFFELD, BLAKE CAMACHO, EMILY",
+      "fee": "$450.00",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-01-07_Unknown.pdf"
+    },
+    {
+      "date": "2015-01-02",
+      "proceedings": "NOTICE TO DEFENDANTS",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-01-02_Unknown.pdf"
+    },
+    {
+      "date": "2015-01-02",
+      "proceedings": "UNLAWFUL DETAINER - RESIDENTIAL, COMPLAINT FILED BY PLAINTIFF 1656 LEAVENWORTH STREET, LLC AS TO DEFENDANT SCHAFFELD, BLAKE CAMACHO, EMILY DOES 1 TO X SUMMONS ISSUED, JUDICIAL COUNCIL CIVIL CASE COVER SHEET FILED",
+      "fee": "$240.00",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-01-02_Unknown.pdf"
+    }
+  ]
+}

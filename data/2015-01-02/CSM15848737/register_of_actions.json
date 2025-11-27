@@ -1,1 +1,30 @@
-[]
+{
+  "metadata": {
+    "total_entries": 3,
+    "total_links": 3,
+    "scraped_links": 3
+  },
+  "actions": [
+    {
+      "date": "2015-02-09",
+      "proceedings": "DISMISSAL OF ENTIRE ACTION OF ALL PARTIES AND ALL CAUSES OF ACTION WITHOUT PREJUDICE CLAIM HEARING OF MAR-09-2015 OFF CALENDAR, DISMISSAL FILED",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-02-09_Unknown.pdf"
+    },
+    {
+      "date": "2015-02-09",
+      "proceedings": "PROOF OF SERVICE FILED ON CLAIM OF PLAINTIFF - FEE FOR SERVICE $ 0.00 - SERVED JAN-25-2015, PERSONAL SERVICE AS TO DEFENDANT DE LAURANTIZ, CARLA NATIAS",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-02-09_Unknown.pdf"
+    },
+    {
+      "date": "2015-01-02",
+      "proceedings": "MONEY CLAIM OF PLAINTIFF FOR $829.12 FILED BY TUNG, JASON G CHANG, NANCY NAI-VEN AS TO DEFENDANT DE LAURANTIZ, CARLA NATIAS ORDER SETTING TRIAL ISSUED FOR MAR-09-2015 AT 03:30 PM IN DEPT 506",
+      "fee": "$30.00",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-01-02_Unknown.pdf"
+    }
+  ]
+}

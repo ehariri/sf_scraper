@@ -1,1 +1,86 @@
-[]
+{
+  "metadata": {
+    "total_entries": 11,
+    "total_links": 8,
+    "scraped_links": 8
+  },
+  "actions": [
+    {
+      "date": "2019-01-29",
+      "proceedings": "SATISFACTION OF JUDGMENT, FULLY SATISFIED, (TRANSACTION ID # 100060859) FILED BY PLAINTIFF PATELCO CREDIT UNION, A STATE CHARTED CREDIT UNION AS TO DEFENDANT LAMPKIN, JOYCELYN L AN INDIVIDUAL",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2019-01-29_Unknown.pdf"
+    },
+    {
+      "date": "2016-10-27",
+      "proceedings": "RETURN OF EXECUTION FOR MONEY ISSUED TO SAN FRANCISCO COUNTY, RETURNED AND FILED, FULLY SATISFIED AS TO DEFENDANT LAMPKIN, JOYCELYN L AN INDIVIDUAL",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2016-10-27_Unknown.pdf"
+    },
+    {
+      "date": "2015-07-06",
+      "proceedings": "CRC 3.740 REVIEW - JUDGMENT ON FILE",
+      "fee": "",
+      "doc_id": null,
+      "doc_filename": null
+    },
+    {
+      "date": "2015-06-10",
+      "proceedings": "EXECUTION FOR MONEY ISSUED TO SAN FRANCISCO COUNTY AS TO DEFENDANT LAMPKIN, JOYCELYN L AN INDIVIDUAL",
+      "fee": "$25.00",
+      "doc_id": null,
+      "doc_filename": null
+    },
+    {
+      "date": "2015-06-10",
+      "proceedings": "ABSTRACT OF JUDGMENT ISSUED TO PLAINTIFF PATELCO CREDIT UNION, A STATE CHARTED CREDIT UNION",
+      "fee": "$25.00",
+      "doc_id": null,
+      "doc_filename": null
+    },
+    {
+      "date": "2015-03-16",
+      "proceedings": "THE COURT ORDERED THE FOLLOWING JUDGMENT ENTERED: IT IS ADJUDGED THAT PLAINTIFF PATELCO CREDIT UNION, A STATE CHARTED CREDIT UNION RECOVER FROM DEFENDANT LAMPKIN, JOYCELYN L AN INDIVIDUAL $5,115.33 PRINCIPAL, $196.08 INTEREST, $360.00 COSTS, TOTAL JUDGMENT $5,671.41, SEE SCANNED DOC",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-03-16_Unknown.pdf"
+    },
+    {
+      "date": "2015-03-11",
+      "proceedings": "SUMMONS ON COMPLAINT (TRANSACTION ID # 15069060), PROOF OF SERVICE ONLY, FILED BY PLAINTIFF PATELCO CREDIT UNION, A STATE CHARTED CREDIT UNION SERVED JAN-26-2015, PERSONAL SERVICE AS TO DEFENDANT LAMPKIN, JOYCELYN L AN INDIVIDUAL",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-03-11_Unknown.pdf"
+    },
+    {
+      "date": "2015-03-11",
+      "proceedings": "REQUEST FOR ENTRY OF DEFAULT/DEFAULT ENTERED, COURT JUDGMENT REQUESTED, DECLARATION OF NON-MILITARY STATUS, COST BILL $360.00 FILED, CREDIT ACKNOWLEDGED $.00 (TRANSACTION ID # 15069060) AS TO DEFENDANT LAMPKIN, JOYCELYN L AN INDIVIDUAL",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-03-11_Unknown.pdf"
+    },
+    {
+      "date": "2015-03-11",
+      "proceedings": "DISMISSAL WITHOUT PREJUDICE OF COMPLAINT (TRANSACTION ID # 15069060) AS TO DEFENDANT DOES 1 TO XXX, INCLUSIVE",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-03-11_Unknown.pdf"
+    },
+    {
+      "date": "2015-03-11",
+      "proceedings": "DECLARATION DECLARATION OF ROBERT KOURY IN SUPPORT OF PLAINTIFFS REQUEST FOR ENTRY OF DEFAULT AND DEFAULT JUDGMENT BY COURT (TRANSACTION ID # 15069060) FILED BY PLAINTIFF PATELCO CREDIT UNION, A STATE CHARTED CREDIT UNION",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-03-11_Unknown.pdf"
+    },
+    {
+      "date": "2015-01-02",
+      "proceedings": "EXEMPT COLLECTIONS (RULE 3.740), COMPLAINT FILED BY PLAINTIFF PATELCO CREDIT UNION, A STATE CHARTED CREDIT UNION AS TO DEFENDANT LAMPKIN, JOYCELYN L AN INDIVIDUAL DOES 1 TO XXX, INCLUSIVE SUMMONS ISSUED, JUDICIAL COUNCIL CIVIL CASE COVER SHEET FILED PROOF OF SERVICE DUE ON JUL-06-2015",
+      "fee": "$225.00",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-01-02_Unknown.pdf"
+    }
+  ]
+}

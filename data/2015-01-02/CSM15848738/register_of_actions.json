@@ -1,1 +1,30 @@
-[]
+{
+  "metadata": {
+    "total_entries": 3,
+    "total_links": 3,
+    "scraped_links": 3
+  },
+  "actions": [
+    {
+      "date": "2015-03-02",
+      "proceedings": "THE COURT ORDERS DISMISSAL OF THE ENTIRE ACTION WITHOUT PREJUDICE. PLAINTIFF WAS NOT PRESENT. DEFENDANT WAS NOT PRESENT. NO EXHIBITS RETAINED. JUDGE: DONALD S. MITCHELL. CLERK: P. NATT. NOT REPORTED. (D-506)",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-03-02_Unknown.pdf"
+    },
+    {
+      "date": "2015-01-22",
+      "proceedings": "PROOF OF SERVICE FILED ON CLAIM OF PLAINTIFF - FEE FOR SERVICE $ 70.00 SERVED JAN-17-2015, SUBSTITUTE SERVICE ON NATURAL PERSON AS TO DEFENDANT AYASH, BAT-ERDENE",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-01-22_Unknown.pdf"
+    },
+    {
+      "date": "2015-01-02",
+      "proceedings": "AUTO ACCIDENT CLAIM OF PLAINTIFF FOR $5,333.76 FILED BY TURNER, GLENN MATHEW AS TO DEFENDANT AYASH, BAT-ERDENE ORDER SETTING TRIAL ISSUED FOR MAR-02-2015 AT 01:30 PM IN DEPT 506",
+      "fee": "$75.00",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-01-02_Unknown.pdf"
+    }
+  ]
+}

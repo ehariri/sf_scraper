@@ -1,44 +1,51 @@
-[
-  {
-    "date": "2015-05-15",
-    "proceedings": "CASE MANAGEMENT CONFERENCE OF JUN-03-2015 IS OFF CALENDAR - DISMISSAL ON FILE. NOTICE SENT BY COURT.",
-    "fee": "",
-    "doc_id": "Unknown",
-    "doc_filename": "2015-05-15_Unknown.pdf"
+{
+  "metadata": {
+    "total_entries": 6,
+    "total_links": 6,
+    "scraped_links": 6
   },
-  {
-    "date": "2015-04-09",
-    "proceedings": "DISMISSAL OF ENTIRE ACTION OF ALL PARTIES AND ALL CAUSES OF ACTION WITH PREJUDICE (TRANSACTION ID # 57055823)",
-    "fee": "",
-    "doc_id": "Unknown",
-    "doc_filename": "2015-04-09_Unknown.pdf"
-  },
-  {
-    "date": "2015-01-29",
-    "proceedings": "SUMMONS ON COMPLAINT (TRANSACTION ID # 15028103), PROOF OF SERVICE ONLY, FILED BY PLAINTIFF BENOIT, AARON SERVED JAN-21-2015, PERSONAL SERVICE AS TO DEFENDANT AGHEL, AHMAD",
-    "fee": "",
-    "doc_id": "Unknown",
-    "doc_filename": "2015-01-29_Unknown.pdf"
-  },
-  {
-    "date": "2015-01-14",
-    "proceedings": "1ST AMENDED COMPLAINT (TRANSACTION ID # 15013025) FILED BY PLAINTIFF BENOIT, AARON AS TO DEFENDANT AGHEL, AHMAD",
-    "fee": "",
-    "doc_id": "Unknown",
-    "doc_filename": "2015-01-14_Unknown.pdf"
-  },
-  {
-    "date": "2015-01-02",
-    "proceedings": "NOTICE TO PLAINTIFF",
-    "fee": "",
-    "doc_id": "Unknown",
-    "doc_filename": "2015-01-02_Unknown.pdf"
-  },
-  {
-    "date": "2015-01-02",
-    "proceedings": "PERSONAL INJURY/PROPERTY DAMAGE - VEHICLE RELATED, COMPLAINT FILED BY PLAINTIFF BENOIT, AARON AS TO DEFENDANT AGHEL, AHMAD DOES 1 TO 50 SUMMONS ISSUED, JUDICIAL COUNCIL CIVIL CASE COVER SHEET FILED CASE MANAGEMENT CONFERENCE SCHEDULED FOR JUN-03-2015 PROOF OF SERVICE DUE ON MAR-03-2015 CASE MANAGEMENT STATEMENT DUE ON MAY-11-2015",
-    "fee": "$450.00",
-    "doc_id": "Unknown",
-    "doc_filename": "2015-01-02_Unknown.pdf"
-  }
-]
+  "actions": [
+    {
+      "date": "2015-05-15",
+      "proceedings": "CASE MANAGEMENT CONFERENCE OF JUN-03-2015 IS OFF CALENDAR - DISMISSAL ON FILE. NOTICE SENT BY COURT.",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-05-15_Unknown.pdf"
+    },
+    {
+      "date": "2015-04-09",
+      "proceedings": "DISMISSAL OF ENTIRE ACTION OF ALL PARTIES AND ALL CAUSES OF ACTION WITH PREJUDICE (TRANSACTION ID # 57055823)",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-04-09_Unknown.pdf"
+    },
+    {
+      "date": "2015-01-29",
+      "proceedings": "SUMMONS ON COMPLAINT (TRANSACTION ID # 15028103), PROOF OF SERVICE ONLY, FILED BY PLAINTIFF BENOIT, AARON SERVED JAN-21-2015, PERSONAL SERVICE AS TO DEFENDANT AGHEL, AHMAD",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-01-29_Unknown.pdf"
+    },
+    {
+      "date": "2015-01-14",
+      "proceedings": "1ST AMENDED COMPLAINT (TRANSACTION ID # 15013025) FILED BY PLAINTIFF BENOIT, AARON AS TO DEFENDANT AGHEL, AHMAD",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-01-14_Unknown.pdf"
+    },
+    {
+      "date": "2015-01-02",
+      "proceedings": "NOTICE TO PLAINTIFF",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-01-02_Unknown.pdf"
+    },
+    {
+      "date": "2015-01-02",
+      "proceedings": "PERSONAL INJURY/PROPERTY DAMAGE - VEHICLE RELATED, COMPLAINT FILED BY PLAINTIFF BENOIT, AARON AS TO DEFENDANT AGHEL, AHMAD DOES 1 TO 50 SUMMONS ISSUED, JUDICIAL COUNCIL CIVIL CASE COVER SHEET FILED CASE MANAGEMENT CONFERENCE SCHEDULED FOR JUN-03-2015 PROOF OF SERVICE DUE ON MAR-03-2015 CASE MANAGEMENT STATEMENT DUE ON MAY-11-2015",
+      "fee": "$450.00",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-01-02_Unknown.pdf"
+    }
+  ]
+}

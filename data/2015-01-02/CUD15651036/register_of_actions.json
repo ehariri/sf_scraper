@@ -1,1 +1,30 @@
-[]
+{
+  "metadata": {
+    "total_entries": 3,
+    "total_links": 3,
+    "scraped_links": 3
+  },
+  "actions": [
+    {
+      "date": "2015-04-27",
+      "proceedings": "DISMISSAL WITH PREJUDICE OF COMPLAINT",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-04-27_Unknown.pdf"
+    },
+    {
+      "date": "2015-01-02",
+      "proceedings": "NOTICE TO DEFENDANTS",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-01-02_Unknown.pdf"
+    },
+    {
+      "date": "2015-01-02",
+      "proceedings": "UNLAWFUL DETAINER - COMMERCIAL, COMPLAINT FILED BY PLAINTIFF NICHOLSON, THOMAS / ELIZABETH NICHOLSON THE NICHOLSON 2010 TRUST GARDNER, ANNE NICHOLSON, WILLIAM AS TO DEFENDANT NEWMAN, RONALD AN INDIVIDUAL DOES 1 TO 20, INCLUSIVE SUMMONS ISSUED, JUDICIAL COUNCIL CIVIL CASE COVER SHEET FILED",
+      "fee": "$240.00",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-01-02_Unknown.pdf"
+    }
+  ]
+}

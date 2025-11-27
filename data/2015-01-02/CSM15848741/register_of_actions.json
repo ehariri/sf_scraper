@@ -1,1 +1,30 @@
-[]
+{
+  "metadata": {
+    "total_entries": 3,
+    "total_links": 3,
+    "scraped_links": 3
+  },
+  "actions": [
+    {
+      "date": "2015-02-05",
+      "proceedings": "DISMISSAL OF ENTIRE ACTION OF ALL PARTIES AND ALL CAUSES OF ACTION WITH PREJUDICE CLAIM HEARING OF MAR-12-2015 OFF CALENDAR, DISMISSAL FILED",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-02-05_Unknown.pdf"
+    },
+    {
+      "date": "2015-01-23",
+      "proceedings": "PROOF OF SERVICE FILED ON CLAIM OF PLAINTIFF - FEE FOR SERVICE $50.00 - SERVED JAN-10-2015, PERSONAL SERVICE AS TO DEFENDANT CLAYTON, MICHAEL",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-01-23_Unknown.pdf"
+    },
+    {
+      "date": "2015-01-02",
+      "proceedings": "AUTO ACCIDENT CLAIM OF PLAINTIFF FOR $7,500.00 FILED BY ARUGUETE, EVEN FELDER, KATHRYN L AS TO DEFENDANT CLAYTON, MICHAEL ORDER SETTING TRIAL ISSUED FOR MAR-12-2015 AT 03:30 PM IN DEPT 506",
+      "fee": "$75.00",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-01-02_Unknown.pdf"
+    }
+  ]
+}

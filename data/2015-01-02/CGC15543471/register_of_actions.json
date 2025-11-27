@@ -1,1 +1,947 @@
-[]
+{
+  "metadata": {
+    "total_entries": 134,
+    "total_links": 114,
+    "scraped_links": 114
+  },
+  "actions": [
+    {
+      "date": "2019-10-02",
+      "proceedings": "CASE DISMISSED BY COURT AT ORDER TO SHOW CAUSE HEARING OCT-01-2019 AT 10:30 AM PURSUANT TO CRC 3.1385. NOTICE SENT BY COURT.",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2019-10-02_Unknown.pdf"
+    },
+    {
+      "date": "2019-10-01",
+      "proceedings": "MINI MINUTES FOR OCT-01-2019 10:30 AM FOR DEPT 610",
+      "fee": "",
+      "doc_id": null,
+      "doc_filename": null
+    },
+    {
+      "date": "2019-08-12",
+      "proceedings": "CRC 3.1385 ORDER TO SHOW CAUSE OF AUG-20-2019 CONTINUED TO OCT-01-2019 AT 10:30 AM IN DEPARTMENT 610, FOR PLAINTIFF TO DISMISS DOES 1-50 AS TO FIRST AMENDED COMPLAINT; FOR 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT TO DISMISS MAY-12-2015 CROSS COMPLAINT. NOTICE SENT BY COURT.",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2019-08-12_Unknown.pdf"
+    },
+    {
+      "date": "2017-08-31",
+      "proceedings": "NOTICE OF ENTRY OF DISMISSAL AND PROOF OF SERVICE (TRANSACTION ID # 17242021) FILED BY CROSS COMPLAINANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2017-08-31_Unknown.pdf"
+    },
+    {
+      "date": "2017-08-29",
+      "proceedings": "DISMISSAL WITH PREJUDICE OF CROSS COMPLAINT FILED BY NAVARRETTE, GIOVANNI (TRANSACTION ID # 17240049)",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2017-08-29_Unknown.pdf"
+    },
+    {
+      "date": "2017-08-28",
+      "proceedings": "NOTICE OF ENTRY OF DISMISSAL AND PROOF OF SERVICE (TRANSACTION ID # 17239044) FILED BY PLAINTIFF ABEL, AARON",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2017-08-28_Unknown.pdf"
+    },
+    {
+      "date": "2017-08-21",
+      "proceedings": "DISMISSAL WITH PREJUDICE (TRANSACTION ID # 17232052)PARTIES TO BEAR THEIR OWN COSTS AND ATTORNEY FEES. AS TO DEFENDANT 1979 UNION STREET CORPORATION",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2017-08-21_Unknown.pdf"
+    },
+    {
+      "date": "2017-06-20",
+      "proceedings": "MANDATORY SETTLEMENT CONFERENCE CALENDAR SET FOR JUL-14-2017 NOT HELD AND REMOVED. CASE SETTLED. ASSIGNED TO DEPT. 610 ON AUG-20-2019 AT 10:30 AM FOR DISMISSAL PER CRC 3.1385. (0.5)",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2017-06-20_Unknown.pdf"
+    },
+    {
+      "date": "2017-06-20",
+      "proceedings": "REMOVED FROM MASTER JURY CALENDAR SET FOR JUL-24-2017 - CASE SETTLED.",
+      "fee": "",
+      "doc_id": null,
+      "doc_filename": null
+    },
+    {
+      "date": "2017-06-08",
+      "proceedings": "NOTICE OF SETTLEMENT , CONDITIONAL (TRANSACTION ID # 60708927) FILED BY PLAINTIFF ABEL, AARON",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2017-06-08_Unknown.pdf"
+    },
+    {
+      "date": "2017-05-25",
+      "proceedings": "NOTICE OF SETTLEMENT CONFERENCE; SETTLEMENT CONFERENCE SET FOR JUL-14-2017 AT 1:00 PM IN DEPT. 212 WITH CONFERENCE OFFICER TROY D. WIGGINS",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2017-05-25_Unknown.pdf"
+    },
+    {
+      "date": "2017-03-29",
+      "proceedings": "MSC SETTING REVIEW CONTINUED",
+      "fee": "",
+      "doc_id": null,
+      "doc_filename": null
+    },
+    {
+      "date": "2017-03-16",
+      "proceedings": "MASTER JURY CALENDAR SET FOR APR-03-2017 CONTINUED TO MASTER CALENDAR JURY ON JUL-24-2017 AT 9:30 AM IN DEPT. 206. (206)",
+      "fee": "",
+      "doc_id": null,
+      "doc_filename": null
+    },
+    {
+      "date": "2017-03-16",
+      "proceedings": "MASTER MOTION CALENDAR ON MAR-16-2017 IN 206, PLAINTIFF'S MOTION TO CONTINUE TRIAL. JOSEPH MAY APPEARING FOR PLAINTIFF. MARK MITTELMAN APPEARING FOR DEFENDANT AND CROSS-COMPLAINANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT. NO OTHER APPEARANCES ON THIS MATTER. THE COURT GRANTS PLAINTIFF'S MOTION TO CONTINUE TRIAL. THE TRIAL DATE OF 4/3/17 IS CONTINUED TO 7/24/17 AT 9:30AM IN DEPT. 206. ORDER SIGNED IN OPEN COURT. JUDGE: SUZANNE R. BOLANOS; CLERK: R. VELUZ; MATTER NOT REPORTED. (206)",
+      "fee": "",
+      "doc_id": null,
+      "doc_filename": null
+    },
+    {
+      "date": "2017-03-16",
+      "proceedings": "ORDER GRANTING PLAINTIFF'S MOTION TO CONTINUE TRIAL",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2017-03-16_Unknown.pdf"
+    },
+    {
+      "date": "2017-03-09",
+      "proceedings": "MSC SETTING REVIEW CONTINUED",
+      "fee": "",
+      "doc_id": null,
+      "doc_filename": null
+    },
+    {
+      "date": "2017-03-07",
+      "proceedings": "*AMENDED* AND SUPPLEMENTAL DECLARATION OF MARK R. MITTELMAN IN SUPPORT OF PLAINTIFF AARON ABELS MOTION TO CONTINUE TRIAL DATE (TRANSACTION ID # 60306195) FILED BY DEFENDANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2017-03-07_Unknown.pdf"
+    },
+    {
+      "date": "2017-03-02",
+      "proceedings": "DECLARATION OF MARK R. MITTELMAN IN SUPPORT OF PLAINTIFF AARON ABELS MOTION TO CONTINUE TRIAL DATE (TRANSACTION ID # 60283628) FILED BY DEFENDANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2017-03-02_Unknown.pdf"
+    },
+    {
+      "date": "2017-02-24",
+      "proceedings": "DECLARATION OF JOSEPH S. MAY IN SUPPORT OF PLAINTIFFS MOTION TO CONTINUE TRIAL (TRANSACTION ID # 60256645) FILED BY PLAINTIFF ABEL, AARON",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2017-02-24_Unknown.pdf"
+    },
+    {
+      "date": "2017-02-24",
+      "proceedings": "MEMORANDUM OF POINTS AND AUTHORITIES IN SUPPORT OF PLAINTIFFS MOTION TO CONTINUE TRIAL (TRANSACTION ID # 60256645) FILED BY PLAINTIFF ABEL, AARON",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2017-02-24_Unknown.pdf"
+    },
+    {
+      "date": "2017-02-24",
+      "proceedings": "MOTION TO CONTINUE JURY TRIAL (TRANSACTION ID # 60256645) FILED BY PLAINTIFF ABEL, AARON HEARING SET FOR MAR-16-2017 AT 09:30 AM IN DEPT 206",
+      "fee": "$60.00",
+      "doc_id": "Unknown",
+      "doc_filename": "2017-02-24_Unknown.pdf"
+    },
+    {
+      "date": "2017-02-24",
+      "proceedings": "ORDER SHORTENING TIME RE: MOTION TO CONTINUE TRIAL (TO BE SET FOR 03/16/17; OPP. DUE 03/06/17; REPLY WAIVED)",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2017-02-24_Unknown.pdf"
+    },
+    {
+      "date": "2017-02-24",
+      "proceedings": "MEMORANDUM OF POINTS AND AUTHORITIES IN SUPPORT OF PLAINTIFFS APPLICATION FOR EX PARTE ORDER SHORTENING TIME FOR NOTICE OF MOTION TO CONTINUE TRIAL (TRANSACTION ID # 60252492) FILED BY PLAINTIFF ABEL, AARON",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2017-02-24_Unknown.pdf"
+    },
+    {
+      "date": "2017-02-24",
+      "proceedings": "DECLARATION OF JOSEPH S. MAY IN SUPPORT OF PLAINTIFFS APPLICATION FOR EX PARTE ORDER SHORTENING TIME FOR NOTICE OF MOTION TO CONTINUE TRIAL (TRANSACTION ID # 60252492) FILED BY PLAINTIFF ABEL, AARON",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2017-02-24_Unknown.pdf"
+    },
+    {
+      "date": "2017-02-24",
+      "proceedings": "EX PARTE APPLICATION FOR ORDER SHORTENING TIME FOR NOTICE OF MOTION TO CONTINUE TRIAL (TRANSACTION ID # 60252492) FILED BY PLAINTIFF ABEL, AARON",
+      "fee": "$60.00",
+      "doc_id": "Unknown",
+      "doc_filename": "2017-02-24_Unknown.pdf"
+    },
+    {
+      "date": "2017-02-15",
+      "proceedings": "REVIEW FOR MANDATORY SETTLEMENT CONFERENCE (0.5)",
+      "fee": "",
+      "doc_id": null,
+      "doc_filename": null
+    },
+    {
+      "date": "2016-11-16",
+      "proceedings": "MASTER JURY CALENDAR SET FOR DEC-12-2016 CONTINUED TO MASTER CALENDAR JURY ON APR-03-2017 AT 9:30 AM IN DEPT. 206 PER STIPULATED EX PARTE ORDER FILED 11/16/16. ALL FURTHER CONTINUANCES MUST BE BY NOTICED MOTION. (206)",
+      "fee": "",
+      "doc_id": null,
+      "doc_filename": null
+    },
+    {
+      "date": "2016-11-16",
+      "proceedings": "ORDER - EX PARTE ORDER CONTINUING TRIAL AND EXPERT DISCOVERY CUTOFF",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2016-11-16_Unknown.pdf"
+    },
+    {
+      "date": "2016-11-16",
+      "proceedings": "STIPULATION TO CONTINUE TRIAL (TRANSACTION ID # 59840455) FILED BY ABEL, AARON",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2016-11-16_Unknown.pdf"
+    },
+    {
+      "date": "2016-11-16",
+      "proceedings": "DECLARATION OF JOSEPH S. MAY IN SUPPORT OF PLAINTIFFS APPLICATION FOR STIPULATED EX PARTE ORDER CONTINUING TRIAL (TRANSACTION ID # 59840455) FILED BY PLAINTIFF ABEL, AARON",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2016-11-16_Unknown.pdf"
+    },
+    {
+      "date": "2016-11-16",
+      "proceedings": "MEMORANDUM OF POINTS AND AUTHORITIES IN SUPPORT OF PLAINTIFFS APPLICATION FOR STIPULATED EX PARTE ORDER CONTINUING TRIAL (TRANSACTION ID # 59840455) FILED BY PLAINTIFF ABEL, AARON",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2016-11-16_Unknown.pdf"
+    },
+    {
+      "date": "2016-11-16",
+      "proceedings": "EX PARTE APPLICATION FOR ORDER FOR CONTINUING TRIAL - STIPULATED (TRANSACTION ID # 59840455) FILED BY PLAINTIFF ABEL, AARON",
+      "fee": "$60.00",
+      "doc_id": "Unknown",
+      "doc_filename": "2016-11-16_Unknown.pdf"
+    },
+    {
+      "date": "2016-10-25",
+      "proceedings": "NOTICE OF SETTLEMENT CONFERENCE; SETTLEMENT CONFERENCE SET FOR NOV-22-2016 AT 1:00 PM IN DEPT. 210 WITH CONFERENCE OFFICER CHARLES GEERHART",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2016-10-25_Unknown.pdf"
+    },
+    {
+      "date": "2016-06-28",
+      "proceedings": "NOTICE OF ENTRY OF JUDGMENT OR ORDER OF TO CONTINUE TRIAL DATE AND RELATED DATES (TRANSACTION ID # 59202487) FILED BY DEFENDANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2016-06-28_Unknown.pdf"
+    },
+    {
+      "date": "2016-06-23",
+      "proceedings": "MASTER CALENDAR MOTION CALENDAR ON JUN-28-2016 IN DEPT. 206, DEFENDANT-CROSS-COMPLAINANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT MOTION TO CONTINUE TRIAL IS OFF CALENDAR PER FAXED LETTER FROM THE MOVING PARTY. TRIAL DATE ALREADY CONTINUED VIA EX PARTE ORDER. (206)",
+      "fee": "",
+      "doc_id": null,
+      "doc_filename": null
+    },
+    {
+      "date": "2016-06-22",
+      "proceedings": "REVIEW FOR MANDATORY SETTLEMENT CONFERENCE",
+      "fee": "",
+      "doc_id": null,
+      "doc_filename": null
+    },
+    {
+      "date": "2016-06-22",
+      "proceedings": "REMOVED FROM SETTLEMENT CONFERENCE CALENDAR SET FOR JUN-16-2016 - NOT HELD AND REMOVED. (0.5)",
+      "fee": "",
+      "doc_id": null,
+      "doc_filename": null
+    },
+    {
+      "date": "2016-06-21",
+      "proceedings": "MASTER JURY CALENDAR SET FOR JUL-05-2016 CONTINUED TO MASTER CALENDAR JURY ON DEC-12-2016 AT 9:30 AM IN DEPT. 206 PER EX PARTE ORDER DATED 6/21/16. (206)",
+      "fee": "",
+      "doc_id": null,
+      "doc_filename": null
+    },
+    {
+      "date": "2016-06-21",
+      "proceedings": "ORDER TO CONTINUE TRIAL DATE AND RELATED DATES",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2016-06-21_Unknown.pdf"
+    },
+    {
+      "date": "2016-06-20",
+      "proceedings": "DECLARATION OF MARK R. MITTELMAN IN SUPPORT OF DEFENDANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT EX PARTE APPLICATION FOR STIPULATED MOTION TO CONTINUE TRIAL (TRANSACTION ID # 59169649) FILED BY DEFENDANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2016-06-20_Unknown.pdf"
+    },
+    {
+      "date": "2016-06-20",
+      "proceedings": "MEMORANDUM OF POINTS AND AUTHORITIES IN SUPPORT OF DEFENDANTS EX PARTE APPLICATION FOR STIPULATED MOTION TO CONTINUE TRIAL C.R.C. 3.1200 ET SEQ.- S. F. SUPERIOR COURT LOCAL RULE 6.0(B) (TRANSACTION ID # 59169649) FILED BY DEFENDANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2016-06-20_Unknown.pdf"
+    },
+    {
+      "date": "2016-06-20",
+      "proceedings": "EX PARTE APPLICATION FOR ORDER FOR A STIPULATED CONTINUANCE OF THE TRIAL DATE [C.R.C. 3.1200 ET SEQ.- S. F. SUPERIOR COURT LOCAL RULE 6.0(B) (TRANSACTION ID # 59169649) FILED BY DEFENDANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT",
+      "fee": "$60.00",
+      "doc_id": "Unknown",
+      "doc_filename": "2016-06-20_Unknown.pdf"
+    },
+    {
+      "date": "2016-06-17",
+      "proceedings": "FEE PAID ON ORDER TO CONTINUE TRIAL DATE AND RELATED DATES (TRANSACTION ID # 59159234) FILED BY DEFENDANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT",
+      "fee": "$20.00",
+      "doc_id": null,
+      "doc_filename": null
+    },
+    {
+      "date": "2016-06-17",
+      "proceedings": "STIPULATION TO CONTINUE TRIAL DATE AND RELATED DATES (TRANSACTION ID # 59159234) FILED BY 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT ABEL, AARON",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2016-06-17_Unknown.pdf"
+    },
+    {
+      "date": "2016-06-10",
+      "proceedings": "NOTICE OF ENTRY OF JUDGMENT TO CONTINUE TRIAL (TRANSACTION ID # 59127773)",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2016-06-10_Unknown.pdf"
+    },
+    {
+      "date": "2016-06-09",
+      "proceedings": "DECLARATION OF GORDON LUNDY, M.C. IN SUPPORT OF DEFENDANT-CROSS-COMPLAINANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT MOTION TO CONTINUE TRIAL AND MANDATORY SETTLEMENT CONFERENCE (TRANSACTION ID # 59127147) FILED BY DEFENDANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2016-06-09_Unknown.pdf"
+    },
+    {
+      "date": "2016-06-09",
+      "proceedings": "DECLARATION OF MARK R. MITTELMAN IN SUPPORT OF 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT MOTION TO CONTINUE TRIAL AND MANDATORY SETTLEMENT CONFERENCE (TRANSACTION ID # 59127147) FILED BY DEFENDANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2016-06-09_Unknown.pdf"
+    },
+    {
+      "date": "2016-06-09",
+      "proceedings": "MEMORANDUM OF POINTS AND AUTHORITIES IN SUPPORT OF DEFENDANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT MOTION TO CONTINUE TRIAL AND MANDATORY SETTLEMENT CONFERENCE (TRANSACTION ID # 59127147) FILED BY DEFENDANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2016-06-09_Unknown.pdf"
+    },
+    {
+      "date": "2016-06-09",
+      "proceedings": "DEFENDANT-CROSS-COMPLAINANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT NOTICE OF MOTION AND MOTION TO CONTINUE TRIAL AND MANDATORY SETTLEMENT CONFERENCE, PROOF OF SERVICE (TRANSACTION ID # 59127147) FILED BY DEFENDANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT HEARING SET FOR JUN-28-2016 AT 09:30 AM IN DEPT 206",
+      "fee": "$60.00",
+      "doc_id": "Unknown",
+      "doc_filename": "2016-06-09_Unknown.pdf"
+    },
+    {
+      "date": "2016-06-09",
+      "proceedings": "ORDER SHORTENING TIME RE: MOTION TO CONTINUE TRIAL",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2016-06-09_Unknown.pdf"
+    },
+    {
+      "date": "2016-06-08",
+      "proceedings": "DECLARATION OF MARK R. MITTELMAN IN SUPPORT OF DEFENDANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT EX PARTE APPLICATION FOR ORDER SHORTENING TIME TO HEAR MOTION TO CONTINUE TRIAL AND MANDATORY SETTLEMENT CONFERENCE (TRANSACTION ID # 59120010) FILED BY DEFENDANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2016-06-08_Unknown.pdf"
+    },
+    {
+      "date": "2016-06-08",
+      "proceedings": "EX PARTE APPLICATION FOR ORDER SHORTENING TIME TO HEAR DEFENDANT-CROSS-COMPLAINANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT MOTION TO CONTINUE TRIAL AND MANDATORY SETTLEMENT CONFERENCE (TRANSACTION ID # 59120010) FILED BY DEFENDANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT",
+      "fee": "$60.00",
+      "doc_id": "Unknown",
+      "doc_filename": "2016-06-08_Unknown.pdf"
+    },
+    {
+      "date": "2016-06-07",
+      "proceedings": "DECLARATION OF MARK R. MITTELMAN IN SUPPORT OF DEFENDANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT EX PARTE APPLICATION FOR AN ORDER SHORTENING TIME TO HEAR MOTION TO CONTINUE TRIAL DATE AND MANDATORY SETTLEMENT CONFERENCE (TRANSACTION ID # 59112522) FILED BY DEFENDANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2016-06-07_Unknown.pdf"
+    },
+    {
+      "date": "2016-06-07",
+      "proceedings": "EX PARTE APPLICATION FOR ORDER SHORTENING TIME TO HEAR DEFENDANT-CROSS-COMPLAINANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT MOTION TO CONTINUE TRIAL AND MANDATORY SETTLEMENT CONFERENCE (TRANSACTION ID # 59112522) FILED BY DEFENDANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT",
+      "fee": "$60.00",
+      "doc_id": "Unknown",
+      "doc_filename": "2016-06-07_Unknown.pdf"
+    },
+    {
+      "date": "2016-06-02",
+      "proceedings": "NOTICE OF ENTRY OF ORDER/NOTICE OF RULING FILED (TRANSACTION ID # 59090146) FILED BY DEFENDANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2016-06-02_Unknown.pdf"
+    },
+    {
+      "date": "2016-06-02",
+      "proceedings": "DISMISSAL WITH PREJUDICE ONLY AS TO THE 2ND CAUSE OF ACTION FOR PREMISES LIABILITY-FAILURE TO PROTECT (TRANSACTION ID # 59087286)",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2016-06-02_Unknown.pdf"
+    },
+    {
+      "date": "2016-05-31",
+      "proceedings": "ORDER GRANTING DEFENDANT/CROSS-COMPLAINANT'S MOTION FOR PROTECTIVE ORDER TO COMPEL CONTINUED INDEPENDENT MEDICAL EXAMINATION WITH SPECIFIED CONDITIONS OF PLAINTIFF AARON ABEL AND REQUEST FOR SANCTIONS AGAINST PLAINTIFF ARRON ABEL AND HIS ATTORNEY OF RECORD JOSEPH MAY",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2016-05-31_Unknown.pdf"
+    },
+    {
+      "date": "2016-05-24",
+      "proceedings": "LAW AND MOTION 302, DEFENDANT 1979 UNION STREET CORPORATION'S MOTION FOR PROTECTIVE ORDER TO COMPEL CONTINUED INDEPENDENT MEDICAL EXAMINATION WITH SPECIFIED CONDITIONS IS GRANTED AND ITS REQUEST FOR MONETARY SANCTIONS IS DENIED. SEE MINUTES AND/OR TRANSCRIPT FOR DETAILS. MR. MITTELMAN IS PREPARE A FORM OF ORDER THAT REFLECTS WHAT WAS STATED AND PROVIDE IT TO MR. MAY FOR REVIEW. JUDGE: HAROLD KAHN. CLERK: ROSIE NOGUERA. REPORTER: SHERRY SAWYER, CSR #5976.",
+      "fee": "",
+      "doc_id": null,
+      "doc_filename": null
+    },
+    {
+      "date": "2016-05-24",
+      "proceedings": "MINI MINUTES FOR MAY-24-2016 09:30 AM FOR DEPT 302",
+      "fee": "",
+      "doc_id": null,
+      "doc_filename": null
+    },
+    {
+      "date": "2016-05-18",
+      "proceedings": "REPLY TO PLAINTIFF'S OPPOSITION TO MOTION FOR PROTECTIVE ORDER TO COMPEL CONTINUED INDEPENDENT MEDICAL EXAMINATION WITH SPECIFIED CONDITIONS OF PLAINTIFF AARON ABEL; REQUEST FOR SANCTIONS AGAINST PLAINTIFF AARON ABEL AND HIS ATTORNEY OF RECORD JOSEPH MAY (TRANSACTION ID # 59029621) FILED BY DEFENDANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2016-05-18_Unknown.pdf"
+    },
+    {
+      "date": "2016-05-17",
+      "proceedings": "TRANSCRIPT OF RECORDING OF DEFENSE PHYSICAL EXAMINATION OF APRIL 15, 2016 IN OPPOSITION TO DEFENANTS MOTION TO COMPEL PHYSICAL EXAMINATION AND FOR SANCTIONS [C.R.C. 2.1040, SUBD. (B).] (TRANSACTION ID # 59023134) FILED BY PLAINTIFF ABEL, AARON",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2016-05-17_Unknown.pdf"
+    },
+    {
+      "date": "2016-05-17",
+      "proceedings": "OBJECTIONS TO EVIDENCE IN SUPPORT OF DEFENDANTS MOTION TO COMPEL PHYSICAL EXAMINATION AND FOR SANCTIONS (TRANSACTION ID # 59023134) FILED BY PLAINTIFF ABEL, AARON",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2016-05-17_Unknown.pdf"
+    },
+    {
+      "date": "2016-05-17",
+      "proceedings": "DECLARATION OF AARON ABEL IN OPPOSITION TO DEFENDANTS MOTION TO COMPEL PHYSICAL EXAMINATION AND FOR SANCTIONS (TRANSACTION ID # 59023134) FILED BY PLAINTIFF ABEL, AARON",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2016-05-17_Unknown.pdf"
+    },
+    {
+      "date": "2016-05-17",
+      "proceedings": "DECLARATION OF JOSEPH S. MAY IN OPPOSITION TO DEFENDANTS MOTION TO COMPEL PHYSICAL EXAMINATION AND FOR SANCTIONS (TRANSACTION ID # 59023134) FILED BY PLAINTIFF ABEL, AARON",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2016-05-17_Unknown.pdf"
+    },
+    {
+      "date": "2016-05-17",
+      "proceedings": "OPPOSITION TO DEFENDANT 1979 UNION STREET CORPORATIONS MOTION TO COMPEL PHYSICAL EXAMINATION; REQUEST FOR SANCTIONS (TRANSACTION ID # 59023134) FILED BY PLAINTIFF ABEL, AARON",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2016-05-17_Unknown.pdf"
+    },
+    {
+      "date": "2016-05-17",
+      "proceedings": "NOTICE OF SETTLEMENT CONFERENCE; SETTLEMENT CONFERENCE SET FOR JUN-16-2016 AT 08:30 AM IN DEPT. 210 WITH CONFERENCE OFFICER MALCOLM SHER.",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2016-05-17_Unknown.pdf"
+    },
+    {
+      "date": "2016-05-10",
+      "proceedings": "PROOF OF SERVICE OF MOTION FOR PROTECTIVE ORDER TO COMPEL CONTINUED INDEPENDENT MEDICAL EXAMINATION WITH SPECIFIED CONDITIONS; REQUEST FOR SANCTIONS AGAINST PLAINTIFF AND HIS ATTORNEY OF RECORD JOSEPH MAY (TRANSACTION ID # 58987837) FILED BY DEFENDANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2016-05-10_Unknown.pdf"
+    },
+    {
+      "date": "2016-05-10",
+      "proceedings": "DECLARATION OF GORDON LUNDY, M.D. IN SUPPORT OF DEFENDANT-CROSS-COMPLAINANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHTS MOTION FOR PROTECTIVE ORDER TO COMPEL CONTINUED INDEPENDENT MEDICAL EXAMINATION WITH SPECIFIED CONDITIONS OF PLAINTIFF AARON ABEL; REQUEST FOR SANCTIONS AGAINST PLAINTIFF AARON ABEL AND HIS ATTORNEY OF RECORD JOSEPH MAY (TRANSACTION ID # 58987837) FILED BY DEFENDANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2016-05-10_Unknown.pdf"
+    },
+    {
+      "date": "2016-05-10",
+      "proceedings": "DECLARATION OF MARK R. MITTELMAN IN SUPPORT OF DEFENDANT-CROSS-COMPLAINANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHTS MOTION FOR PROTECTIVE ORDER TO COMPEL CONTINUED INDEPENDENT MEDICAL EXAMINATION WITH SPECIFIED CONDITIONS OF PLAINTIFF AARON ABEL; REQUEST FOR SANCTIONS AGAINST PLAINTIFF AARON ABEL AND HIS ATTORNEY OF RECORD JOSEPH MAY (TRANSACTION ID # 58987837) FILED BY DEFENDANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2016-05-10_Unknown.pdf"
+    },
+    {
+      "date": "2016-05-10",
+      "proceedings": "MEMORANDUM OF POINTS AND AUTHORITIES IN SUPPORT OF DEFENDANT-CROSS-COMPLAINANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHTS MOTION FOR PROTECTIVE ORDER TO COMPEL CONTINUED INDEPENDENT MEDICAL EXAMINATION WITH SPECIFIED CONDITIONS OF PLAINTIFF AARON ABEL; REQUEST FOR SANCTIONS AGAINST PLAINTIFF AARON ABEL AND HIS ATTORNEY OF RECORD JOSEPH MAY (TRANSACTION ID # 58987837) FILED BY DEFENDANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2016-05-10_Unknown.pdf"
+    },
+    {
+      "date": "2016-05-10",
+      "proceedings": "NOTICE OF MOTION AND DEFENDANT-CROSS-COMPLAINANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHTS MOTION FOR PROTECTIVE ORDER TO COMPEL CONTINUED INDEPENDENT MEDICAL EXAMINATION WITH SPECIFIED CONDITIONS; REQUEST FOR SANCTIONS AGAINST PLAINTIFF AARON ABEL AND HIS ATTORNEY OF RECORD JOSEPH MAY **DISCOVERY MOTION SET AT 9:30** (TRANSACTION ID # 58987837) FILED BY DEFENDANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT HEARING SET FOR MAY-24-2016 AT 09:30 AM IN DEPT 302",
+      "fee": "$60.00",
+      "doc_id": "Unknown",
+      "doc_filename": "2016-05-10_Unknown.pdf"
+    },
+    {
+      "date": "2016-05-10",
+      "proceedings": "ORDER GRANTING DEFENDANT/CROSS-COMPLAINANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT'S EX PARTE APPLICATION FOR AN ORDER SHORTENING TIME TO HEAR ITS MOTION FOR PROTECTIVE ORDER COMPELLING CONTINUED INDEPENDENT MEDICAL EXAMINATION OF PLAINTIFF AARON ABEL AND REQUEST FOR MONETARY SANCTIONS AGAINST PLAINTIFF AARON ABEL AND HIS ATTORNEY OF RECORD JOSEPH MAY - (HEARING: 5/24/16 AT 9:30 AM; OPPOSITION: 5/17/16 BY 4PM; REPLY: 5/18/16 BY 4PM; ELECTRONIC SERVICE)",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2016-05-10_Unknown.pdf"
+    },
+    {
+      "date": "2016-05-09",
+      "proceedings": "DECLARATION OF MARK R. MITTEMAN IN SUPPORT OF DEFENDANT-CROSS-COMPLAINANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHTS EX PARTE APPLICATION FOR AN ORDER SHORTENING TIME TO HEAR ITS MOTION FOR PROTECTIVE ORDER COMPELLING CONTINUED INDEPENDENT MEDICAL EXAMINATION OF PLAINTIFF AARON ABEL AND REQUEST FOR MONETARY SANCTIONS AGAINST PLAINTIFF AARON ABEL AND HIS ATTORNEY OF RECORD JOSEPH MAY (TRANSACTION ID # 58976268) FILED BY DEFENDANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2016-05-09_Unknown.pdf"
+    },
+    {
+      "date": "2016-05-09",
+      "proceedings": "MEMORANDUM OF POINTS AND AUTHORITIES IN SUPPORT OF DEFENDANT-CROSS-COMPLAINANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHTS EX PARTE APPLICATION FOR AN ORDER SHORTENING TIME TO HEAR MOTION FOR PROTECTIVE ORDER COMPELLING CONTINUED INDEPENDENT MEDICAL EXAMINATION OF PLAINTIFF AND REQUEST FOR MONETARY SANCTIONS AGAINST PLAINTIFF AARON ABEL AND HIS ATTORNEY OF RECORD JOSEPH MAY (C.R.C. 3.1200 ET SEQ.) (TRANSACTION ID # 58976268) FILED BY DEFENDANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2016-05-09_Unknown.pdf"
+    },
+    {
+      "date": "2016-05-09",
+      "proceedings": "EX PARTE APPLICATION FOR ORDER SHORTENING TIME TO HEAR MOTION FOR PROTECTIVE ORDER COMPELLING CONTINUED INDEPENDENT MEDICAL EXAMINATION OF PLAINTIFF AND REQUEST FOR MONETARY SANCTIONS AGAINST PLAINTIFF AARON ABEL AND HIS ATTORNEY OF RECORD JOSEPH MAY (TRANSACTION ID # 58976268) FILED BY DEFENDANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT",
+      "fee": "$60.00",
+      "doc_id": "Unknown",
+      "doc_filename": "2016-05-09_Unknown.pdf"
+    },
+    {
+      "date": "2016-05-02",
+      "proceedings": "DISCOVERY 302, DEFENDANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT'S MOTION TO COMPEL FURTHER RESPONSES TO CROSS-DEFENDANT GIOVANNI NAVARRETES RESPONSES TO FIRST SET OF FORM INTERROGATORIES; REQUEST FOR SANCTIONS AGAINST CROSS-DEFENDANT GIOVANNI NAVARRETE AND HIS ATTORNEY OF RECORD THOMAS W.J. PURTELL IS TAKEN OFF CALENDAR PER THE REQUEST OF THE MOVING PARTY.",
+      "fee": "",
+      "doc_id": null,
+      "doc_filename": null
+    },
+    {
+      "date": "2016-05-02",
+      "proceedings": "MINI MINUTES FOR MAY-17-2016 09:00 AM FOR DEPT 302",
+      "fee": "",
+      "doc_id": null,
+      "doc_filename": null
+    },
+    {
+      "date": "2016-04-19",
+      "proceedings": "SEPARATE STATEMENT OF FACTS (TRANSACTION ID # 58885347) FILED BY DEFENDANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2016-04-19_Unknown.pdf"
+    },
+    {
+      "date": "2016-04-19",
+      "proceedings": "DECLARATION OF MARK R. MITTELMAN IN SUPPORT OF DEFENDANT-CROSS-COMPLAINANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHTS MOTION TO COMPEL FURTHER RESPONSES TO CROSS-DEFENDANT GIOVANNI NAVARRETES RESPONSES TO FIRST SET OF FORM INTERROGATORIES; REQUEST FOR SANCTIONS AGAINST CROSS-DEFENDANT GIOVANNI NAVARRETE AND HIS ATTORNEY OF RECORD THOMAS W.J. PURTELL (TRANSACTION ID # 58885347) FILED BY DEFENDANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2016-04-19_Unknown.pdf"
+    },
+    {
+      "date": "2016-04-19",
+      "proceedings": "MEMORANDUM OF POINTS AND AUTHORITIES IN SUPPORT OF MOTION (TRANSACTION ID # 58885347) FILED BY DEFENDANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2016-04-19_Unknown.pdf"
+    },
+    {
+      "date": "2016-04-19",
+      "proceedings": "NOTICE OF MOTION AND DEFENDANT-CROSS-COMPLAINANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHTS MOTION TO COMPEL FURTHER RESPONSES TO CROSS-DEFENDANT GIOVANNI NAVARRETES RESPONSES TO FIRST SET OF FORM INTERROGATORIES; REQUEST FOR SANCTIONS AGAINST CROSS-DEFENDANT GIOVANNI NAVARRETE AND HIS ATTORNEY OF RECORD THOMAS W.J. PURTELL (TRANSACTION ID # 58885347) FILED BY DEFENDANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT HEARING SET FOR MAY-17-2016 AT 09:00 AM IN DEPT 302",
+      "fee": "$60.00",
+      "doc_id": "Unknown",
+      "doc_filename": "2016-04-19_Unknown.pdf"
+    },
+    {
+      "date": "2016-03-23",
+      "proceedings": "NOTICE OF AMENDED LIEN FILED BY CLAIMANT STATE OF CALIFORNIA/VICTIM COMPENSATION AND GOVERNMENT CLAIMS BOARD",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2016-03-23_Unknown.pdf"
+    },
+    {
+      "date": "2015-12-10",
+      "proceedings": "NOTICE OF TIME AND PLACE OF TRIAL, JURY TRIAL SET FOR JUL-05-2016 AT 9:30 AM IN DEPT. 206. CASE MANAGEMENT CONFERENCE ON DEC-23-2015 IS OFF CALENDAR. NOTICE SENT BY COURT.",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-12-10_Unknown.pdf"
+    },
+    {
+      "date": "2015-12-04",
+      "proceedings": "CASE MANAGEMENT STATEMENT (TRANSACTION ID # 58251709) FILED BY PLAINTIFF ABEL, AARON JURY DEMANDED, ESTIMATED TIME FOR TRIAL: 4.0 DAYS",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-12-04_Unknown.pdf"
+    },
+    {
+      "date": "2015-12-04",
+      "proceedings": "ANSWER TO CROSS COMPLAINT (TRANSACTION ID # 58251120) FILED BY CROSS DEFENDANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-12-04_Unknown.pdf"
+    },
+    {
+      "date": "2015-12-04",
+      "proceedings": "CASE MANAGEMENT STATEMENT (TRANSACTION ID # 58250814) FILED BY DEFENDANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT JURY DEMANDED, ESTIMATED TIME FOR TRIAL: 9.0 DAYS",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-12-04_Unknown.pdf"
+    },
+    {
+      "date": "2015-11-05",
+      "proceedings": "PROOF OF SERVICE (TRANSACTION ID # 58116297) FILED BY CROSS DEFENDANT NAVARRETTE, GIOVANNI",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-11-05_Unknown.pdf"
+    },
+    {
+      "date": "2015-11-05",
+      "proceedings": "ANSWER TO CROSS COMPLAINT (TRANSACTION ID # 58116297) FILED BY CROSS DEFENDANT NAVARRETTE, GIOVANNI",
+      "fee": "$450.00",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-11-05_Unknown.pdf"
+    },
+    {
+      "date": "2015-11-05",
+      "proceedings": "PROOF OF SERVICE (TRANSACTION ID # 58116297) FILED BY CROSS DEFENDANT NAVARRETTE, GIOVANNI",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-11-05_Unknown.pdf"
+    },
+    {
+      "date": "2015-11-05",
+      "proceedings": "CROSS COMPLAINT (TRANSACTION ID # 58116297) FILED BY CROSS COMPLAINANT NAVARRETTE, GIOVANNI AS TO CROSS DEFENDANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT ROES 1 TO 20, INCLUSIVE",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-11-05_Unknown.pdf"
+    },
+    {
+      "date": "2015-10-09",
+      "proceedings": "CASE MANAGEMENT CONFERENCE OF OCT-28-2015 CONTINUED TO DEC-23-2015 AT 10:30 AM IN DEPARTMENT 610 FOR CROSS COMPLAINANT(S) TO BRING CROSS COMPLAINT(S) AT ISSUE AS TO CROSS DEFENDANT(S) GIOVANNI NAVARRETTE. NOTICE SENT BY COURT.",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-10-09_Unknown.pdf"
+    },
+    {
+      "date": "2015-10-07",
+      "proceedings": "CASE MANAGEMENT STATEMENT (TRANSACTION ID # 57984045) FILED BY DEFENDANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT JURY DEMANDED, ESTIMATED TIME FOR TRIAL: 8.0 DAYS",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-10-07_Unknown.pdf"
+    },
+    {
+      "date": "2015-10-05",
+      "proceedings": "SUMMONS ON COMPLAINT (TRANSACTION ID # 57962307), PROOF OF SERVICE ONLY, FILED BY CROSS COMPLAINANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT SERVED SEP-21-2015, PERSONAL SERVICE AS TO CROSS DEFENDANT NAVARRETTE, GIOVANNI",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-10-05_Unknown.pdf"
+    },
+    {
+      "date": "2015-09-17",
+      "proceedings": "DISMISSAL WITHOUT PREJUDICE OF CROSS COMPLAINT FILED BY LEE, MAY (TRANSACTION ID # 57887185)",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-09-17_Unknown.pdf"
+    },
+    {
+      "date": "2015-08-31",
+      "proceedings": "NOTICE OF LIEN (TRANSACTION ID # 15242006) FILED BY CLAIMANT STATE OF CALIFORNIA/VICTIM COMPENSATION AND GOVERNMENT CLAIMS BOARD",
+      "fee": "EXEMPT",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-08-31_Unknown.pdf"
+    },
+    {
+      "date": "2015-08-17",
+      "proceedings": "DISMISSAL WITH PREJUDICE OF 1ST AMENDED COMPLAINT THE PARTIES ARE TO BEAR THEIR OWN COSTS AND ATTORNEYS' FEES. (TRANSACTION ID # 57723968) AS TO DEFENDANT HO BET LEE, LAI FONG LEE, AND LEO MING LEE, AS CO-TRUSTEES OF THE GENERATION-SKIPPING TRUST ESTABLISHED UNDER THE HOM HON PING AND KAI TAI LEE REVOCABLE TRUST U/A DATED DECEMBER 2, 1976, AS AMENDED MAY 10, 1989 LEE, MAY LEE, LEO M. LEE, LEO Y.",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-08-17_Unknown.pdf"
+    },
+    {
+      "date": "2015-08-10",
+      "proceedings": "CASE MANAGEMENT CONFERENCE OF AUG-26-2015 CONTINUED TO OCT-28-2015 AT 10:30 AM IN DEPARTMENT 610. NOTICE SENT BY COURT.",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-08-10_Unknown.pdf"
+    },
+    {
+      "date": "2015-08-07",
+      "proceedings": "CASE MANAGEMENT STATEMENT (TRANSACTION ID # 57674866) FILED BY DEFENDANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT LEE, MAY JURY DEMANDED, ESTIMATED TIME FOR TRIAL: 8.0 DAYS",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-08-07_Unknown.pdf"
+    },
+    {
+      "date": "2015-08-06",
+      "proceedings": "CASE MANAGEMENT STATEMENT (TRANSACTION ID # 57667058) FILED BY PLAINTIFF ABEL, AARON JURY DEMANDED, ESTIMATED TIME FOR TRIAL: 4.0 DAYS",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-08-06_Unknown.pdf"
+    },
+    {
+      "date": "2015-06-26",
+      "proceedings": "CASE MANAGEMENT CONFERENCE OF JUL-15-2015 CONTINUED TO AUG-26-2015 AT 10:30 AM IN DEPARTMENT 610. NOTICE SENT BY COURT.",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-06-26_Unknown.pdf"
+    },
+    {
+      "date": "2015-06-25",
+      "proceedings": "CASE MANAGEMENT STATEMENT (TRANSACTION ID # 57458521) FILED BY DEFENDANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT JURY DEMANDED, ESTIMATED TIME FOR TRIAL: 8.0 DAYS",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-06-25_Unknown.pdf"
+    },
+    {
+      "date": "2015-06-22",
+      "proceedings": "CASE MANAGEMENT STATEMENT (TRANSACTION ID # 57441859) FILED BY PLAINTIFF ABEL, AARON JURY DEMANDED, ESTIMATED TIME FOR TRIAL: 4.0 DAYS",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-06-22_Unknown.pdf"
+    },
+    {
+      "date": "2015-06-15",
+      "proceedings": "SUMMONS ISSUED TO CROSS COMPLAINANT LEE, MAY",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-06-15_Unknown.pdf"
+    },
+    {
+      "date": "2015-06-11",
+      "proceedings": "LAW AND MOTION, 302, DEFENDANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT MOTION TO STRIKE COMPLAINT IS TAKEN OFF CALENDAR PER THE REQUEST OF THE MOVING PARTY.",
+      "fee": "",
+      "doc_id": null,
+      "doc_filename": null
+    },
+    {
+      "date": "2015-06-11",
+      "proceedings": "LAW AND MOTION, 302, DEFENDANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT DEMURRER TO THE THIRD CAUSE OF ACTION [C.C.P. 430.10] IS TAKEN OFF CALENDAR PER THE REQUEST OF THE MOVING PARTY.",
+      "fee": "",
+      "doc_id": null,
+      "doc_filename": null
+    },
+    {
+      "date": "2015-06-08",
+      "proceedings": "CROSS COMPLAINT (TRANSACTION ID # 57355620) FILED BY CROSS COMPLAINANT LEE, MAY AS TO CROSS DEFENDANT NAVARRETTE, GIOVANNI ROES 1 TO 20, INCLUSIVE",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-06-08_Unknown.pdf"
+    },
+    {
+      "date": "2015-06-08",
+      "proceedings": "ANSWER TO 1ST AMENDED COMPLAINT (TRANSACTION ID # 57355620) FILED BY DEFENDANT LEE, MAY",
+      "fee": "$450.00",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-06-08_Unknown.pdf"
+    },
+    {
+      "date": "2015-05-27",
+      "proceedings": "SUMMONS ON COMPLAINT (TRANSACTION ID # 57299571) FILED BY PLAINTIFF ABEL, AARON SERVED APR-28-2015, SUBSTITUTE SERVICE ON NATURAL PERSON AS TO DEFENDANT LEE, MAY",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-05-27_Unknown.pdf"
+    },
+    {
+      "date": "2015-05-18",
+      "proceedings": "SUMMONS ISSUED TO CROSS COMPLAINANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-05-18_Unknown.pdf"
+    },
+    {
+      "date": "2015-05-15",
+      "proceedings": "CASE MANAGEMENT CONFERENCE OF JUN-03-2015 CONTINUED TO JUL-15-2015 AT 10:30 AM IN DEPARTMENT 610. NOTICE SENT BY COURT.",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-05-15_Unknown.pdf"
+    },
+    {
+      "date": "2015-05-12",
+      "proceedings": "CROSS COMPLAINT (TRANSACTION ID # 57227184) FILED BY CROSS COMPLAINANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT AS TO CROSS DEFENDANT NAVARRETTE, GIOVANNI ROES 1 TO 20, INCLUSIVE",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-05-12_Unknown.pdf"
+    },
+    {
+      "date": "2015-05-12",
+      "proceedings": "ANSWER TO 1ST AMENDED COMPLAINT (TRANSACTION ID # 57227184) FILED BY DEFENDANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-05-12_Unknown.pdf"
+    },
+    {
+      "date": "2015-05-12",
+      "proceedings": "CASE MANAGEMENT STATEMENT (TRANSACTION ID # 57227184) FILED BY DEFENDANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT JURY DEMANDED, ESTIMATED TIME FOR TRIAL: 8.0 DAYS",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-05-12_Unknown.pdf"
+    },
+    {
+      "date": "2015-05-06",
+      "proceedings": "SUMMONS ON COMPLAINT (TRANSACTION ID # 57195932), PROOF OF SERVICE ONLY, FILED BY PLAINTIFF ABEL, AARON SERVED APR-28-2015, SUBSTITUTE SERVICE ON NATURAL PERSON AS TO DEFENDANT LEE, MAY",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-05-06_Unknown.pdf"
+    },
+    {
+      "date": "2015-05-05",
+      "proceedings": "CASE MANAGEMENT STATEMENT (TRANSACTION ID # 57186193) FILED BY PLAINTIFF ABEL, AARON JURY DEMANDED, ESTIMATED TIME FOR TRIAL: 4.0 DAYS",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-05-05_Unknown.pdf"
+    },
+    {
+      "date": "2015-05-04",
+      "proceedings": "SUMMONS ON COMPLAINT **INSISTENCE** (TRANSACTION ID # 57177421), PROOF OF SERVICE ONLY, FILED BY PLAINTIFF ABEL, AARON SERVED APR-24-2015, PERSONAL SERVICE AS TO DEFENDANT HO BET LEE, LAI FONG LEE, AND LEO MING LEE, AS CO-TRUSTEES OF THE GENERATION-SKIPPING TRUST ESTABLISHED UNDER THE HOM HON PING AND KAI TAI LEE REVOCABLE TRUST U/A DATED DECEMBER 2, 1976, AS AMENDED MAY 10, 1989",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-05-04_Unknown.pdf"
+    },
+    {
+      "date": "2015-04-27",
+      "proceedings": "NOTICE OF CHANGE OF ADDRESS (TRANSACTION ID # 57139278) FILED BY ATTORNEY MAY, JOSEPH S.",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-04-27_Unknown.pdf"
+    },
+    {
+      "date": "2015-04-14",
+      "proceedings": "SUMMONS ISSUED ON FIRST AMENDED COMPLAINT TO PLAINTIFF ABEL, AARON",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-04-14_Unknown.pdf"
+    },
+    {
+      "date": "2015-04-08",
+      "proceedings": "1ST AMENDED COMPLAINT (TRANSACTION ID # 57044809) FILED BY PLAINTIFF ABEL, AARON AS TO DEFENDANT 1979 UNION STREET CORPORATION HO BET LEE, LAI FONG LEE, AND LEO MING LEE, AS CO-TRUSTEES OF THE GENERATION-SKIPPING TRUST ESTABLISHED UNDER THE HOM HON PING AND KAI TAI LEE REVOCABLE TRUST U/A DATED DECEMBER 2, 1976, AS AMENDED MAY 10, 1989 LEE, MAY LEE, LEO M. LEE, LEO Y. DOES 1 TO 50, INCLUSIVE",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-04-08_Unknown.pdf"
+    },
+    {
+      "date": "2015-02-23",
+      "proceedings": "DISMISSAL WITHOUT PREJUDICE OF COMPLAINT (TRANSACTION ID # 56812348) AS TO DEFENDANT JORDAN, JEFFREY DEAN AMES, JEFFREY DAVID COSSEY, LANCE RANDOLPH",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-02-23_Unknown.pdf"
+    },
+    {
+      "date": "2015-02-23",
+      "proceedings": "STIPULATION REGARDING DISMISSAL OF DEFENDANTS JORDAN, AMES AND COSSEY (TRANSACTION ID # 56812248) FILED BY ABEL, AARON 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-02-23_Unknown.pdf"
+    },
+    {
+      "date": "2015-02-17",
+      "proceedings": "COURT REPORTING SERVICES LESS THAN 1 HOUR (TRANSACTION ID # 56784659) FILED BY DEFENDANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT",
+      "fee": "$30.00",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-02-17_Unknown.pdf"
+    },
+    {
+      "date": "2015-02-17",
+      "proceedings": "MEMORANDUM OF POINTS AND AUTHORITIES IN SUPPORT OF DEFENDANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT'S MOTION TO STRIKE PUNITIVE DAMAGES ALLEGATIONS [C.C.P. 435-37] (TRANSACTION ID # 56784659) FILED BY DEFENDANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-02-17_Unknown.pdf"
+    },
+    {
+      "date": "2015-02-17",
+      "proceedings": "MOTION TO STRIKE COMPLAINT (TRANSACTION ID # 56784659) FILED BY DEFENDANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT HEARING SET FOR JUL-17-2015 AT 09:30 AM IN DEPT 302",
+      "fee": "NO FEE",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-02-17_Unknown.pdf"
+    },
+    {
+      "date": "2015-02-17",
+      "proceedings": "NOTICE OF DEFENDANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT'S MOTION TO STRIKE PUNITIVE DAMAGES ALLEGATIONS [C.C.P. 435-37] (TRANSACTION ID # 56784659) FILED BY DEFENDANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-02-17_Unknown.pdf"
+    },
+    {
+      "date": "2015-02-17",
+      "proceedings": "COURT REPORTING SERVICES LESS THAN 1 HOUR (TRANSACTION ID # 56784659) FILED BY DEFENDANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT",
+      "fee": "$30.00",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-02-17_Unknown.pdf"
+    },
+    {
+      "date": "2015-02-17",
+      "proceedings": "MEMORANDUM OF POINTS AND AUTHORITIES IN SUPPORT OF DEFENDANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT'S DEMURRER TO THE THIRD CAUSE OF ACTION [C.C.P. 435-37] (TRANSACTION ID # 56784659) FILED BY DEFENDANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-02-17_Unknown.pdf"
+    },
+    {
+      "date": "2015-02-17",
+      "proceedings": "DEMURRER TO THE THIRD CAUSE OF ACTION [C.C.P. 430.10] (TRANSACTION ID # 56784659) FILED BY DEFENDANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT HEARING SET FOR JUL-17-2015 AT 09:30 AM IN DEPT 302",
+      "fee": "$450.00",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-02-17_Unknown.pdf"
+    },
+    {
+      "date": "2015-02-17",
+      "proceedings": "NOTICE OF DEFENDANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHTS DEMURRER TO THE THIRD CAUSE OF ACTION [C.C.P. 430.10] (TRANSACTION ID # 56784659) FILED BY DEFENDANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-02-17_Unknown.pdf"
+    },
+    {
+      "date": "2015-01-12",
+      "proceedings": "SUMMONS ON COMPLAINT (TRANSACTION ID # 56550732) FILED BY PLAINTIFF ABEL, AARON SERVED JAN-03-2015, PERSONAL SERVICE AS TO DEFENDANT JORDAN, JEFFREY DEAN",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-01-12_Unknown.pdf"
+    },
+    {
+      "date": "2015-01-12",
+      "proceedings": "SUMMONS ON COMPLAINT (TRANSACTION ID # 56550732) FILED BY PLAINTIFF ABEL, AARON SERVED JAN-03-2015, PERSONAL SERVICE AS TO DEFENDANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-01-12_Unknown.pdf"
+    },
+    {
+      "date": "2015-01-02",
+      "proceedings": "JURY FEES DEPOSITED BY PLAINTIFF ABEL, AARON",
+      "fee": "$150.00",
+      "doc_id": null,
+      "doc_filename": null
+    },
+    {
+      "date": "2015-01-02",
+      "proceedings": "NOTICE TO PLAINTIFF",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-01-02_Unknown.pdf"
+    },
+    {
+      "date": "2015-01-02",
+      "proceedings": "PERSONAL INJURY/PROPERTY DAMAGE - NON-VEHICLE RELATED, COMPLAINT FILED BY PLAINTIFF ABEL, AARON AS TO DEFENDANT 1979 UNION STREET CORPORATION DBA THE BLUE LIGHT JORDAN, JEFFREY DEAN AMES, JEFFREY DAVID COSSEY, LANCE RANDOLPH SUMMONS ISSUED, JUDICIAL COUNCIL CIVIL CASE COVER SHEET FILED CASE MANAGEMENT CONFERENCE SCHEDULED FOR JUN-03-2015 PROOF OF SERVICE DUE ON MAR-03-2015 CASE MANAGEMENT STATEMENT DUE ON MAY-11-2015",
+      "fee": "$450.00",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-01-02_Unknown.pdf"
+    }
+  ]
+}

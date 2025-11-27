@@ -1,1 +1,184 @@
-[]
+{
+  "metadata": {
+    "total_entries": 25,
+    "total_links": 20,
+    "scraped_links": 20
+  },
+  "actions": [
+    {
+      "date": "2016-01-25",
+      "proceedings": "MASTER COURT CALENDAR SET FOR FEB-08-2016 VACATED. DISMISSAL FILED 5/20/15. (206)",
+      "fee": "",
+      "doc_id": null,
+      "doc_filename": null
+    },
+    {
+      "date": "2015-05-20",
+      "proceedings": "NOTICE OF TIME AND PLACE OF TRIAL, COURT TRIAL SET FOR FEB-08-2016 AT 9:30 AM IN DEPT. 206. CASE MANAGEMENT CONFERENCE ON JUN-03-2015 IS OFF CALENDAR. NOTICE SENT BY COURT.",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-05-20_Unknown.pdf"
+    },
+    {
+      "date": "2015-05-20",
+      "proceedings": "PROOF OF ELECTRONIC SERVICE (TRANSACTION ID # 57266988) FILED BY PLAINTIFF HELLER, STAN DREW, KATHLEEN HELLER, SOPHIA PURSELL, CRAIG",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-05-20_Unknown.pdf"
+    },
+    {
+      "date": "2015-05-20",
+      "proceedings": "DISMISSAL WITH PREJUDICE OF 1ST AMENDED COMPLAINT (TRANSACTION ID # 57266988)",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-05-20_Unknown.pdf"
+    },
+    {
+      "date": "2015-04-29",
+      "proceedings": "PROOF OF ELECTRONIC SERVICE (TRANSACTION ID # 15118158) FILED BY PLAINTIFF HELLER, STAN DREW, KATHLEEN HELLER, SOPHIA PURSELL, CRAIG",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-04-29_Unknown.pdf"
+    },
+    {
+      "date": "2015-04-29",
+      "proceedings": "NOTICE OF WITHDRAWAL OF PENDANCY OF ACTION (TRANSACTION ID # 15118158) FILED BY PLAINTIFF HELLER, STAN DREW, KATHLEEN HELLER, SOPHIA PURSELL, CRAIG",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-04-29_Unknown.pdf"
+    },
+    {
+      "date": "2015-04-24",
+      "proceedings": "ANSWER TO 1ST AMENDED COMPLAINT (TRANSACTION ID # 57137364) FILED BY DEFENDANT CANDU CAPITAL GROUP LLC VOHRA, RITU DUTT, ARJUN",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-04-24_Unknown.pdf"
+    },
+    {
+      "date": "2015-04-09",
+      "proceedings": "REAL PROPERTY/HOUSING MOTION 501, DEFENDANT CANDU CAPITAL GROUP LLC, RITU VOHRA AND ARJUN DUTT'S MOTION TO STRIKE PLAINTIFFS' PRAYER FOR PUNITIVE DAMAGES IS OFF CALENDAR AS MOOT. FIRST AMENDED COMPLAINT FILED MARCH 23, 2015. JUDGE RONALD E. QUIDACHAY, CLERK: M. OLOPERNES, NOT REPORTED",
+      "fee": "",
+      "doc_id": null,
+      "doc_filename": null
+    },
+    {
+      "date": "2015-04-09",
+      "proceedings": "REAL PROPERTY/HOUSING MOTION 501, DEFENDANTS CANDU CAPITAL GROUP LLC, RITU VOHRA AND ARJUN DUTT DEMURRER TO COMPLAINT IS OFF CALENDAR AS MOOT. FIRST AMENDED COMPLAINT FILED MARCH 23, 2015. JUDGE RONALD E. QUIDACHAY, CLERK: M. OLOPERNES, NOT REPORTED",
+      "fee": "",
+      "doc_id": null,
+      "doc_filename": null
+    },
+    {
+      "date": "2015-04-09",
+      "proceedings": "MINI MINUTES FOR APR-09-2015 09:30 AM FOR DEPT 501",
+      "fee": "",
+      "doc_id": null,
+      "doc_filename": null
+    },
+    {
+      "date": "2015-04-09",
+      "proceedings": "MINI MINUTES FOR APR-09-2015 09:30 AM FOR DEPT 501",
+      "fee": "",
+      "doc_id": null,
+      "doc_filename": null
+    },
+    {
+      "date": "2015-03-23",
+      "proceedings": "PROOF OF SERVICE BY ELECTRONIC MAIL (TRANSACTION ID # 56962161) FILED BY PLAINTIFF HELLER, STAN DREW, KATHLEEN HELLER, SOPHIA PURSELL, CRAIG",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-03-23_Unknown.pdf"
+    },
+    {
+      "date": "2015-03-23",
+      "proceedings": "1ST AMENDED COMPLAINT (TRANSACTION ID # 56962161) FILED BY PLAINTIFF HELLER, STAN DREW, KATHLEEN HELLER, SOPHIA PURSELL, CRAIG AS TO DEFENDANT CANDU CAPITAL GROUP LLC VOHRA, RITU DUTT, ARJUN DOES 1 TO 25",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-03-23_Unknown.pdf"
+    },
+    {
+      "date": "2015-03-18",
+      "proceedings": "PROOF OF SERVICE OF NOTICE OF PENDENCY OF ACTION (TRANSACTION ID # 56941009) FILED BY PLAINTIFF HELLER, STAN DREW, KATHLEEN HELLER, SOPHIA PURSELL, CRAIG SERVED MAR-18-2015, ELECTRONIC AS TO DEFENDANT CANDU CAPITAL GROUP LLC VOHRA, RITU DUTT, ARJUN",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-03-18_Unknown.pdf"
+    },
+    {
+      "date": "2015-03-18",
+      "proceedings": "NOTICE OF PENDING ACTION (TRANSACTION ID # 56941009) FILED BY PLAINTIFF HELLER, STAN DREW, KATHLEEN HELLER, SOPHIA PURSELL, CRAIG AS TO DEFENDANT CANDU CAPITAL GROUP LLC VOHRA, RITU DUTT, ARJUN",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-03-18_Unknown.pdf"
+    },
+    {
+      "date": "2015-02-26",
+      "proceedings": "DEFENDANTS MEMORANDUM OF POINTS AND AUTHORITIES IN SUPPORT OF MOTION TO STRIKE; EXHIBIT A (TRANSACTION ID # 56833075) FILED BY DEFENDANT CANDU CAPITAL GROUP LLC VOHRA, RITU DUTT, ARJUN",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-02-26_Unknown.pdf"
+    },
+    {
+      "date": "2015-02-26",
+      "proceedings": "DEFENDANTS NOTICE OF MOTION TO STRIKE PLAINTIFFS PRAYER FOR PUNITIVE DAMAGES, PROOF OF SERVICE (TRANSACTION ID # 56833075) FILED BY DEFENDANT CANDU CAPITAL GROUP LLC VOHRA, RITU DUTT, ARJUN HEARING SET FOR APR-09-2015 AT 09:30 AM IN DEPT 501",
+      "fee": "NO FEE",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-02-26_Unknown.pdf"
+    },
+    {
+      "date": "2015-02-26",
+      "proceedings": "MEMORANDUM OF POINTS AND AUTHORITIES IN SUPPORT TO DEMURRER TO PLAINTIFFS COMPLAINT; EXHIBIT A (TRANSACTION ID # 56833075) FILED BY DEFENDANT CANDU CAPITAL GROUP LLC VOHRA, RITU DUTT, ARJUN",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-02-26_Unknown.pdf"
+    },
+    {
+      "date": "2015-02-26",
+      "proceedings": "DEMURRER TO COMPLAINT, PROOF OF SERVICE (TRANSACTION ID # 56833075) FILED BY DEFENDANT CANDU CAPITAL GROUP LLC VOHRA, RITU DUTT, ARJUN HEARING SET FOR APR-09-2015 AT 09:30 AM IN DEPT 501",
+      "fee": "$1350.00",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-02-26_Unknown.pdf"
+    },
+    {
+      "date": "2015-02-26",
+      "proceedings": "NOTICE OF DEMURRER TO PLAINTIFFS COMPLAINT (TRANSACTION ID # 56833075) FILED BY DEFENDANT CANDU CAPITAL GROUP LLC VOHRA, RITU DUTT, ARJUN",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-02-26_Unknown.pdf"
+    },
+    {
+      "date": "2015-01-29",
+      "proceedings": "SUMMONS ON COMPLAINT (TRANSACTION ID # 56689334), PROOF OF SERVICE ONLY, FILED BY PLAINTIFF HELLER, STAN DREW, KATHLEEN HELLER, SOPHIA PURSELL, CRAIG SERVED JAN-27-2015, PERSONAL SERVICE AS TO DEFENDANT VOHRA, RITU",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-01-29_Unknown.pdf"
+    },
+    {
+      "date": "2015-01-29",
+      "proceedings": "SUMMONS ON COMPLAINT (TRANSACTION ID # 56689334), PROOF OF SERVICE ONLY, FILED BY PLAINTIFF HELLER, STAN DREW, KATHLEEN HELLER, SOPHIA PURSELL, CRAIG SERVED JAN-28-2015, SUBSTITUTE SERVICE ON NATURAL PERSON AS TO DEFENDANT CANDU CAPITAL GROUP LLC",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-01-29_Unknown.pdf"
+    },
+    {
+      "date": "2015-01-29",
+      "proceedings": "SUMMONS ON COMPLAINT (TRANSACTION ID # 56689334), PROOF OF SERVICE ONLY, FILED BY PLAINTIFF HELLER, STAN DREW, KATHLEEN HELLER, SOPHIA PURSELL, CRAIG SERVED JAN-28-2015, SUBSTITUTE SERVICE ON NATURAL PERSON AS TO DEFENDANT DUTT, ARJUN",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-01-29_Unknown.pdf"
+    },
+    {
+      "date": "2015-01-02",
+      "proceedings": "NOTICE TO PLAINTIFF",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-01-02_Unknown.pdf"
+    },
+    {
+      "date": "2015-01-02",
+      "proceedings": "WRONGFUL EVICTION, COMPLAINT FILED BY PLAINTIFF HELLER, STAN DREW, KATHLEEN HELLER, SOPHIA PURSELL, CRAIG AS TO DEFENDANT CANDU CAPITAL GROUP LLC VOHRA, RITU DUTT, ARJUN DOES 1 TO 25 SUMMONS ISSUED, JUDICIAL COUNCIL CIVIL CASE COVER SHEET FILED CASE MANAGEMENT CONFERENCE SCHEDULED FOR JUN-03-2015 PROOF OF SERVICE DUE ON MAR-03-2015 CASE MANAGEMENT STATEMENT DUE ON MAY-11-2015",
+      "fee": "$450.00",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-01-02_Unknown.pdf"
+    }
+  ]
+}

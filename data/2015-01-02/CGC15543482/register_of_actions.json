@@ -1,1 +1,373 @@
-[]
+{
+  "metadata": {
+    "total_entries": 52,
+    "total_links": 42,
+    "scraped_links": 42
+  },
+  "actions": [
+    {
+      "date": "2015-09-04",
+      "proceedings": "CASE MANAGEMENT CONFERENCE OF SEP-23-2015 IS OFF CALENDAR. DISMISSAL ON FILE. NOTICE SENT BY COURT.",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-09-04_Unknown.pdf"
+    },
+    {
+      "date": "2015-08-18",
+      "proceedings": "NOTICE OF ENTRY OF DISMISSAL AND PROOF OF SERVICE (TRANSACTION ID # 15229023) FILED BY PLAINTIFF DEEM, INC. GLOBAL GROUND AUTOMATION, INC.",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-08-18_Unknown.pdf"
+    },
+    {
+      "date": "2015-08-13",
+      "proceedings": "DISMISSAL WITHOUT PREJUDICE OF COMPLAINT AND PURSUANT TO THE TERMS OF THE STIPULATION OF COUNSEL (TRANSACTION ID # 15224025)",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-08-13_Unknown.pdf"
+    },
+    {
+      "date": "2015-08-04",
+      "proceedings": "LAW AND MOTION 302, DEFENDANT APURVA PATEL, ORISSA HOLDINGS, LLC'S DEMURRER TO COMPLAINT IS OFF CALENDAR AS MOOT. JOINT STIPULATION RE: DISMISSAL OF ENTIRE CASE WITHOUT PREJUDICE FILED JULY 23, 2015. JUDGE ERNEST H. GOLDSMITH; CLERK FELICIA GREEN; DEPT. 302. (302/EHG)",
+      "fee": "",
+      "doc_id": null,
+      "doc_filename": null
+    },
+    {
+      "date": "2015-08-04",
+      "proceedings": "MINI MINUTES FOR AUG-04-2015 09:30 AM FOR DEPT 302",
+      "fee": "",
+      "doc_id": null,
+      "doc_filename": null
+    },
+    {
+      "date": "2015-08-04",
+      "proceedings": "MINI MINUTES FOR AUG-04-2015 09:30 AM FOR DEPT 302",
+      "fee": "",
+      "doc_id": null,
+      "doc_filename": null
+    },
+    {
+      "date": "2015-08-04",
+      "proceedings": "LAW AND MOTION 302, DEFENDANT APURVA PATEL, ORISSA HOLDINGS, LLC'S MOTION TO STAY BASED ON FORUM NON CONVENIENS IS OFF CALENDAR AS MOOT. JOINT STIPULATION RE: DISMISSAL OF ENTIRE CASE WITHOUT PREJUDICE FILED JULY 23, 2015. JUDGE ERNEST H. GOLDSMITH; CLERK FELICIA GREEN; DEPT. 302. (302/EHG)",
+      "fee": "",
+      "doc_id": null,
+      "doc_filename": null
+    },
+    {
+      "date": "2015-07-28",
+      "proceedings": "REPLY MEMORANDUM CONCERNING DEMURRER; NOTICE OF PARTIES STIPULATION OF DISMISSAL WITHOUT PREJUDICE (TRANSACTION ID # 57619368) FILED BY DEFENDANT PATEL, APURVA AN INDIVIDUAL ORISSA HOLDINGS, LLC INDIVIDUALLY AND DBA GROUNDWIDGETS",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-07-28_Unknown.pdf"
+    },
+    {
+      "date": "2015-07-28",
+      "proceedings": "REPLY MEMORANDUM CONCERNING MOTION TO STAY BASED ON FORUM NON CONVENIENS; NOTICE OF PARTIES STIPULATION OF DISMISSAL WITHOUT PREJUDICE (TRANSACTION ID # 57619368) FILED BY DEFENDANT PATEL, APURVA AN INDIVIDUAL ORISSA HOLDINGS, LLC INDIVIDUALLY AND DBA GROUNDWIDGETS",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-07-28_Unknown.pdf"
+    },
+    {
+      "date": "2015-07-23",
+      "proceedings": "JOINT STIPULATION RE DISMISSAL WITHOUT PREJUDICE (TRANSACTION ID # 15203041) FILED BY PLAINTIFF DEEM, INC. GLOBAL GROUND AUTOMATION, INC.",
+      "fee": "$20.00",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-07-23_Unknown.pdf"
+    },
+    {
+      "date": "2015-07-16",
+      "proceedings": "CORRECTED DECLARATION OF APURVA PATEL IN SUPPORT OF DEFENDANTS MOTION TO STAY BASED ON FORUM NON CONVENIENS (TRANSACTION ID # 57564567) FILED BY DEFENDANT PATEL, APURVA AN INDIVIDUAL ORISSA HOLDINGS, LLC INDIVIDUALLY AND DBA GROUNDWIDGETS",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-07-16_Unknown.pdf"
+    },
+    {
+      "date": "2015-06-26",
+      "proceedings": "CASE MANAGEMENT CONFERENCE OF JUL-15-2015 CONTINUED TO SEP-23-2015 AT 10:30 AM IN DEPARTMENT 610. NOTICE SENT BY COURT.",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-06-26_Unknown.pdf"
+    },
+    {
+      "date": "2015-06-22",
+      "proceedings": "CASE MANAGEMENT STATEMENT (TRANSACTION ID # 57441573) FILED BY PLAINTIFF DEEM, INC. GLOBAL GROUND AUTOMATION, INC. ALSO FILED BY DEFENDANT PATEL, APURVA AN INDIVIDUAL ORISSA HOLDINGS, LLC INDIVIDUALLY AND DBA GROUNDWIDGETS JURY DEMANDED, ESTIMATED TIME FOR TRIAL: 10.0 DAYS",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-06-22_Unknown.pdf"
+    },
+    {
+      "date": "2015-06-15",
+      "proceedings": "LAW AND MOTION, 302, DEFENDANT APURVA PATEL AND ORISSA HOLDINGS LLC, DBA GROUNDWIDGETS' DEMURRER TO COMPLAINT IS ADVANCED FROM DEC-24-2015 TO AUG-04-2015 AT 9:30 A.M. IN DEPT. 302 PURSUANT TO EX PARTE ORDER FILED 6/15/15. (302)",
+      "fee": "",
+      "doc_id": null,
+      "doc_filename": null
+    },
+    {
+      "date": "2015-06-15",
+      "proceedings": "ORDER GRANTING DEFENDANTS APURVA PATEL'S AND ORISSA HOLDINGS LLC'S EX PARTE APPLICATION FOR ORDER ADVANCING HEARING ON DEFENDANTS' DEMURRER (FROM 12/24/15 TO 8/4/15 AT 9:30 A.M. IN DEPT. 302)",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-06-15_Unknown.pdf"
+    },
+    {
+      "date": "2015-06-15",
+      "proceedings": "NOTICE OF ENTRY OF ORDER/NOTICE OF RULING FILED (TRANSACTION ID # 57406017) FILED BY DEFENDANT PATEL, APURVA AN INDIVIDUAL ORISSA HOLDINGS, LLC INDIVIDUALLY AND DBA GROUNDWIDGETS",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-06-15_Unknown.pdf"
+    },
+    {
+      "date": "2015-06-12",
+      "proceedings": "PROOF OF SERVICE OF EX PARTE APPLICATION FOR ORDER ADVANCING HEARING ON DEFENDANTS DEMURRER; AND DECLARATION (TRANSACTION ID # 57400955) FILED BY DEFENDANT PATEL, APURVA AN INDIVIDUAL ORISSA HOLDINGS, LLC INDIVIDUALLY AND DBA GROUNDWIDGETS",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-06-12_Unknown.pdf"
+    },
+    {
+      "date": "2015-06-12",
+      "proceedings": "DECLARATION OF FREDRICK C. CROMBIE IN SUPPORT OF DEFENDANTS APURVA PATELS AND ORISSA HOLDINGS LLCS EX PARTE APPLICATION FOR ORDER ADVANCING HEARING ON DEFENDANTS DEMURRER (TRANSACTION ID # 57400955) FILED BY DEFENDANT PATEL, APURVA AN INDIVIDUAL ORISSA HOLDINGS, LLC INDIVIDUALLY AND DBA GROUNDWIDGETS",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-06-12_Unknown.pdf"
+    },
+    {
+      "date": "2015-06-12",
+      "proceedings": "EX PARTE APPLICATION FOR ORDER ADVANCING HEARING ON DEFENDANTS DEMURRER (TRANSACTION ID # 57400955) FILED BY DEFENDANT PATEL, APURVA AN INDIVIDUAL ORISSA HOLDINGS, LLC INDIVIDUALLY AND DBA GROUNDWIDGETS",
+      "fee": "$60.00",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-06-12_Unknown.pdf"
+    },
+    {
+      "date": "2015-06-02",
+      "proceedings": "MEMORANDUM OF POINTS AND AUTHORITIES IN SUPPORT OF DEMURRER (TRANSACTION ID # 57322672) FILED BY DEFENDANT PATEL, APURVA AN INDIVIDUAL",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-06-02_Unknown.pdf"
+    },
+    {
+      "date": "2015-06-01",
+      "proceedings": "DECLARATION OF APURVA PATEL IN SUPPORT OF DEFENDANTS MOTION TO STAY BASED ON FORUM NON CONVENIENS (TRANSACTION ID # 57319285) FILED BY DEFENDANT PATEL, APURVA AN INDIVIDUAL ORISSA HOLDINGS, LLC INDIVIDUALLY AND DBA GROUNDWIDGETS",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-06-01_Unknown.pdf"
+    },
+    {
+      "date": "2015-06-01",
+      "proceedings": "PROOF OF SERVICE RE DEFENDANTS DEMURRER TO COMPLAINT (TRANSACTION ID # 57313425) FILED BY DEFENDANT PATEL, APURVA AN INDIVIDUAL ORISSA HOLDINGS, LLC INDIVIDUALLY AND DBA GROUNDWIDGETS",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-06-01_Unknown.pdf"
+    },
+    {
+      "date": "2015-06-01",
+      "proceedings": "COURT REPORTING SERVICES LESS THAN 1 HOUR (TRANSACTION ID # 57313425) FILED BY DEFENDANT PATEL, APURVA AN INDIVIDUAL ORISSA HOLDINGS, LLC INDIVIDUALLY AND DBA GROUNDWIDGETS",
+      "fee": "$30.00",
+      "doc_id": null,
+      "doc_filename": null
+    },
+    {
+      "date": "2015-06-01",
+      "proceedings": "NOTICE OF DEMURRER TO PLAINTIFFS COMPLAINT (TRANSACTION ID # 57313425) FILED BY DEFENDANT PATEL, APURVA AN INDIVIDUAL ORISSA HOLDINGS, LLC INDIVIDUALLY AND DBA GROUNDWIDGETS",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-06-01_Unknown.pdf"
+    },
+    {
+      "date": "2015-06-01",
+      "proceedings": "DEMURRER TO COMPLAINT (TRANSACTION ID # 57313425) FILED BY DEFENDANT PATEL, APURVA AN INDIVIDUAL ORISSA HOLDINGS, LLC INDIVIDUALLY AND DBA GROUNDWIDGETS HEARING SET FOR DEC-24-2015 AT 09:30 AM IN DEPT 302",
+      "fee": "$60.00",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-06-01_Unknown.pdf"
+    },
+    {
+      "date": "2015-05-29",
+      "proceedings": "PROOF OF SERVICE RE MOTION TO STAY BASED ON FORUM NON CONVENIENS (TRANSACTION ID # 57313094) FILED BY DEFENDANT PATEL, APURVA AN INDIVIDUAL ORISSA HOLDINGS, LLC INDIVIDUALLY AND DBA GROUNDWIDGETS",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-05-29_Unknown.pdf"
+    },
+    {
+      "date": "2015-05-29",
+      "proceedings": "COURT REPORTING SERVICES LESS THAN 1 HOUR (TRANSACTION ID # 57313094) FILED BY DEFENDANT PATEL, APURVA AN INDIVIDUAL ORISSA HOLDINGS, LLC INDIVIDUALLY AND DBA GROUNDWIDGETS",
+      "fee": "$30.00",
+      "doc_id": null,
+      "doc_filename": null
+    },
+    {
+      "date": "2015-05-29",
+      "proceedings": "MEMORANDUM OF POINTS AND AUTHORITIES IN SUPPORT OF MOTION TO STAY BASED ON FORUM NON CONVENIENS (TRANSACTION ID # 57313094) FILED BY DEFENDANT PATEL, APURVA AN INDIVIDUAL ORISSA HOLDINGS, LLC INDIVIDUALLY AND DBA GROUNDWIDGETS",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-05-29_Unknown.pdf"
+    },
+    {
+      "date": "2015-05-29",
+      "proceedings": "NOTICE OF MOTION AND MOTION TO STAY BASED ON FORUM NON CONVENIENS (TRANSACTION ID # 57313094) FILED BY DEFENDANT PATEL, APURVA AN INDIVIDUAL ORISSA HOLDINGS, LLC INDIVIDUALLY AND DBA GROUNDWIDGETS HEARING SET FOR AUG-04-2015 AT 09:30 AM IN DEPT 302",
+      "fee": "$60.00",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-05-29_Unknown.pdf"
+    },
+    {
+      "date": "2015-05-26",
+      "proceedings": "NOTICE OF ENTRY OF ORDER/NOTICE OF RULING FILED GRANTING UNOPPOSED MOTION TO SET ASIDE ENTRY OF DEFAULT (TRANSACTION ID # 57290921) FILED BY DEFENDANT PATEL, APURVA AN INDIVIDUAL ORISSA HOLDINGS, LLC INDIVIDUALLY AND DBA GROUNDWIDGETS",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-05-26_Unknown.pdf"
+    },
+    {
+      "date": "2015-05-19",
+      "proceedings": "MINI MINUTES FOR MAY-19-2015 09:30 AM FOR DEPT 302",
+      "fee": "",
+      "doc_id": null,
+      "doc_filename": null
+    },
+    {
+      "date": "2015-05-19",
+      "proceedings": "ORDER TO SET ASIDE DEFAULT/JUDGMENT/LEAVE TO DEFEND DEFAULT OF FEB-26-2015 SET ASIDE",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-05-19_Unknown.pdf"
+    },
+    {
+      "date": "2015-05-19",
+      "proceedings": "LAW AND MOTION 302, DEFENDANTS APURVA PATEL AND ORISSA HOLDINGS, LLC'S UNOPPOSED MOTION TO SET ASIDE ENTRY OF DEFAULT IS GRANTED. NO OPPOSITION FILED. ORDER SIGNED. JUDGE: ERNEST H. GOLDSMITH; CLERK: SEAN KANE; REPORTER: MELANIE GHENO, CSR #7489 (302/EHG)",
+      "fee": "",
+      "doc_id": null,
+      "doc_filename": null
+    },
+    {
+      "date": "2015-05-15",
+      "proceedings": "PROOF OF SERVICE OF SUBSTITUTIONS OF ATTORNEY (TRANSACTION ID # 57250372) FILED BY DEFENDANT PATEL, APURVA AN INDIVIDUAL ORISSA HOLDINGS, LLC INDIVIDUALLY AND DBA GROUNDWIDGETS",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-05-15_Unknown.pdf"
+    },
+    {
+      "date": "2015-05-15",
+      "proceedings": "SUBSTITUTION OF ATTORNEY, (TRANSACTION ID # 57250372): KNOWLES, JEFFREY G SUBSTITUTED FOR GARTEISER, RANDALL AS ATTORNEY FOR PATEL, APURVA AN INDIVIDUAL",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-05-15_Unknown.pdf"
+    },
+    {
+      "date": "2015-05-15",
+      "proceedings": "SUBSTITUTION OF ATTORNEY, (TRANSACTION ID # 57250372): KNOWLES, JEFFREY G SUBSTITUTED FOR GARTEISER, RANDALL AS ATTORNEY FOR ORISSA HOLDINGS, LLC INDIVIDUALLY AND DBA GROUNDWIDGETS",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-05-15_Unknown.pdf"
+    },
+    {
+      "date": "2015-05-15",
+      "proceedings": "CASE MANAGEMENT CONFERENCE OF JUN-03-2015 CONTINUED TO JUL-15-2015 AT 10:30 AM IN DEPARTMENT 610. NOTICE SENT BY COURT.",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-05-15_Unknown.pdf"
+    },
+    {
+      "date": "2015-05-08",
+      "proceedings": "CASE MANAGEMENT STATEMENT (TRANSACTION ID # 15127052) FILED BY PLAINTIFF DEEM, INC. GLOBAL GROUND AUTOMATION, INC. JURY DEMANDED, ESTIMATED TIME FOR TRIAL: 3.0 DAYS",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-05-08_Unknown.pdf"
+    },
+    {
+      "date": "2015-03-23",
+      "proceedings": "NOTICE OF UNOPPOSED MOTION AND MOTION TO SET ASIDE ENTRY OF DEFAULT (TRANSACTION ID # 15081149) FILED BY DEFENDANT PATEL, APURVA AN INDIVIDUAL ORISSA HOLDINGS, LLC INDIVIDUALLY AND DBA GROUNDWIDGETS HEARING SET FOR MAY-19-2015 AT 09:30 AM IN DEPT 302",
+      "fee": "$900.00",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-03-23_Unknown.pdf"
+    },
+    {
+      "date": "2015-03-23",
+      "proceedings": "COURT REPORTING SERVICES LESS THAN 1 HOUR (TRANSACTION ID # 15081146) FILED BY DEFENDANT PATEL, APURVA AN INDIVIDUAL ORISSA HOLDINGS, LLC INDIVIDUALLY AND DBA GROUNDWIDGETS",
+      "fee": "$30.00",
+      "doc_id": null,
+      "doc_filename": null
+    },
+    {
+      "date": "2015-03-23",
+      "proceedings": "DECLARATION OF RANDALL T. GARTEISER IN SUPPORT OF DEFENDANTS UNOPPOSED MOTION TO SET ASIDE ENTRY OF DEFAULT (TRANSACTION ID # 15081143) FILED BY DEFENDANT PATEL, APURVA AN INDIVIDUAL ORISSA HOLDINGS, LLC INDIVIDUALLY AND DBA GROUNDWIDGETS",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-03-23_Unknown.pdf"
+    },
+    {
+      "date": "2015-03-23",
+      "proceedings": "MEMORANDUM OF POINTS AND AUTHORITIES IN SUPPORT OF DEFENDANTS UNOPPOSED MOTION TO SET ASIDE ENTRY OF DEFAULT (TRANSACTION ID # 15081140) FILED BY DEFENDANT PATEL, APURVA AN INDIVIDUAL ORISSA HOLDINGS, LLC INDIVIDUALLY AND DBA GROUNDWIDGETS",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-03-23_Unknown.pdf"
+    },
+    {
+      "date": "2015-03-02",
+      "proceedings": "REQUEST FOR DEFAULT REJECTED, E-FILING REJECT, (TRANSACTION ID # 15057153) SUBMITTED BY PLAINTIFF DEEM, INC. GLOBAL GROUND AUTOMATION, INC. AS TO DEFENDANT PATEL, APURVA AN INDIVIDUAL ORISSA HOLDINGS, LLC INDIVIDUALLY AND DBA GROUNDWIDGETS",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-03-02_Unknown.pdf"
+    },
+    {
+      "date": "2015-02-27",
+      "proceedings": "SUMMONS ON COMPLAINT (TRANSACTION ID # 15057143), PROOF OF SERVICE ONLY, FILED BY PLAINTIFF DEEM, INC. GLOBAL GROUND AUTOMATION, INC. SERVED JAN-22-2015, PERSONAL SERVICE AS TO DEFENDANT ORISSA HOLDINGS, LLC INDIVIDUALLY AND DBA GROUNDWIDGETS",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-02-27_Unknown.pdf"
+    },
+    {
+      "date": "2015-02-27",
+      "proceedings": "PROOF OF SERVICE RE: SERVICE OF NOTICE OF APPEARANCE OF ADDITIONAL COUNSEL ON BEHALF OF PLNTFS DEEM INC AND GLOBAL GROUND AUTOMATION INC (TRANSACTION ID # 15057134) FILED BY PLAINTIFF DEEM, INC. GLOBAL GROUND AUTOMATION, INC.",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-02-27_Unknown.pdf"
+    },
+    {
+      "date": "2015-02-26",
+      "proceedings": "NOTICE OF APPEARANCE OF ADDITIONAL COUNSEL ON BEHALF OF PLAINTIFFS (TRANSACTION ID # 15056120) FILED BY PLAINTIFF DEEM, INC. GLOBAL GROUND AUTOMATION, INC.",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-02-26_Unknown.pdf"
+    },
+    {
+      "date": "2015-02-26",
+      "proceedings": "REQUEST FOR ENTRY OF DEFAULT/DEFAULT ENTERED (TRANSACTION ID # 15056047) AS TO DEFENDANT PATEL, APURVA AN INDIVIDUAL ORISSA HOLDINGS, LLC INDIVIDUALLY AND DBA GROUNDWIDGETS",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-02-26_Unknown.pdf"
+    },
+    {
+      "date": "2015-02-19",
+      "proceedings": "REQUEST FOR DEFAULT REJECTED, E-FILING REJECT, (TRANSACTION ID # 15049172) SUBMITTED BY PLAINTIFF DEEM, INC. GLOBAL GROUND AUTOMATION, INC. AS TO DEFENDANT PATEL, APURVA AN INDIVIDUAL ORISSA HOLDINGS, LLC INDIVIDUALLY AND DBA GROUNDWIDGETS",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-02-19_Unknown.pdf"
+    },
+    {
+      "date": "2015-02-09",
+      "proceedings": "SUMMONS ON COMPLAINT (TRANSACTION ID # 15036345) FILED BY PLAINTIFF GLOBAL GROUND AUTOMATION, INC. SERVED JAN-26-2015, PERSONAL SERVICE AS TO DEFENDANT PATEL, APURVA AN INDIVIDUAL",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-02-09_Unknown.pdf"
+    },
+    {
+      "date": "2015-02-02",
+      "proceedings": "SUMMONS ON COMPLAINT (TRANSACTION ID # 15032091), PROOF OF SERVICE ONLY, FILED BY PLAINTIFF DEEM, INC. GLOBAL GROUND AUTOMATION, INC. SERVED JAN-26-2015, PERSONAL SERVICE AS TO DEFENDANT PATEL, APURVA AN INDIVIDUAL",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-02-02_Unknown.pdf"
+    },
+    {
+      "date": "2015-01-02",
+      "proceedings": "NOTICE TO PLAINTIFF",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-01-02_Unknown.pdf"
+    },
+    {
+      "date": "2015-01-02",
+      "proceedings": "BUSINESS TORT, COMPLAINT FILED BY PLAINTIFF DEEM, INC. GLOBAL GROUND AUTOMATION, INC. AS TO DEFENDANT PATEL, APURVA AN INDIVIDUAL ORISSA HOLDINGS, LLC INDIVIDUALLY AND DBA GROUNDWIDGETS SUMMONS ISSUED, JUDICIAL COUNCIL CIVIL CASE COVER SHEET FILED CASE MANAGEMENT CONFERENCE SCHEDULED FOR JUN-03-2015 PROOF OF SERVICE DUE ON MAR-03-2015 CASE MANAGEMENT STATEMENT DUE ON MAY-11-2015",
+      "fee": "$450.00",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-01-02_Unknown.pdf"
+    }
+  ]
+}

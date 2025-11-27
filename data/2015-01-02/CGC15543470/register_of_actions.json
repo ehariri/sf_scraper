@@ -1,1 +1,51 @@
-[]
+{
+  "metadata": {
+    "total_entries": 6,
+    "total_links": 4,
+    "scraped_links": 4
+  },
+  "actions": [
+    {
+      "date": "2015-12-29",
+      "proceedings": "CRC 3.740 REVIEW - DISMISSAL ON FILE",
+      "fee": "",
+      "doc_id": null,
+      "doc_filename": null
+    },
+    {
+      "date": "2015-07-22",
+      "proceedings": "DISMISSAL OF ENTIRE ACTION OF ALL PARTIES AND ALL CAUSES OF ACTION WITH PREJUDICE (TRANSACTION ID # 100002397)",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-07-22_Unknown.pdf"
+    },
+    {
+      "date": "2015-06-29",
+      "proceedings": "CRC 3.740 REVIEW",
+      "fee": "",
+      "doc_id": null,
+      "doc_filename": null
+    },
+    {
+      "date": "2015-03-25",
+      "proceedings": "SUMMONS ON COMPLAINT (TRANSACTION ID # 15083041), PROOF OF SERVICE ONLY, FILED BY PLAINTIFF AMERICAN EXPRESS CENTURION BANK, A UTAH STATE CHARTERED BANK SERVED MAR-23-2015, SUBSTITUTE SERVICE ON NATURAL PERSON AS TO DEFENDANT PICCININI, ROSS AKA ROSS D. PICCININI AN INDIVIDUAL",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-03-25_Unknown.pdf"
+    },
+    {
+      "date": "2015-01-16",
+      "proceedings": "SUMMONS ON COMPLAINT (TRANSACTION ID # 15015008), PROOF OF SERVICE ONLY, FILED BY PLAINTIFF AMERICAN EXPRESS CENTURION BANK, A UTAH STATE CHARTERED BANK SERVED JAN-13-2015, SUBSTITUTE SERVICE ON NATURAL PERSON AS TO DEFENDANT PICCININI, ROSS AKA ROSS D. PICCININI AN INDIVIDUAL",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-01-16_Unknown.pdf"
+    },
+    {
+      "date": "2015-01-02",
+      "proceedings": "EXEMPT COLLECTIONS (RULE 3.740), COMPLAINT FILED BY PLAINTIFF AMERICAN EXPRESS CENTURION BANK, A UTAH STATE CHARTERED BANK AS TO DEFENDANT PICCININI, ROSS AKA ROSS D. PICCININI AN INDIVIDUAL DOES 1 TO 20, INCLUSIVE SUMMONS ISSUED, JUDICIAL COUNCIL CIVIL CASE COVER SHEET FILED PROOF OF SERVICE DUE ON JUL-01-2015",
+      "fee": "$370.00",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-01-02_Unknown.pdf"
+    }
+  ]
+}

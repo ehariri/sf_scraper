@@ -1,1 +1,121 @@
-[]
+{
+  "metadata": {
+    "total_entries": 16,
+    "total_links": 12,
+    "scraped_links": 12
+  },
+  "actions": [
+    {
+      "date": "2015-04-27",
+      "proceedings": "DISMISSAL WITH PREJUDICE OF 1ST AMENDED COMPLAINT (TRANSACTION ID # 15116012)",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-04-27_Unknown.pdf"
+    },
+    {
+      "date": "2015-03-16",
+      "proceedings": "REMOVED FROM UD COURT TRIAL CALENDAR SET FOR MAR-16-2015 - CASE SETTLED AS REPORTED BY PLAINTIFF'S COUNSEL IN OPEN COURT. (D501)",
+      "fee": "",
+      "doc_id": null,
+      "doc_filename": null
+    },
+    {
+      "date": "2015-03-13",
+      "proceedings": "CONVERT TO COURT TRIAL. NO JURY FEE DEPOSIT OR JURY FEE WAIVER ON FILE. (D501)",
+      "fee": "",
+      "doc_id": null,
+      "doc_filename": null
+    },
+    {
+      "date": "2015-03-06",
+      "proceedings": "NOTICE OF TIME AND PLACE OF TRIAL",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-03-06_Unknown.pdf"
+    },
+    {
+      "date": "2015-03-06",
+      "proceedings": "DEMAND FOR JURY ON COUNTER REQUEST TO SET CASE FOR JURY TRIAL FILED BY DEFENDANT DICKERSON, PAUL HEARING SET FOR MAR-16-2015 AT 09:00 AM IN DEPT 501",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-03-06_Unknown.pdf"
+    },
+    {
+      "date": "2015-03-02",
+      "proceedings": "NOTICE OF TIME AND PLACE OF TRIAL",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-03-02_Unknown.pdf"
+    },
+    {
+      "date": "2015-03-02",
+      "proceedings": "REQUEST TO SET CASE FOR COURT TRIAL , REFER TO FEB-27-2015 E-FILING FILED BY PLAINTIFF NICHOLSON, THOMAS / ELIZABETH NICHOLSON THE NICHOLSON 2010 TRUST GARDNER, ANNE NICHOLSON, WILLIAM HEARING SET FOR MAR-16-2015 AT 09:00 AM IN DEPT 501",
+      "fee": "",
+      "doc_id": null,
+      "doc_filename": null
+    },
+    {
+      "date": "2015-02-27",
+      "proceedings": "REQUEST TO SET CASE FOR TRIAL (TRANSACTION ID # 15057015) FILED BY PLAINTIFF NICHOLSON, THOMAS / ELIZABETH NICHOLSON THE NICHOLSON 2010 TRUST GARDNER, ANNE NICHOLSON, WILLIAM",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-02-27_Unknown.pdf"
+    },
+    {
+      "date": "2015-02-25",
+      "proceedings": "ANSWER TO 1ST AMENDED COMPLAINT FILED BY DEFENDANT DICKERSON, PAUL",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-02-25_Unknown.pdf"
+    },
+    {
+      "date": "2015-02-19",
+      "proceedings": "REAL PROPERTY/HOUSING MOTION, 501, DEMURRER TO COMPLAINT, OFF CALENDAR, 1ST AMENDED COMPLAINT FILED ON 2/4/15. (D501)",
+      "fee": "",
+      "doc_id": null,
+      "doc_filename": null
+    },
+    {
+      "date": "2015-02-18",
+      "proceedings": "MEMORANDUM OF POINTS AND AUTHORITIES IN SUPPORT OF EX PARTE APPLICATION FOR ORDER FILED BY PLAINTIFF NICHOLSON, THOMAS / ELIZABETH NICHOLSON THE NICHOLSON 2010 TRUST GARDNER, ANNE NICHOLSON, WILLIAM",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-02-18_Unknown.pdf"
+    },
+    {
+      "date": "2015-02-18",
+      "proceedings": "EX PARTE APPLICATION FOR ORDER SHORTENING TIME FOR HEARING ON DEFENDANT'S DEMURRER FILED BY PLAINTIFF NICHOLSON, THOMAS / ELIZABETH NICHOLSON THE NICHOLSON 2010 TRUST GARDNER, ANNE NICHOLSON, WILLIAM",
+      "fee": "$60.00",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-02-18_Unknown.pdf"
+    },
+    {
+      "date": "2015-02-10",
+      "proceedings": "NOTICE OF HEARING ON DEMURRER FILED BY DEFENDANT DICKERSON, PAUL",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-02-10_Unknown.pdf"
+    },
+    {
+      "date": "2015-02-04",
+      "proceedings": "1ST AMENDED COMPLAINT FILED BY PLAINTIFF NICHOLSON, THOMAS / ELIZABETH NICHOLSON THE NICHOLSON 2010 TRUST GARDNER, ANNE NICHOLSON, WILLIAM AS TO DEFENDANT DICKERSON, PAUL AN INDIVIDUAL, INDIVIDUALLY AND DBA PAUL'S DETAILING DOES 1 TO 30, INCLUSIVE",
+      "fee": "",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-02-04_Unknown.pdf"
+    },
+    {
+      "date": "2015-01-29",
+      "proceedings": "DEMURRER TO COMPLAINT, POINTS AND AUTHORITIES FILED BY DEFENDANT DICKERSON, PAUL HEARING SET FOR FEB-24-2015 AT 09:30 AM IN DEPT 501",
+      "fee": "$225.00",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-01-29_Unknown.pdf"
+    },
+    {
+      "date": "2015-01-02",
+      "proceedings": "UNLAWFUL DETAINER - COMMERCIAL, COMPLAINT FILED BY PLAINTIFF NICHOLSON, THOMAS / ELIZABETH NICHOLSON THE NICHOLSON 2010 TRUST GARDNER, ANNE NICHOLSON, WILLIAM AS TO DEFENDANT DICKERSON, PAUL AN INDIVIDUAL, INDIVIDUALLY AND DBA PAUL'S DETAILING GUTIERREZ, JAMIE DOES 1 TO 30, INCLUSIVE SUMMONS ISSUED, JUDICIAL COUNCIL CIVIL CASE COVER SHEET FILED",
+      "fee": "$450.00",
+      "doc_id": "Unknown",
+      "doc_filename": "2015-01-02_Unknown.pdf"
+    }
+  ]
+}

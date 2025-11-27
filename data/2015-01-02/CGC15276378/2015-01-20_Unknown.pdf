@@ -2,8 +2,8 @@
 <html>
 <head>
 	<title>Online Services | Superior Court of California - County of San Francisco</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.4/jquery.min.js" integrity="sha512-jGsMH83oKe9asCpkOVkBnUrDDTp8wl+adkB2D+//JtlxO4SrLoJdhbOysIFQJloQFD+C4Fl1rMsQZF76JjV0eQ==" crossorigin="anonymous" referrerpolicy="no-referrer" type="31d9efd6415cb622c5a24a27-text/javascript"></script>
-    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?compat=recaptcha" async defer type="31d9efd6415cb622c5a24a27-text/javascript"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.4/jquery.min.js" integrity="sha512-jGsMH83oKe9asCpkOVkBnUrDDTp8wl+adkB2D+//JtlxO4SrLoJdhbOysIFQJloQFD+C4Fl1rMsQZF76JjV0eQ==" crossorigin="anonymous" referrerpolicy="no-referrer" type="9c823b79742956d9cd66a72f-text/javascript"></script>
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?compat=recaptcha" async defer type="9c823b79742956d9cd66a72f-text/javascript"></script>
     <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
 	<meta http-equiv="Content-Language" content="en-us" />
 	<!-- <meta http-equiv="X-UA-Compatible" content="IE=Edge" > -->
@@ -34,9 +34,9 @@
 	</div>
 	</div>
 </div>
-<script src="/cdn-cgi/scripts/7d0fa10a/cloudflare-static/rocket-loader.min.js" data-cf-settings="31d9efd6415cb622c5a24a27-|49" defer></script></body>
+<script src="/cdn-cgi/scripts/7d0fa10a/cloudflare-static/rocket-loader.min.js" data-cf-settings="9c823b79742956d9cd66a72f-|49" defer></script></body>
 
-<script type="31d9efd6415cb622c5a24a27-text/javascript">
+<script type="9c823b79742956d9cd66a72f-text/javascript">
 	function recaptchaCallBack(resp) {
 		$('#WebForm').submit();
 	}
