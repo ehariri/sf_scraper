@@ -82,7 +82,36 @@ async def scrape_cases(page):
         
     return cases
 
-async def scrape_case(context, link):
+import json
+from pathlib import Path
+from urllib.parse import urlparse, parse_qs
+
+async def save_doc(context, url, folder, filename):
+    try:
+        folder.mkdir(parents=True, exist_ok=True)
+        file_path = folder / filename
+        
+        if file_path.exists():
+            print(f"    Skipping existing file: {filename}")
+            return
+
+        print(f"    Downloading {filename}...")
+        # Note: The 'View' link might be a redirect or direct download. 
+        # Using context.request.get should handle cookies/session.
+        response = await context.request.get(url)
+        
+        if response.status == 200:
+            body = await response.body()
+            with open(file_path, "wb") as f:
+                f.write(body)
+            print(f"    Saved {filename}")
+        else:
+            print(f"    Failed to download {filename}: Status {response.status}")
+            
+    except Exception as e:
+        print(f"    Error saving doc {filename}: {e}")
+
+async def scrape_case(context, link, filing_date):
     print(f"  Scraping case: {link}")
     page = await context.new_page()
     try:
@@ -91,19 +120,95 @@ async def scrape_case(context, link):
             link = "https://webapps.sftc.org/ci/" + link
             
         await page.goto(link)
+        
+        # Check for Cloudflare
+        try:
+            title = await page.title()
+            content = await page.content()
+            if "Just a moment" in title or "Cloudflare" in title or "challenge-platform" in content:
+                print("\n!!! CLOUDFLARE DETECTED IN CASE TAB !!!")
+                print("Please solve the challenge in the new tab manually.")
+                print("Waiting for challenge to pass...")
+                
+                while True:
+                    await asyncio.sleep(2)
+                    title = await page.title()
+                    if "Just a moment" not in title and "Cloudflare" not in title:
+                        print("Cloudflare passed! Resuming...")
+                        break
+        except Exception as e:
+            print(f"  Error checking for Cloudflare: {e}")
+
         await page.wait_for_timeout(1000)
         
-        # Select "All" entries (if applicable for case details)
+        # Extract Case Number from URL or Page
+        # URL format: ...CaseNum=CGC15276378...
+        parsed_url = urlparse(link)
+        qs = parse_qs(parsed_url.query)
+        case_num = qs.get("CaseNum", ["Unknown"])[0]
+        
+        # Create directory: data/{filing_date}/{case_num}
+        case_dir = Path(f"data/{filing_date}/{case_num}")
+        case_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Select "All" entries
         try:
-            # Check if the dropdown exists first
             if await page.locator('select[name="example_length"]').is_visible():
                 await page.select_option('select[name="example_length"]', "-1", timeout=3000)
                 print("  Selected 'All' entries in case view.")
-                await page.wait_for_timeout(500)
+                await page.wait_for_timeout(1000) # Wait for table reload
             else:
-                print("  No 'Select All' dropdown found in case view.")
+                print("  No 'Select All' dropdown found in case view (or page failed to load).")
         except Exception as e:
             print(f"  Could not select 'All' in case view: {e}")
+
+        # Scrape Register of Actions
+        actions = []
+        rows = page.locator("#example tbody tr")
+        count = await rows.count()
+        print(f"  Found {count} actions.")
+        
+        for i in range(count):
+            row = rows.nth(i)
+            cols = row.locator("td")
+            
+            # Extract columns
+            action_date = await cols.nth(0).inner_text()
+            proceedings = await cols.nth(1).inner_text()
+            fee = await cols.nth(3).inner_text()
+            
+            # Check for Document View Link
+            doc_link_el = cols.nth(2).locator("a")
+            doc_url = None
+            doc_filename = None
+            
+            if await doc_link_el.count() > 0:
+                doc_url = await doc_link_el.get_attribute("href")
+                if doc_url:
+                    # Parse DocID from URL
+                    # Example: ...&DocID=08272316&...
+                    doc_qs = parse_qs(urlparse(doc_url).query)
+                    doc_id = doc_qs.get("DocID", ["Unknown"])[0]
+                    
+                    # Filename: {action_date}_{doc_id}.pdf
+                    doc_filename = f"{action_date}_{doc_id}.pdf"
+                    
+                    # Download Document
+                    await save_doc(context, doc_url, case_dir, doc_filename)
+
+            actions.append({
+                "date": action_date,
+                "proceedings": proceedings,
+                "fee": fee,
+                "doc_id": doc_id if doc_url else None,
+                "doc_filename": doc_filename
+            })
+            
+        # Save Register of Actions JSON
+        json_path = case_dir / "register_of_actions.json"
+        with open(json_path, "w") as f:
+            json.dump(actions, f, indent=2)
+        print(f"  Saved register of actions to {json_path}")
             
     except Exception as e:
         print(f"  Error scraping case {link}: {e}")
@@ -159,8 +264,8 @@ async def scrape_date(page, date_str):
             # Process each case
             for case in cases:
                 if case['link']:
-                    await scrape_case(page.context, case['link'])
-                    # await asyncio.sleep(0.5) # Optional: be polite
+                    await scrape_case(page.context, case['link'], date_str)
+                    await asyncio.sleep(2) # Be polite and avoid rate limits
 
         except Exception as e:
             print(f"Could not select 'All' entries (maybe no results?): {e}")
