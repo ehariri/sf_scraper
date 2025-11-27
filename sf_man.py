@@ -82,6 +82,34 @@ async def scrape_cases(page):
         
     return cases
 
+async def scrape_case(context, link):
+    print(f"  Scraping case: {link}")
+    page = await context.new_page()
+    try:
+        # Construct full URL if relative
+        if not link.startswith("http"):
+            link = "https://webapps.sftc.org/ci/" + link
+            
+        await page.goto(link)
+        await page.wait_for_timeout(1000)
+        
+        # Select "All" entries (if applicable for case details)
+        try:
+            # Check if the dropdown exists first
+            if await page.locator('select[name="example_length"]').is_visible():
+                await page.select_option('select[name="example_length"]', "-1", timeout=3000)
+                print("  Selected 'All' entries in case view.")
+                await page.wait_for_timeout(500)
+            else:
+                print("  No 'Select All' dropdown found in case view.")
+        except Exception as e:
+            print(f"  Could not select 'All' in case view: {e}")
+            
+    except Exception as e:
+        print(f"  Error scraping case {link}: {e}")
+    finally:
+        await page.close()
+
 async def scrape_date(page, date_str):
     print(f"Processing date: {date_str}")
     try:
@@ -127,8 +155,12 @@ async def scrape_date(page, date_str):
             # Scrape cases
             cases = await scrape_cases(page)
             print(f"Scraped {len(cases)} cases.")
-            if cases:
-                print(f"Sample: {cases[0]}")
+            
+            # Process each case
+            for case in cases:
+                if case['link']:
+                    await scrape_case(page.context, case['link'])
+                    # await asyncio.sleep(0.5) # Optional: be polite
 
         except Exception as e:
             print(f"Could not select 'All' entries (maybe no results?): {e}")
