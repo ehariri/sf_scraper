@@ -20,7 +20,9 @@ CHROME_PROFILE = Path.home() / ".sf_manual_profile"
 # --- Custom Exception ---
 class BrowserStuckError(Exception):
     """Raised when the browser is stuck or unresponsive."""
-    pass
+    def __init__(self, message, failed_case_num=None):
+        super().__init__(message)
+        self.failed_case_num = failed_case_num
 
 def get_dates():
     start = datetime.strptime(START_DATE, "%Y-%m-%d")
@@ -110,14 +112,20 @@ async def scrape_cases(page):
             row = rows.nth(i)
             # Extract Case Number (1st column)
             case_num_el = row.locator("td").nth(0)
-            case_num = await case_num_el.inner_text()
+            case_num_raw = await case_num_el.inner_text()
+            case_num = re.sub(r'[^a-zA-Z0-9]', '', case_num_raw)
             
             # Extract Link
             try:
                 link_el = case_num_el.locator("a")
-                link = await link_el.get_attribute("href")
-            except:
+                if await link_el.count() > 0:
+                    link = await link_el.get_attribute("href")
+                else:
+                    link = None
+                    print(f"    WARNING: No link found for case {case_num}")
+            except Exception as e:
                 link = None
+                print(f"    Error extracting link for {case_num}: {e}")
 
             # Extract Case Title (2nd column)
             case_title = await row.locator("td").nth(1).inner_text()
@@ -208,10 +216,24 @@ async def scrape_case(context, link, filing_date):
                     print("\r  !!! CLOUDFLARE DETECTED !!! Please solve manually.   ", end="", flush=True)
                     await asyncio.sleep(2)
                     continue
+                
+                # 2. Check for Restricted Case (CCP 1161.2)
+                if "Per CCP 1161.2" in content or "Case Is Not Available For Viewing" in content:
+                    print(f"\r  Case {case_num} is RESTRICTED (CCP 1161.2). Saving status.      ")
+                    output_data = {
+                        "metadata": {
+                            "status": "restricted",
+                            "reason": "CCP 1161.2"
+                        }
+                    }
+                    with open(json_path, "w") as f:
+                        json.dump(output_data, f, indent=2)
+                    return
+
             except Exception:
                 pass
 
-            # 2. Check for Dropdown (Success)
+            # 3. Check for Dropdown (Success)
             if await page.locator('select[name="example_length"]').is_visible():
                 print("\r  Page loaded.                                         ")
                 break
@@ -220,7 +242,7 @@ async def scrape_case(context, link, filing_date):
             print(".", end="", flush=True)
         else:
             print("\n  Timed out waiting for page/dropdown.")
-            raise BrowserStuckError("Timeout waiting for case page load")
+            raise BrowserStuckError("Timeout waiting for case page load", failed_case_num=case_num)
 
         # Select "All" entries
         try:
@@ -300,8 +322,68 @@ async def scrape_case(context, link, filing_date):
     finally:
         await page.close()
 
-async def scrape_date(page, date_str):
+def update_day_summary(date_str, total_cases=None):
+    """Updates the day_summary.json for a given date."""
+    date_dir = Path(f"data/{date_str}")
+    if not date_dir.exists():
+        return {"fully_completed": False}
+        
+    summary_path = date_dir / "day_summary.json"
+    
+    # Load existing summary to preserve total_cases if not provided
+    current_summary = {}
+    if summary_path.exists():
+        try:
+            with open(summary_path, "r") as f:
+                current_summary = json.load(f)
+        except:
+            pass
+            
+    if total_cases is None:
+        total_cases = current_summary.get("total_cases", 0)
+        
+    # Count scraped cases
+    scraped_cases = 0
+    for case_dir in date_dir.iterdir():
+        if case_dir.is_dir():
+            json_path = case_dir / "register_of_actions.json"
+            if json_path.exists():
+                try:
+                    with open(json_path, "r") as f:
+                        data = json.load(f)
+                        if isinstance(data, dict) and "metadata" in data:
+                            meta = data["metadata"]
+                            # Check if restricted OR fully scraped
+                            if meta.get("status") == "restricted":
+                                scraped_cases += 1
+                            elif meta.get("scraped_links", 0) == meta.get("total_links", 0):
+                                scraped_cases += 1
+                except:
+                    pass
+
+    fully_completed = (total_cases > 0) and (scraped_cases >= total_cases)
+    
+    summary = {
+        "date": date_str,
+        "total_cases": total_cases,
+        "scraped_cases": scraped_cases,
+        "fully_completed": fully_completed
+    }
+    
+    with open(summary_path, "w") as f:
+        json.dump(summary, f, indent=2)
+        
+    return summary
+
+async def scrape_date(page, date_str, resume_case_num=None):
     print(f"Processing date: {date_str}")
+    
+    # Check if day is already fully scraped
+    summary = update_day_summary(date_str)
+    if summary.get("fully_completed") and not resume_case_num:
+        print(f"  Day {date_str} fully scraped ({summary['scraped_cases']}/{summary['total_cases']}). Skipping.")
+        return
+
     try:
         # Fill FilingDate
         await page.fill("#FilingDate", date_str)
@@ -321,7 +403,6 @@ async def scrape_date(page, date_str):
                     print(f"No cases found for {date_str}. Skipping.")
                     return
         except Exception as e:
-            pass # Continue to try selecting if check fails
             pass 
 
         # Select "All" entries
@@ -335,8 +416,10 @@ async def scrape_date(page, date_str):
                 info_text = await page.locator("#example_info").inner_text()
                 match = re.search(r"of\s+([\d,]+)\s+entries", info_text)
                 if match:
-                    total_entries = match.group(1)
+                    total_entries = int(match.group(1).replace(",", ""))
                     print(f"Entry count: {total_entries}")
+                    # Update summary with total count
+                    update_day_summary(date_str, total_cases=total_entries)
                 else:
                     print(f"Entry count: {info_text} (Regex failed)")
             except Exception as e:
@@ -348,9 +431,21 @@ async def scrape_date(page, date_str):
             
             # Process each case
             for case in cases:
+                # Fast Resume Logic
+                if resume_case_num:
+                    if case['case_num'] == resume_case_num:
+                        print(f"Found resume target: {resume_case_num}. Resuming scrape...")
+                        resume_case_num = None # Clear resume flag to proceed normally
+                    else:
+                        # print(f"Skipping {case['case_num']} (Fast Resume seeking {resume_case_num})")
+                        continue
+
                 if case['link']:
                     await scrape_case(page.context, case['link'], date_str)
                     await asyncio.sleep(2) 
+
+            # Update summary at the end of the day
+            update_day_summary(date_str)
 
         except BrowserStuckError:
             raise
@@ -362,7 +457,7 @@ async def scrape_date(page, date_str):
     except Exception as e:
         print(f"Error processing {date_str}: {e}")
 
-async def run_search_loop(page, dates):
+async def run_search_loop(page, dates, resume_case_num=None):
     print("Starting search loop...")
     # Click "Search by New Filings" tab
     await page.click("#ui-id-3")
@@ -379,10 +474,14 @@ async def run_search_loop(page, dates):
             dates.pop(0)
             continue
             
-        await scrape_date(page, date_str)
+        # Pass resume_case_num only to the first date in the list (the one we failed on)
+        # For subsequent dates, resume_case_num should be None
+        await scrape_date(page, date_str, resume_case_num)
+        resume_case_num = None 
+        
         dates.pop(0) # Remove date after successful processing
 
-async def monitor_browser(dates):
+async def monitor_browser(dates, resume_case_num=None):
     cdp = f"http://localhost:{CHROME_PORT}"
     print("Starting browser monitor...")
     
@@ -423,7 +522,7 @@ async def monitor_browser(dates):
                     print("Playwright is now attached and controlling the browser.")
                     
                     # Run the search loop with the remaining dates
-                    await run_search_loop(page, dates)
+                    await run_search_loop(page, dates, resume_case_num)
                     return # Done with all dates
                 
                 else:
@@ -438,9 +537,13 @@ async def monitor_browser(dates):
 
 async def main():
     dates = get_dates()
+    resume_case_num = None
     
     while dates:
         print(f"\n--- Starting Session. Remaining dates: {len(dates)} ---")
+        if resume_case_num:
+            print(f"Resuming from case: {resume_case_num}")
+
         launch_chrome()
         
         # Initial navigation
@@ -451,11 +554,14 @@ async def main():
         await asyncio.sleep(1)
         
         try:
-            await monitor_browser(dates)
+            await monitor_browser(dates, resume_case_num)
             print("All dates processed successfully!")
             break
-        except BrowserStuckError:
+        except BrowserStuckError as e:
             print("\n!!! BROWSER STUCK DETECTED !!!")
+            if e.failed_case_num:
+                print(f"Failed at case: {e.failed_case_num}")
+                resume_case_num = e.failed_case_num
             print("Restarting browser session...")
             kill_chrome()
             await asyncio.sleep(2)
