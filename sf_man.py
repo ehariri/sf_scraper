@@ -5,7 +5,7 @@ from playwright.async_api import async_playwright
 
 CHROME_PROFILE = Path.home() / ".sf_manual_profile"
 CHROME_PORT = 9222
-TARGET_URL = "https://webapps.sftc.org/cc/CaseCalendar.dll"
+TARGET_URL = "https://webapps.sftc.org/ci/CaseInfo.dll"
 
 
 def launch_real_chrome():
@@ -44,6 +44,141 @@ async def open_sf_page():
         print("Navigation complete. You can now solve the Cloudflare challenge manually.")
 
 
+from datetime import date, timedelta
+import re
+
+async def scrape_date(page, date_str):
+    print(f"Processing date: {date_str}")
+    try:
+        # Fill FilingDate
+        await page.fill("#FilingDate", date_str)
+        
+        # Click Search
+        await page.get_by_role("button", name="Search").click()
+        
+        # Wait for results to load
+        await page.wait_for_timeout(1000) 
+        
+        # Check for "No cases found"
+        try:
+            results_count = page.locator("#resultsCount")
+            if await results_count.is_visible():
+                text = await results_count.inner_text()
+                if "No cases found" in text:
+                    print(f"No cases found for {date_str}. Skipping.")
+                    return
+        except Exception as e:
+            pass # Continue to try selecting if check fails
+
+        # Select "All" entries
+        try:
+            await page.select_option('select[name="example_length"]', "-1", timeout=5000)
+            print("Selected 'All' entries.")
+            await page.wait_for_timeout(1000) # Wait for table update
+            
+            # Print entry count
+            try:
+                info_text = await page.locator("#example_info").inner_text()
+                # Extract total entries using regex (e.g., "Showing 1 to 72 of 72 entries")
+                match = re.search(r"of\s+([\d,]+)\s+entries", info_text)
+                if match:
+                    total_entries = match.group(1)
+                    print(f"Entry count: {total_entries}")
+                else:
+                    print(f"Entry count: {info_text} (Regex failed)")
+            except Exception as e:
+                print(f"Could not get entry count: {e}")
+
+        except Exception as e:
+            print(f"Could not select 'All' entries (maybe no results?): {e}")
+
+    except Exception as e:
+        print(f"Error processing {date_str}: {e}")
+
+
+async def run_search_loop(page):
+    print("Starting search loop...")
+    
+    # Click "Search by New Filings" tab
+    try:
+        await page.click("#ui-id-3")
+        print("Clicked 'Search by New Filings' tab.")
+        await page.wait_for_timeout(1000) # Wait for tab switch
+    except Exception as e:
+        print(f"Error clicking tab: {e}")
+        return
+
+    start_date = date(2015, 1, 1)
+    end_date = date(2015, 1, 10)
+    delta = timedelta(days=1)
+    
+    current_date = start_date
+    while current_date <= end_date:
+        # Skip weekends (Saturday=5, Sunday=6)
+        if current_date.weekday() >= 5:
+            print(f"Skipping weekend: {current_date.strftime('%Y-%m-%d')}")
+            current_date += delta
+            continue
+
+        date_str = current_date.strftime("%Y-%m-%d")
+        await scrape_date(page, date_str)
+        current_date += delta
+        
+    print("Search loop complete.")
+
+
+async def monitor_browser():
+    cdp = f"http://localhost:{CHROME_PORT}"
+    print("Starting browser monitor...")
+
+    while True:
+        try:
+            async with async_playwright() as p:
+                browser = await p.chromium.connect_over_cdp(cdp)
+                if not browser.contexts:
+                    print("No browser context found. Retrying...")
+                    await asyncio.sleep(2)
+                    continue
+                
+                context = browser.contexts[0]
+                # Find the page with the target URL or just check active page
+                found = False
+                for page in context.pages:
+                    if "SessionID=" in page.url:
+                        found = True
+                        print("\n" + "="*50)
+                        print(f"SUCCESS! Cloudflare challenge passed.")
+                        
+                        # Extract SessionID
+                        try:
+                            from urllib.parse import urlparse, parse_qs
+                            parsed_url = urlparse(page.url)
+                            query_params = parse_qs(parsed_url.query)
+                            session_id = query_params.get("SessionID", [None])[0]
+                            print(f"SessionID: {session_id}")
+                        except:
+                            print("Could not parse SessionID")
+
+                        cookies = await context.cookies()
+                        print(f"Cookies: {cookies}")
+                        print("="*50 + "\n")
+                        print("Playwright is now attached and controlling the browser.")
+                        
+                        # Run the search loop
+                        await run_search_loop(page)
+                        
+                        print("Press Ctrl+C to exit.")
+                        await asyncio.Future()
+                
+                if not found:
+                    print("Waiting for Cloudflare challenge... (checking again in 3s)")
+                    await asyncio.sleep(3)
+
+        except Exception as e:
+            print(f"Monitor error: {e}")
+            await asyncio.sleep(3)
+
+
 async def main():
     launch_real_chrome()
 
@@ -51,6 +186,12 @@ async def main():
     await asyncio.sleep(2)
 
     await open_sf_page()
+    
+    print("Waiting 1 second before attaching monitor to allow Cloudflare check to proceed...")
+    await asyncio.sleep(1)
+
+    # Start monitoring for completion
+    await monitor_browser()
 
 
 if __name__ == "__main__":
