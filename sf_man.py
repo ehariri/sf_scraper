@@ -47,6 +47,41 @@ async def open_sf_page():
 from datetime import date, timedelta
 import re
 
+async def scrape_cases(page):
+    cases = []
+    try:
+        # Locate the table rows
+        rows = page.locator("#example tbody tr")
+        count = await rows.count()
+        print(f"Found {count} rows in table.")
+        
+        for i in range(count):
+            row = rows.nth(i)
+            # Extract Case Number (1st column)
+            case_num_el = row.locator("td").nth(0)
+            case_num = await case_num_el.inner_text()
+            
+            # Extract Link
+            try:
+                link_el = case_num_el.locator("a")
+                link = await link_el.get_attribute("href")
+            except:
+                link = None
+
+            # Extract Case Title (2nd column)
+            case_title = await row.locator("td").nth(1).inner_text()
+            
+            cases.append({
+                "case_num": case_num,
+                "title": case_title,
+                "link": link
+            })
+            
+    except Exception as e:
+        print(f"Error scraping cases: {e}")
+        
+    return cases
+
 async def scrape_date(page, date_str):
     print(f"Processing date: {date_str}")
     try:
@@ -88,6 +123,12 @@ async def scrape_date(page, date_str):
                     print(f"Entry count: {info_text} (Regex failed)")
             except Exception as e:
                 print(f"Could not get entry count: {e}")
+                
+            # Scrape cases
+            cases = await scrape_cases(page)
+            print(f"Scraped {len(cases)} cases.")
+            if cases:
+                print(f"Sample: {cases[0]}")
 
         except Exception as e:
             print(f"Could not select 'All' entries (maybe no results?): {e}")
