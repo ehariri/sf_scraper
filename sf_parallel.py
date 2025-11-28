@@ -150,29 +150,37 @@ DOWNLOAD_SEMAPHORE = asyncio.Semaphore(5)
 
 async def save_doc(context, url, folder, filename):
     async with DOWNLOAD_SEMAPHORE:
-        try:
-            folder.mkdir(parents=True, exist_ok=True)
-            file_path = folder / filename
-            
-            if file_path.exists():
-                # print(f"    Skipping existing file: {filename}")
-                return
+        folder.mkdir(parents=True, exist_ok=True)
+        file_path = folder / filename
+        
+        if file_path.exists():
+            # print(f"    Skipping existing file: {filename}")
+            return
 
-            print(f"    Downloading {filename}...")
-            # Note: The 'View' link might be a redirect or direct download. 
-            # Using context.request.get should handle cookies/session.
-            response = await context.request.get(url)
-            
-            if response.status == 200:
-                body = await response.body()
-                with open(file_path, "wb") as f:
-                    f.write(body)
-                print(f"    Saved {filename}")
-            else:
-                print(f"    Failed to download {filename}: Status {response.status}")
+        print(f"    Downloading {filename}...")
+        
+        for attempt in range(3):
+            try:
+                # Note: The 'View' link might be a redirect or direct download. 
+                # Using context.request.get should handle cookies/session.
+                response = await context.request.get(url)
                 
-        except Exception as e:
-            print(f"    Error saving doc {filename}: {e}")
+                if response.status == 200:
+                    body = await response.body()
+                    with open(file_path, "wb") as f:
+                        f.write(body)
+                    print(f"    Saved {filename}")
+                    return # Success
+                else:
+                    print(f"    Failed to download {filename}: Status {response.status} (Attempt {attempt+1}/3)")
+                    
+            except Exception as e:
+                print(f"    Error saving doc {filename}: {e} (Attempt {attempt+1}/3)")
+            
+            # Wait before retrying
+            await asyncio.sleep(2 * (attempt + 1))
+            
+        print(f"    Gave up on {filename} after 3 attempts.")
 
 async def scrape_case(context, link, filing_date):
     # Construct full URL if relative
