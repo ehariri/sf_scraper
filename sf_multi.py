@@ -295,8 +295,13 @@ async def scrape_case(context, link, filing_date):
                 doc_url = await doc_link_el.get_attribute("href")
                 if doc_url:
                     # Parse DocID from URL
-                    doc_qs = parse_qs(urlparse(doc_url).query)
-                    doc_id = doc_qs.get("DocID", ["Unknown"])[0]
+                    # Example: ...&DocID=08272316&...
+                    # It might be in the main query or nested in the 'URL' param
+                    match = re.search(r"DocID%3D(\d+)", doc_url)
+                    if match:
+                        doc_id = match.group(1)
+                    else:
+                        doc_id = "Unknown"
                     
                     # Filename: {action_date}_{doc_id}.pdf
                     doc_filename = f"{action_date}_{doc_id}.pdf"
