@@ -1,16 +1,16 @@
-import subprocess
-import asyncio
-import time
-import os
-import signal
-import re
-import json
-from pathlib import Path
-from urllib.parse import urlparse, parse_qs
-from datetime import datetime, timedelta
-from playwright.async_api import async_playwright
-
 import argparse
+import asyncio
+import json
+import os
+import re
+import signal
+import subprocess
+import time
+from datetime import datetime, timedelta
+from pathlib import Path
+from urllib.parse import parse_qs, urlparse
+
+from playwright.async_api import async_playwright
 
 # --- Configuration ---
 # Defaults (can be overridden by CLI args)
@@ -20,12 +20,15 @@ START_DATE = "2015-01-01"
 END_DATE = "2015-01-10"
 CHROME_PROFILE = Path.home() / f".sf_profile_{CHROME_PORT}"
 
+
 # --- Custom Exception ---
 class BrowserStuckError(Exception):
     """Raised when the browser is stuck or unresponsive."""
+
     def __init__(self, message, failed_case_num=None):
         super().__init__(message)
         self.failed_case_num = failed_case_num
+
 
 def get_dates():
     start = datetime.strptime(START_DATE, "%Y-%m-%d")
@@ -37,11 +40,12 @@ def get_dates():
         curr += timedelta(days=1)
     return dates
 
+
 def launch_chrome():
     """Launches a real Chrome instance with remote debugging enabled."""
     print("Launching real Chrome...")
     CHROME_PROFILE.mkdir(exist_ok=True)
-    
+
     # Check if Chrome is already running on port 9222
     try:
         subprocess.check_output(f"lsof -i :{CHROME_PORT}", shell=True)
@@ -52,27 +56,33 @@ def launch_chrome():
 
     # MacOS specific Chrome path
     CHROME_PATH = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
-    
+
     cmd = [
         "open",
-        "-na", "Google Chrome",
+        "-na",
+        "Google Chrome",
         "--args",
         f"--user-data-dir={CHROME_PROFILE}",
         f"--remote-debugging-port={CHROME_PORT}",
         "--no-first-run",
         "--no-default-browser-check",
     ]
-    
+
     subprocess.Popen(cmd)
     print("Waiting 2 seconds for Chrome to start...")
     time.sleep(2)
+
 
 def kill_chrome():
     """Kills the Chrome process running on the debugging port."""
     print("Killing Chrome process...")
     try:
         # Find PID using lsof
-        pid = subprocess.check_output(f"lsof -i :{CHROME_PORT} -t", shell=True).decode().strip()
+        pid = (
+            subprocess.check_output(f"lsof -i :{CHROME_PORT} -t", shell=True)
+            .decode()
+            .strip()
+        )
         if pid:
             os.kill(int(pid), signal.SIGTERM)
             print(f"Killed Chrome PID: {pid}")
@@ -97,11 +107,14 @@ async def open_sf_page():
         page = await context.new_page()
         print(f"Navigating Chrome → {TARGET_URL}")
         await page.goto(TARGET_URL)
-        print("Navigation complete. You can now solve the Cloudflare challenge manually.")
+        print(
+            "Navigation complete. You can now solve the Cloudflare challenge manually."
+        )
 
 
-from datetime import date, timedelta
 import re
+from datetime import date, timedelta
+
 
 async def scrape_cases(page):
     cases = []
@@ -110,14 +123,14 @@ async def scrape_cases(page):
         rows = page.locator("#example tbody tr")
         count = await rows.count()
         print(f"Found {count} rows in table.")
-        
+
         for i in range(count):
             row = rows.nth(i)
             # Extract Case Number (1st column)
             case_num_el = row.locator("td").nth(0)
             case_num_raw = await case_num_el.inner_text()
-            case_num = re.sub(r'[^a-zA-Z0-9]', '', case_num_raw)
-            
+            case_num = re.sub(r"[^a-zA-Z0-9]", "", case_num_raw)
+
             # Extract Link
             try:
                 link_el = case_num_el.locator("a")
@@ -132,58 +145,59 @@ async def scrape_cases(page):
 
             # Extract Case Title (2nd column)
             case_title = await row.locator("td").nth(1).inner_text()
-            
-            cases.append({
-                "case_num": case_num,
-                "title": case_title,
-                "link": link
-            })
-            
+
+            cases.append({"case_num": case_num, "title": case_title, "link": link})
+
     except Exception as e:
         print(f"Error scraping cases: {e}")
-        
+
     return cases
+
 
 import json
 from pathlib import Path
-from urllib.parse import urlparse, parse_qs
+from urllib.parse import parse_qs, urlparse
 
 # Semaphore to limit concurrent downloads
-DOWNLOAD_SEMAPHORE = None # Initialized in main()
+DOWNLOAD_SEMAPHORE = None  # Initialized in main()
+
 
 async def save_doc(context, url, folder, filename):
     async with DOWNLOAD_SEMAPHORE:
         folder.mkdir(parents=True, exist_ok=True)
         file_path = folder / filename
-        
+
         if file_path.exists():
             # print(f"    Skipping existing file: {filename}")
             return
 
         print(f"    Downloading {filename}...")
-        
+
         for attempt in range(3):
             try:
-                # Note: The 'View' link might be a redirect or direct download. 
+                # Note: The 'View' link might be a redirect or direct download.
                 # Using context.request.get should handle cookies/session.
                 response = await context.request.get(url)
-                
+
                 if response.status == 200:
                     body = await response.body()
                     with open(file_path, "wb") as f:
                         f.write(body)
                     print(f"    Saved {filename}")
-                    return # Success
+                    return  # Success
                 else:
-                    print(f"    Failed to download {filename}: Status {response.status} (Attempt {attempt+1}/3)")
-                    
+                    print(
+                        f"    Failed to download {filename}: Status {response.status} (Attempt {attempt+1}/3)"
+                    )
+
             except Exception as e:
                 print(f"    Error saving doc {filename}: {e} (Attempt {attempt+1}/3)")
-            
+
             # Wait before retrying
             await asyncio.sleep(2 * (attempt + 1))
-            
+
         print(f"    Gave up on {filename} after 3 attempts.")
+
 
 async def scrape_case(context, link, filing_date):
     # Construct full URL if relative
@@ -195,7 +209,7 @@ async def scrape_case(context, link, filing_date):
     parsed_url = urlparse(link)
     qs = parse_qs(parsed_url.query)
     case_num = qs.get("CaseNum", ["Unknown"])[0]
-    
+
     # Create directory: data/{filing_date}/{case_num}
     case_dir = Path(f"data/{filing_date}/{case_num}")
     case_dir.mkdir(parents=True, exist_ok=True)
@@ -209,8 +223,13 @@ async def scrape_case(context, link, filing_date):
                 # Check if it has the new structure and is complete
                 if isinstance(data, dict) and "metadata" in data:
                     meta = data["metadata"]
-                    if meta.get("scraped_links", 0) == meta.get("total_links", 0) and meta.get("total_links", 0) > 0:
-                        print(f"  Skipping {case_num} (Already scraped: {meta['scraped_links']}/{meta['total_links']} links)")
+                    if (
+                        meta.get("scraped_links", 0) == meta.get("total_links", 0)
+                        and meta.get("total_links", 0) > 0
+                    ):
+                        print(
+                            f"  Skipping {case_num} (Already scraped: {meta['scraped_links']}/{meta['total_links']} links)"
+                        )
                         return
         except Exception as e:
             print(f"  Error reading existing JSON for {case_num}: {e}")
@@ -219,27 +238,37 @@ async def scrape_case(context, link, filing_date):
     page = await context.new_page()
     try:
         await page.goto(link)
-        
+
         # Wait for page to load or Cloudflare to pass
         print("  Waiting for page load...", end="", flush=True)
-        for _ in range(10): # Wait up to 10 seconds
+        for _ in range(10):  # Wait up to 10 seconds
             # 1. Check for Cloudflare
             try:
                 title = await page.title()
                 content = await page.content()
-                if "Just a moment" in title or "Cloudflare" in title or "challenge-platform" in content:
-                    print("\r  !!! CLOUDFLARE DETECTED !!! Please solve manually.   ", end="", flush=True)
+                if (
+                    "Just a moment" in title
+                    or "Cloudflare" in title
+                    or "challenge-platform" in content
+                ):
+                    print(
+                        "\r  !!! CLOUDFLARE DETECTED !!! Please solve manually.   ",
+                        end="",
+                        flush=True,
+                    )
                     await asyncio.sleep(2)
                     continue
-                
+
                 # 2. Check for Restricted Case (CCP 1161.2)
-                if "Per CCP 1161.2" in content or "Case Is Not Available For Viewing" in content:
-                    print(f"\r  Case {case_num} is RESTRICTED (CCP 1161.2). Saving status.      ")
+                if (
+                    "Per CCP 1161.2" in content
+                    or "Case Is Not Available For Viewing" in content
+                ):
+                    print(
+                        f"\r  Case {case_num} is RESTRICTED (CCP 1161.2). Saving status.      "
+                    )
                     output_data = {
-                        "metadata": {
-                            "status": "restricted",
-                            "reason": "CCP 1161.2"
-                        }
+                        "metadata": {"status": "restricted", "reason": "CCP 1161.2"}
                     }
                     with open(json_path, "w") as f:
                         json.dump(output_data, f, indent=2)
@@ -252,17 +281,21 @@ async def scrape_case(context, link, filing_date):
             if await page.locator('select[name="example_length"]').is_visible():
                 print("\r  Page loaded.                                         ")
                 break
-            
+
             await asyncio.sleep(1)
             print(".", end="", flush=True)
         else:
             print("\n  Timed out waiting for page/dropdown.")
-            raise BrowserStuckError("Timeout waiting for case page load", failed_case_num=case_num)
+            raise BrowserStuckError(
+                "Timeout waiting for case page load", failed_case_num=case_num
+            )
 
         # Select "All" entries
         try:
-            await page.select_option('select[name="example_length"]', "-1", timeout=3000)
-            await page.wait_for_timeout(1000) # Wait for table reload
+            await page.select_option(
+                'select[name="example_length"]', "-1", timeout=3000
+            )
+            await page.wait_for_timeout(1000)  # Wait for table reload
         except Exception as e:
             print(f"  Could not select 'All' in case view: {e}")
 
@@ -272,24 +305,24 @@ async def scrape_case(context, link, filing_date):
         rows = page.locator("#example tbody tr")
         count = await rows.count()
         print(f"  Found {count} actions.")
-        
+
         total_links = 0
-        
+
         # Phase 1: Extraction & Task Collection
         for i in range(count):
             row = rows.nth(i)
             cols = row.locator("td")
-            
+
             # Extract columns
             action_date = await cols.nth(0).inner_text()
             proceedings = await cols.nth(1).inner_text()
             fee = await cols.nth(3).inner_text()
-            
+
             # Check for Document View Link
             doc_link_el = cols.nth(2).locator("a")
             doc_url = None
             doc_filename = None
-            
+
             if await doc_link_el.count() > 0:
                 total_links += 1
                 doc_url = await doc_link_el.get_attribute("href")
@@ -302,47 +335,53 @@ async def scrape_case(context, link, filing_date):
                         doc_id = match.group(1)
                     else:
                         doc_id = "Unknown"
-                    
+
                     # Filename: {action_date}_{doc_id}.pdf
                     doc_filename = f"{action_date}_{doc_id}.pdf"
-                    
-                    # Add to download tasks
-                    download_tasks.append(save_doc(context, doc_url, case_dir, doc_filename))
 
-            actions.append({
-                "date": action_date,
-                "proceedings": proceedings,
-                "fee": fee,
-                "doc_id": doc_id if doc_url else None,
-                "doc_filename": doc_filename
-            })
-            
+                    # Add to download tasks
+                    download_tasks.append(
+                        save_doc(context, doc_url, case_dir, doc_filename)
+                    )
+
+            actions.append(
+                {
+                    "date": action_date,
+                    "proceedings": proceedings,
+                    "fee": fee,
+                    "doc_id": doc_id if doc_url else None,
+                    "doc_filename": doc_filename,
+                }
+            )
+
         # Phase 2: Parallel Execution
         if download_tasks:
             print(f"  Downloading {len(download_tasks)} documents in parallel...")
             await asyncio.gather(*download_tasks)
-            
+
         # Phase 3: Verification & Counting
         scraped_links = 0
         for action in actions:
             if action["doc_filename"]:
                 if (case_dir / action["doc_filename"]).exists():
                     scraped_links += 1
-            
+
         # Save Register of Actions JSON with Metadata
         output_data = {
             "metadata": {
                 "total_entries": count,
                 "total_links": total_links,
-                "scraped_links": scraped_links
+                "scraped_links": scraped_links,
             },
-            "actions": actions
+            "actions": actions,
         }
-        
+
         with open(json_path, "w") as f:
             json.dump(output_data, f, indent=2)
-        print(f"  Saved register of actions to {json_path} (Links: {scraped_links}/{total_links})")
-            
+        print(
+            f"  Saved register of actions to {json_path} (Links: {scraped_links}/{total_links})"
+        )
+
     except BrowserStuckError:
         raise
     except Exception as e:
@@ -350,14 +389,15 @@ async def scrape_case(context, link, filing_date):
     finally:
         await page.close()
 
+
 def update_day_summary(date_str, total_cases=None):
     """Updates the day_summary.json for a given date."""
     date_dir = Path(f"data/{date_str}")
     if not date_dir.exists():
         return {"fully_completed": False}
-        
+
     summary_path = date_dir / "day_summary.json"
-    
+
     # Load existing summary to preserve total_cases if not provided
     current_summary = {}
     if summary_path.exists():
@@ -366,10 +406,10 @@ def update_day_summary(date_str, total_cases=None):
                 current_summary = json.load(f)
         except:
             pass
-            
+
     if total_cases is None:
         total_cases = current_summary.get("total_cases", 0)
-        
+
     # Count scraped cases
     scraped_cases = 0
     for case_dir in date_dir.iterdir():
@@ -384,44 +424,49 @@ def update_day_summary(date_str, total_cases=None):
                             # Check if restricted OR fully scraped
                             if meta.get("status") == "restricted":
                                 scraped_cases += 1
-                            elif meta.get("scraped_links", 0) == meta.get("total_links", 0):
+                            elif meta.get("scraped_links", 0) == meta.get(
+                                "total_links", 0
+                            ):
                                 scraped_cases += 1
                 except:
                     pass
 
     fully_completed = (total_cases > 0) and (scraped_cases >= total_cases)
-    
+
     summary = {
         "date": date_str,
         "total_cases": total_cases,
         "scraped_cases": scraped_cases,
-        "fully_completed": fully_completed
+        "fully_completed": fully_completed,
     }
-    
+
     with open(summary_path, "w") as f:
         json.dump(summary, f, indent=2)
-        
+
     return summary
+
 
 async def scrape_date(page, date_str, resume_case_num=None):
     print(f"Processing date: {date_str}")
-    
+
     # Check if day is already fully scraped
     summary = update_day_summary(date_str)
     if summary.get("fully_completed") and not resume_case_num:
-        print(f"  Day {date_str} fully scraped ({summary['scraped_cases']}/{summary['total_cases']}). Skipping.")
+        print(
+            f"  Day {date_str} fully scraped ({summary['scraped_cases']}/{summary['total_cases']}). Skipping."
+        )
         return
 
     try:
         # Fill FilingDate
         await page.fill("#FilingDate", date_str)
-        
+
         # Click Search
         await page.get_by_role("button", name="Search").click()
-        
+
         # Wait for results to load
-        await page.wait_for_timeout(1000) 
-        
+        await page.wait_for_timeout(1000)
+
         # Check for "No cases found"
         try:
             results_count = page.locator("#resultsCount")
@@ -431,14 +476,16 @@ async def scrape_date(page, date_str, resume_case_num=None):
                     print(f"No cases found for {date_str}. Skipping.")
                     return
         except Exception as e:
-            pass 
+            pass
 
         # Select "All" entries
         try:
-            await page.select_option('select[name="example_length"]', "-1", timeout=5000)
+            await page.select_option(
+                'select[name="example_length"]', "-1", timeout=5000
+            )
             print("Selected 'All' entries.")
-            await page.wait_for_timeout(1000) 
-            
+            await page.wait_for_timeout(1000)
+
             # Print entry count
             try:
                 info_text = await page.locator("#example_info").inner_text()
@@ -452,25 +499,27 @@ async def scrape_date(page, date_str, resume_case_num=None):
                     print(f"Entry count: {info_text} (Regex failed)")
             except Exception as e:
                 print(f"Could not get entry count: {e}")
-                
+
             # Scrape cases
             cases = await scrape_cases(page)
             print(f"Scraped {len(cases)} cases.")
-            
+
             # Process each case
             for case in cases:
                 # Fast Resume Logic
                 if resume_case_num:
-                    if case['case_num'] == resume_case_num:
-                        print(f"Found resume target: {resume_case_num}. Resuming scrape...")
-                        resume_case_num = None # Clear resume flag to proceed normally
+                    if case["case_num"] == resume_case_num:
+                        print(
+                            f"Found resume target: {resume_case_num}. Resuming scrape..."
+                        )
+                        resume_case_num = None  # Clear resume flag to proceed normally
                     else:
                         # print(f"Skipping {case['case_num']} (Fast Resume seeking {resume_case_num})")
                         continue
 
-                if case['link']:
-                    await scrape_case(page.context, case['link'], date_str)
-                    await asyncio.sleep(2) 
+                if case["link"]:
+                    await scrape_case(page.context, case["link"], date_str)
+                    await asyncio.sleep(2)
 
             # Update summary at the end of the day
             update_day_summary(date_str)
@@ -485,34 +534,37 @@ async def scrape_date(page, date_str, resume_case_num=None):
     except Exception as e:
         print(f"Error processing {date_str}: {e}")
 
+
 async def run_search_loop(page, dates, resume_case_num=None):
     print("Starting search loop...")
     # Click "Search by New Filings" tab
     await page.click("#ui-id-3")
     print("Clicked 'Search by New Filings' tab.")
-    
+
     while dates:
         date_str = dates[0]
-        
+
         # Skip weekends
         from datetime import datetime
+
         dt = datetime.strptime(date_str, "%Y-%m-%d")
-        if dt.weekday() >= 5: # 5=Sat, 6=Sun
+        if dt.weekday() >= 5:  # 5=Sat, 6=Sun
             print(f"Skipping weekend: {date_str}")
             dates.pop(0)
             continue
-            
+
         # Pass resume_case_num only to the first date in the list (the one we failed on)
         # For subsequent dates, resume_case_num should be None
         await scrape_date(page, date_str, resume_case_num)
-        resume_case_num = None 
-        
-        dates.pop(0) # Remove date after successful processing
+        resume_case_num = None
+
+        dates.pop(0)  # Remove date after successful processing
+
 
 async def monitor_browser(dates, resume_case_num=None):
     cdp = f"http://localhost:{CHROME_PORT}"
     print("Starting browser monitor...")
-    
+
     # Wait for Cloudflare to be solved (SessionID in URL)
     while True:
         try:
@@ -522,7 +574,7 @@ async def monitor_browser(dates, resume_case_num=None):
                     context = await browser.new_context()
                 else:
                     context = browser.contexts[0]
-                
+
                 # Find the tab with the target URL
                 page = None
                 for ctx in browser.contexts:
@@ -530,77 +582,94 @@ async def monitor_browser(dates, resume_case_num=None):
                         if "SessionID=" in pg.url:
                             page = pg
                             break
-                    if page: break
-                
+                    if page:
+                        break
+
                 if page:
-                    print("\n" + "="*50)
+                    print("\n" + "=" * 50)
                     print("SUCCESS! Cloudflare challenge passed.")
-                    
+
                     # Extract SessionID
                     url_parts = urlparse(page.url)
                     query = parse_qs(url_parts.query)
                     session_id = query.get("SessionID", ["Unknown"])[0]
                     print(f"SessionID: {session_id}")
-                    
+
                     # Print Cookies
                     cookies = await context.cookies()
                     print(f"Cookies: {cookies}")
-                    print("="*50 + "\n")
-                    
+                    print("=" * 50 + "\n")
+
                     print("Playwright is now attached and controlling the browser.")
-                    
+
                     # Run the search loop with the remaining dates
                     await run_search_loop(page, dates, resume_case_num)
-                    return # Done with all dates
-                
+                    return  # Done with all dates
+
                 else:
-                    print("Waiting for Cloudflare challenge... (checking again in 3s)", end="\r")
+                    print(
+                        "Waiting for Cloudflare challenge... (checking again in 3s)",
+                        end="\r",
+                    )
                     await asyncio.sleep(3)
-                    
+
         except BrowserStuckError:
-            raise # Propagate up to main to trigger restart
+            raise  # Propagate up to main to trigger restart
         except Exception as e:
             print(f"Monitor error: {e}")
             await asyncio.sleep(3)
+
 
 async def main():
     global CHROME_PORT, START_DATE, END_DATE, CHROME_PROFILE
 
     parser = argparse.ArgumentParser(description="SF Scraper Worker")
-    parser.add_argument("--port", type=int, default=9222, help="Chrome remote debugging port")
-    parser.add_argument("--start-date", type=str, default="2015-01-01", help="Start date (YYYY-MM-DD)")
-    parser.add_argument("--end-date", type=str, default="2015-01-10", help="End date (YYYY-MM-DD)")
-    parser.add_argument("--max-concurrent", type=int, default=5, help="Max concurrent downloads")
+    parser.add_argument(
+        "--port", type=int, default=9222, help="Chrome remote debugging port"
+    )
+    parser.add_argument(
+        "--start-date", type=str, default="2015-01-01", help="Start date (YYYY-MM-DD)"
+    )
+    parser.add_argument(
+        "--end-date", type=str, default="2015-01-10", help="End date (YYYY-MM-DD)"
+    )
+    parser.add_argument(
+        "--max-concurrent", type=int, default=5, help="Max concurrent downloads"
+    )
     args = parser.parse_args()
 
     CHROME_PORT = args.port
     START_DATE = args.start_date
     END_DATE = args.end_date
     CHROME_PROFILE = Path.home() / f".sf_profile_{CHROME_PORT}"
-    
+
     # Initialize Semaphore with configured limit
     global DOWNLOAD_SEMAPHORE
     DOWNLOAD_SEMAPHORE = asyncio.Semaphore(args.max_concurrent)
 
-    print(f"Worker starting: Port {CHROME_PORT}, Dates {START_DATE} to {END_DATE}, Max Concurrent: {args.max_concurrent}")
+    print(
+        f"Worker starting: Port {CHROME_PORT}, Dates {START_DATE} to {END_DATE}, Max Concurrent: {args.max_concurrent}"
+    )
 
     dates = get_dates()
     resume_case_num = None
-    
+
     while dates:
         print(f"\n--- Starting Session. Remaining dates: {len(dates)} ---")
         if resume_case_num:
             print(f"Resuming from case: {resume_case_num}")
 
         launch_chrome()
-        
+
         # Initial navigation
         await open_sf_page()
-        
+
         # Wait a bit before attaching monitor
-        print("Waiting 1 second before attaching monitor to allow Cloudflare check to proceed...")
+        print(
+            "Waiting 1 second before attaching monitor to allow Cloudflare check to proceed..."
+        )
         await asyncio.sleep(1)
-        
+
         try:
             await monitor_browser(dates, resume_case_num)
             print("All dates processed successfully!")
@@ -618,6 +687,7 @@ async def main():
             print("Restarting browser session...")
             kill_chrome()
             await asyncio.sleep(2)
+
 
 if __name__ == "__main__":
     try:

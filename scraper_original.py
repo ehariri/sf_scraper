@@ -5,13 +5,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Optional
 
-from playwright.async_api import (
-    BrowserContext,
-    Browser,
-    Page,
-    TimeoutError as PlaywrightTimeoutError,
-    async_playwright,
-)
+from playwright.async_api import Browser, BrowserContext, Page
+from playwright.async_api import TimeoutError as PlaywrightTimeoutError
+from playwright.async_api import async_playwright
 
 ENTRY_URL = "https://sf.courts.ca.gov/online-services/case-information"
 DEFAULT_USER_DATA_DIR = Path.home() / ".sf_scraper" / "chromium"
@@ -36,7 +32,9 @@ def ensure_profile_dir(path: Path) -> Path:
     return path
 
 
-async def launch_context(headless: bool, profile_dir: Optional[Path], cdp_endpoint: Optional[str]):
+async def launch_context(
+    headless: bool, profile_dir: Optional[Path], cdp_endpoint: Optional[str]
+):
     """
     ALWAYS launch a persistent real Chrome profile, never Playwright's automation Chromium.
     This is required for Cloudflare (cf_clearance) to work interactively.
@@ -62,6 +60,7 @@ async def launch_context(headless: bool, profile_dir: Optional[Path], cdp_endpoi
 
     return playwright, context
 
+
 async def open_civil_query(page: Page, timeout_ms: Optional[int] = None) -> Page:
     await page.goto(ENTRY_URL, wait_until="domcontentloaded", timeout=timeout_ms)
     access_link = page.get_by_role("link", name="Access Now").first
@@ -82,11 +81,10 @@ async def interactive_setup(
     profile_dir: Optional[Path],
     cdp_endpoint: Optional[str],
 ) -> None:
-
     playwright, context = await launch_context(
-        headless=False,                     # MUST be non-headless
+        headless=False,  # MUST be non-headless
         profile_dir=profile_dir,
-        cdp_endpoint=None,                  # ignore CDP for interactive
+        cdp_endpoint=None,  # ignore CDP for interactive
     )
 
     page = context.pages[0] if context.pages else await context.new_page()
