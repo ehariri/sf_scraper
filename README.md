@@ -34,16 +34,19 @@ This project automates the scraping of civil case data from the San Francisco Su
 
 This is the fastest way to scrape a range of dates.
 
-1.  **Configure**: Edit `sf_launcher.py` to set your desired `START_DATE`, `END_DATE`, and `NUM_WORKERS`.
-    ```python
-    START_DATE = "2015-01-01"
-    END_DATE = "2015-01-10"
-    NUM_WORKERS = 3
-    ```
+1.  **Configure**: You can configure the scraper by editing `sf_launcher.py` or passing arguments directly.
+    *   `--start-date`: Start date (YYYY-MM-DD)
+    *   `--end-date`: End date (YYYY-MM-DD)
+    *   `--num-workers`: Number of parallel Chrome instances (default: 3)
+    *   `--max-concurrent`: Max concurrent downloads per worker (default: 5)
 
 2.  **Run**:
     ```bash
+    # Default (3 workers, 5 concurrent downloads)
     python sf_launcher.py
+
+    # Custom configuration
+    python sf_launcher.py --start-date 2015-01-01 --end-date 2015-02-01 --num-workers 5 --max-concurrent 10
     ```
 
 3.  **Solve Cloudflare**:

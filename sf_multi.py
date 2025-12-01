@@ -149,7 +149,7 @@ from pathlib import Path
 from urllib.parse import urlparse, parse_qs
 
 # Semaphore to limit concurrent downloads
-DOWNLOAD_SEMAPHORE = asyncio.Semaphore(5)
+DOWNLOAD_SEMAPHORE = None # Initialized in main()
 
 async def save_doc(context, url, folder, filename):
     async with DOWNLOAD_SEMAPHORE:
@@ -570,14 +570,19 @@ async def main():
     parser.add_argument("--port", type=int, default=9222, help="Chrome remote debugging port")
     parser.add_argument("--start-date", type=str, default="2015-01-01", help="Start date (YYYY-MM-DD)")
     parser.add_argument("--end-date", type=str, default="2015-01-10", help="End date (YYYY-MM-DD)")
+    parser.add_argument("--max-concurrent", type=int, default=5, help="Max concurrent downloads")
     args = parser.parse_args()
 
     CHROME_PORT = args.port
     START_DATE = args.start_date
     END_DATE = args.end_date
     CHROME_PROFILE = Path.home() / f".sf_profile_{CHROME_PORT}"
+    
+    # Initialize Semaphore with configured limit
+    global DOWNLOAD_SEMAPHORE
+    DOWNLOAD_SEMAPHORE = asyncio.Semaphore(args.max_concurrent)
 
-    print(f"Worker starting: Port {CHROME_PORT}, Dates {START_DATE} to {END_DATE}")
+    print(f"Worker starting: Port {CHROME_PORT}, Dates {START_DATE} to {END_DATE}, Max Concurrent: {args.max_concurrent}")
 
     dates = get_dates()
     resume_case_num = None
