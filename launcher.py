@@ -61,7 +61,7 @@ def main():
         print(f"Launching Worker {i+1} on port {port}: {worker_start} to {worker_end} ({len(chunk)} days)")
         
         cmd = [
-            sys.executable, "sf_multi.py",
+            sys.executable, "worker.py",
             "--port", str(port),
             "--start-date", worker_start,
             "--end-date", worker_end,

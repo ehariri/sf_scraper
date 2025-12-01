@@ -13,10 +13,10 @@ This project automates the scraping of civil case data from the San Francisco Su
 
 ## Scripts
 
-*   **`sf_launcher.py`**: The main entry point for multi-process scraping. It splits a date range into chunks and launches multiple worker processes.
-*   **`sf_multi.py`**: The worker script used by `sf_launcher.py`. It handles the actual scraping for a assigned date range and port.
-*   **`sf_parallel.py`**: A standalone script for single-process scraping with parallel document downloads.
-*   **`sf_man.py`**: The original single-process scraper (legacy).
+*   **`launcher.py`**: The main entry point for multi-process scraping. It splits a date range into chunks and launches multiple worker processes.
+*   **`worker.py`**: The worker script used by `launcher.py`. It handles the actual scraping for a assigned date range and port.
+*   **`scraper.py`**: A standalone script for single-process scraping with parallel document downloads.
+*   **`legacy.py`**: The original single-process scraper (legacy).
 
 ## Setup
 
@@ -34,7 +34,7 @@ This project automates the scraping of civil case data from the San Francisco Su
 
 This is the fastest way to scrape a range of dates.
 
-1.  **Configure**: You can configure the scraper by editing `sf_launcher.py` or passing arguments directly.
+1.  **Configure**: You can configure the scraper by editing `launcher.py` or passing arguments directly.
     *   `--start-date`: Start date (YYYY-MM-DD)
     *   `--end-date`: End date (YYYY-MM-DD)
     *   `--num-workers`: Number of parallel Chrome instances (default: 3)
@@ -43,10 +43,10 @@ This is the fastest way to scrape a range of dates.
 2.  **Run**:
     ```bash
     # Default (3 workers, 5 concurrent downloads)
-    python sf_launcher.py
+    python launcher.py
 
     # Custom configuration
-    python sf_launcher.py --start-date 2015-01-01 --end-date 2015-02-01 --num-workers 5 --max-concurrent 10
+    python launcher.py --start-date 2015-01-01 --end-date 2015-02-01 --num-workers 5 --max-concurrent 10
     ```
 
 3.  **Solve Cloudflare**:
@@ -58,11 +58,11 @@ This is the fastest way to scrape a range of dates.
 
 To scrape a specific date range using a single browser instance:
 
-1.  **Configure**: Edit `sf_parallel.py` to set `START_DATE` and `END_DATE`.
+1.  **Configure**: Edit `scraper.py` to set `START_DATE` and `END_DATE`.
 
 2.  **Run**:
     ```bash
-    python sf_parallel.py
+    python scraper.py
     ```
 
 3.  **Solve Cloudflare**: Solve the challenge in the opened Chrome window.
