@@ -1,3 +1,4 @@
+import argparse
 import asyncio
 import json
 import os
@@ -11,12 +12,34 @@ from urllib.parse import parse_qs, urlparse
 
 from playwright.async_api import async_playwright
 
-# --- Configuration ---
+# --- Configuration (defaults, can be overridden by CLI args) ---
 CHROME_PORT = 9222
 TARGET_URL = "https://webapps.sftc.org/ci/CaseInfo.dll"
-START_DATE = "2015-01-01"
-END_DATE = "2015-01-10"
+START_DATE = "2020-01-01"
+END_DATE = "2020-01-10"
 CHROME_PROFILE = Path.home() / ".sf_manual_profile"
+
+# Federal holidays that courts are definitely closed
+# Format: (month, day) for fixed holidays, or computed for floating holidays
+def get_federal_holidays(year):
+    """Returns a set of (month, day) tuples for federal holidays in a given year."""
+    holidays = set()
+    
+    # Fixed holidays
+    holidays.add((1, 1))    # New Year's Day
+    holidays.add((7, 4))    # Independence Day  
+    holidays.add((12, 25))  # Christmas Day
+    
+    # Thanksgiving (4th Thursday of November)
+    nov_first = datetime(year, 11, 1)
+    # Find first Thursday
+    days_until_thursday = (3 - nov_first.weekday()) % 7
+    first_thursday = nov_first + timedelta(days=days_until_thursday)
+    # 4th Thursday
+    thanksgiving = first_thursday + timedelta(weeks=3)
+    holidays.add((11, thanksgiving.day))
+    
+    return holidays
 
 
 # --- Custom Exception ---
@@ -29,19 +52,43 @@ class BrowserStuckError(Exception):
 
 
 def get_dates():
+    """Generate list of dates to scrape, excluding weekends and federal holidays."""
     start = datetime.strptime(START_DATE, "%Y-%m-%d")
     end = datetime.strptime(END_DATE, "%Y-%m-%d")
     dates = []
     curr = start
+    
+    # Build set of all holidays in the date range
+    years_in_range = set(range(start.year, end.year + 1))
+    all_holidays = set()
+    for year in years_in_range:
+        for month, day in get_federal_holidays(year):
+            all_holidays.add((year, month, day))
+    
     while curr <= end:
+        # Skip weekends (5=Saturday, 6=Sunday)
+        if curr.weekday() >= 5:
+            curr += timedelta(days=1)
+            continue
+        
+        # Skip federal holidays
+        if (curr.year, curr.month, curr.day) in all_holidays:
+            print(f"[INFO] Skipping federal holiday: {curr.strftime('%Y-%m-%d')}")
+            curr += timedelta(days=1)
+            continue
+            
         dates.append(curr.strftime("%Y-%m-%d"))
         curr += timedelta(days=1)
+    
     return dates
 
 
 def launch_chrome():
-    """Launches a real Chrome instance with remote debugging enabled."""
-    print("Launching real Chrome...")
+    """Launches a real Chrome instance with remote debugging enabled.
+    
+    Uses -g flag to prevent Chrome from coming to the foreground.
+    """
+    print("Launching real Chrome (background mode)...")
     CHROME_PROFILE.mkdir(exist_ok=True)
 
     # Check if Chrome is already running on port 9222
@@ -55,9 +102,10 @@ def launch_chrome():
     # MacOS specific Chrome path
     CHROME_PATH = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 
+    # -g = don't bring to foreground, -n = open new instance, -a = specify app
     cmd = [
         "open",
-        "-na",
+        "-gna",  # -g prevents focus stealing
         "Google Chrome",
         "--args",
         f"--user-data-dir={CHROME_PROFILE}",
@@ -156,45 +204,89 @@ import json
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
-# Semaphore to limit concurrent downloads
-DOWNLOAD_SEMAPHORE = asyncio.Semaphore(5)
+# Note: DOWNLOAD_SEMAPHORE is created per-session in scrape_case to avoid event loop issues
+# Lock for thread-safe register updates
+import threading
+_register_lock = threading.Lock()
 
 
-async def save_doc(context, url, folder, filename):
-    async with DOWNLOAD_SEMAPHORE:
+async def save_doc(semaphore, context, url, folder, filename, json_path=None, action_idx=None):
+    """Download a document and update register on success for crash recovery."""
+    async with semaphore:
         folder.mkdir(parents=True, exist_ok=True)
         file_path = folder / filename
 
         if file_path.exists():
-            # print(f"    Skipping existing file: {filename}")
-            return
+            # Skip if file exists and is reasonably sized
+            if file_path.stat().st_size > 5000:
+                return True
+            else:
+                file_path.unlink()  # Remove small/broken files
 
-        print(f"    Downloading {filename}...")
+        print(f"    [DL] {filename}...")
 
         for attempt in range(3):
             try:
-                # Note: The 'View' link might be a redirect or direct download.
-                # Using context.request.get should handle cookies/session.
                 response = await context.request.get(url)
 
                 if response.status == 200:
                     body = await response.body()
+                    
+                    # Validate it's actually a PDF (not Cloudflare challenge HTML)
+                    if len(body) < 5000 or b'%PDF' not in body[:100]:
+                        print(f"    [FAIL] {filename}: Got Cloudflare challenge, not PDF (Attempt {attempt+1}/3)")
+                        # Add extra delay when we hit Cloudflare
+                        await asyncio.sleep(5)
+                        continue
+                    
                     with open(file_path, "wb") as f:
                         f.write(body)
-                    print(f"    Saved {filename}")
-                    return  # Success
+                    print(f"    [OK] {filename}")
+                    
+                    # Update register immediately for crash recovery
+                    if json_path and action_idx is not None:
+                        _update_register_progress(json_path, action_idx, filename, True)
+                    
+                    return True
                 else:
-                    print(
-                        f"    Failed to download {filename}: Status {response.status} (Attempt {attempt+1}/3)"
-                    )
+                    print(f"    [FAIL] {filename}: Status {response.status} (Attempt {attempt+1}/3)")
 
             except Exception as e:
-                print(f"    Error saving doc {filename}: {e} (Attempt {attempt+1}/3)")
+                print(f"    [ERR] {filename}: {e} (Attempt {attempt+1}/3)")
 
-            # Wait before retrying
-            await asyncio.sleep(2 * (attempt + 1))
+            await asyncio.sleep(1 * (attempt + 1))
 
-        print(f"    Gave up on {filename} after 3 attempts.")
+        print(f"    [GAVE UP] {filename} after 3 attempts.")
+        
+        # Mark as failed in register
+        if json_path and action_idx is not None:
+            _update_register_progress(json_path, action_idx, filename, False)
+        
+        return False
+
+
+def _update_register_progress(json_path, action_idx, filename, success):
+    """Thread-safe update of register_of_actions.json after each download."""
+    with _register_lock:
+        try:
+            with open(json_path, "r") as f:
+                data = json.load(f)
+            
+            # Update the specific action's download status
+            if "actions" in data and action_idx < len(data["actions"]):
+                data["actions"][action_idx]["downloaded"] = success
+                data["actions"][action_idx]["download_time"] = datetime.now().isoformat()
+            
+            # Update scraped_links count
+            if "metadata" in data:
+                downloaded_count = sum(1 for a in data.get("actions", []) if a.get("downloaded") == True)
+                data["metadata"]["scraped_links"] = downloaded_count
+                data["metadata"]["last_updated"] = datetime.now().isoformat()
+            
+            with open(json_path, "w") as f:
+                json.dump(data, f, indent=2)
+        except Exception as e:
+            print(f"    [WARN] Could not update register: {e}")
 
 
 async def scrape_case(context, link, filing_date):
@@ -213,24 +305,40 @@ async def scrape_case(context, link, filing_date):
     case_dir.mkdir(parents=True, exist_ok=True)
     json_path = case_dir / "register_of_actions.json"
 
-    # Check for existing metadata to skip
+    # Check for existing metadata to skip already-completed cases
     if json_path.exists():
         try:
             with open(json_path, "r") as f:
                 data = json.load(f)
-                # Check if it has the new structure and is complete
                 if isinstance(data, dict) and "metadata" in data:
                     meta = data["metadata"]
+                    status = meta.get("status", "")
+                    
+                    # Skip if explicitly marked complete or restricted
+                    if status == "complete":
+                        print(
+                            f"  [SKIP] {case_num} already complete ({meta.get('scraped_links', 0)}/{meta.get('total_links', 0)} docs)"
+                        )
+                        return
+                    if status == "restricted":
+                        print(f"  [SKIP] {case_num} is restricted")
+                        return
+                    
+                    # Also skip if old format with matching counts
                     if (
                         meta.get("scraped_links", 0) == meta.get("total_links", 0)
                         and meta.get("total_links", 0) > 0
                     ):
                         print(
-                            f"  Skipping {case_num} (Already scraped: {meta['scraped_links']}/{meta['total_links']} links)"
+                            f"  [SKIP] {case_num} (Already scraped: {meta['scraped_links']}/{meta['total_links']} links)"
                         )
                         return
+                        
+                    # If status is pending or partial, we'll re-scrape
+                    if status in ["pending", "partial"]:
+                        print(f"  [DEBUG] {case_num} has status={status}, will re-scrape")
         except Exception as e:
-            print(f"  Error reading existing JSON for {case_num}: {e}")
+            print(f"  [DEBUG] Error reading existing JSON for {case_num}: {e}")
 
     print(f"  Scraping case: {link}")
     page = await context.new_page()
@@ -298,13 +406,18 @@ async def scrape_case(context, link, filing_date):
             print(f"  Could not select 'All' in case view: {e}")
 
         # Scrape Register of Actions
+        print(f"  [DEBUG] Extracting register of actions...")
         actions = []
         download_tasks = []
         rows = page.locator("#example tbody tr")
         count = await rows.count()
-        print(f"  Found {count} actions.")
+        print(f"  [DEBUG] Found {count} action rows in table.")
 
         total_links = 0
+        doc_id = None  # Initialize doc_id to avoid unbound variable
+        
+        # Create semaphore in the current event loop - use LOW concurrency to avoid Cloudflare rate limits
+        download_semaphore = asyncio.Semaphore(2)  # Only 2 concurrent downloads to avoid captcha
 
         # Phase 1: Extraction & Task Collection
         for i in range(count):
@@ -320,6 +433,7 @@ async def scrape_case(context, link, filing_date):
             doc_link_el = cols.nth(2).locator("a")
             doc_url = None
             doc_filename = None
+            current_doc_id = None
 
             if await doc_link_el.count() > 0:
                 total_links += 1
@@ -330,16 +444,17 @@ async def scrape_case(context, link, filing_date):
                     # It might be in the main query or nested in the 'URL' param
                     match = re.search(r"DocID%3D(\d+)", doc_url)
                     if match:
-                        doc_id = match.group(1)
+                        current_doc_id = match.group(1)
                     else:
-                        doc_id = "Unknown"
+                        current_doc_id = "Unknown"
 
                     # Filename: {action_date}_{doc_id}.pdf
-                    doc_filename = f"{action_date}_{doc_id}.pdf"
+                    doc_filename = f"{action_date}_{current_doc_id}.pdf"
 
-                    # Add to download tasks
+                    # Add to download tasks - pass json_path and action index for live tracking
                     download_tasks.append(
-                        save_doc(context, doc_url, case_dir, doc_filename)
+                        save_doc(download_semaphore, context, doc_url, case_dir, doc_filename,
+                                json_path=json_path, action_idx=i)
                     )
 
             actions.append(
@@ -347,29 +462,58 @@ async def scrape_case(context, link, filing_date):
                     "date": action_date,
                     "proceedings": proceedings,
                     "fee": fee,
-                    "doc_id": doc_id if doc_url else None,
+                    "doc_id": current_doc_id,
                     "doc_filename": doc_filename,
+                    "doc_url": doc_url,
                 }
             )
 
+        # *** SAVE REGISTER OF ACTIONS FIRST (before downloading) ***
+        print(f"  [DEBUG] Saving register of actions FIRST (status=pending)...")
+        started_at = datetime.now().isoformat()
+        output_data = {
+            "metadata": {
+                "status": "pending",
+                "total_entries": count,
+                "total_links": total_links,
+                "scraped_links": 0,
+                "started_at": started_at,
+            },
+            "actions": actions,
+        }
+        with open(json_path, "w") as f:
+            json.dump(output_data, f, indent=2)
+        print(f"  [DEBUG] Register saved: {count} actions, {total_links} documents to download")
+
         # Phase 2: Parallel Execution
         if download_tasks:
-            print(f"  Downloading {len(download_tasks)} documents in parallel...")
-            await asyncio.gather(*download_tasks)
+            print(f"  [DEBUG] Starting download of {len(download_tasks)} documents in parallel...")
+            results = await asyncio.gather(*download_tasks, return_exceptions=True)
+            
+            # Count successful downloads
+            success_count = sum(1 for r in results if r is True)
+            fail_count = sum(1 for r in results if r is False or isinstance(r, Exception))
+            print(f"  [DEBUG] Downloads complete: {success_count} succeeded, {fail_count} failed.")
+        else:
+            print(f"  [DEBUG] No documents to download for this case.")
 
         # Phase 3: Verification & Counting
+        print(f"  [DEBUG] Verifying downloaded files...")
         scraped_links = 0
         for action in actions:
             if action["doc_filename"]:
                 if (case_dir / action["doc_filename"]).exists():
                     scraped_links += 1
 
-        # Save Register of Actions JSON with Metadata
+        # Update Register of Actions JSON with final status
         output_data = {
             "metadata": {
+                "status": "complete" if scraped_links == total_links else "partial",
                 "total_entries": count,
                 "total_links": total_links,
                 "scraped_links": scraped_links,
+                "started_at": started_at,
+                "completed_at": datetime.now().isoformat(),
             },
             "actions": actions,
         }
@@ -377,7 +521,7 @@ async def scrape_case(context, link, filing_date):
         with open(json_path, "w") as f:
             json.dump(output_data, f, indent=2)
         print(
-            f"  Saved register of actions to {json_path} (Links: {scraped_links}/{total_links})"
+            f"  [DONE] Saved register of actions: {scraped_links}/{total_links} documents downloaded"
         )
 
     except BrowserStuckError:
@@ -388,15 +532,20 @@ async def scrape_case(context, link, filing_date):
         await page.close()
 
 
-def update_day_summary(date_str, total_cases=None):
-    """Updates the day_summary.json for a given date."""
+def update_day_summary(date_str, total_cases=None, cases_list=None):
+    """Updates the day_summary.json for a given date.
+    
+    Args:
+        date_str: The date string (YYYY-MM-DD)
+        total_cases: Total number of cases for this day
+        cases_list: List of case dicts with case_num, title, link
+    """
     date_dir = Path(f"data/{date_str}")
-    if not date_dir.exists():
-        return {"fully_completed": False}
+    date_dir.mkdir(parents=True, exist_ok=True)
 
     summary_path = date_dir / "day_summary.json"
 
-    # Load existing summary to preserve total_cases if not provided
+    # Load existing summary to preserve data if not provided
     current_summary = {}
     if summary_path.exists():
         try:
@@ -407,13 +556,18 @@ def update_day_summary(date_str, total_cases=None):
 
     if total_cases is None:
         total_cases = current_summary.get("total_cases", 0)
+    
+    if cases_list is None:
+        cases_list = current_summary.get("cases", [])
 
-    # Count scraped cases
+    # Count scraped cases by checking which have register_of_actions.json
     scraped_cases = 0
+    completed_cases = 0
     for case_dir in date_dir.iterdir():
         if case_dir.is_dir():
             json_path = case_dir / "register_of_actions.json"
             if json_path.exists():
+                scraped_cases += 1  # Started scraping this case
                 try:
                     with open(json_path, "r") as f:
                         data = json.load(f)
@@ -421,25 +575,33 @@ def update_day_summary(date_str, total_cases=None):
                             meta = data["metadata"]
                             # Check if restricted OR fully scraped
                             if meta.get("status") == "restricted":
-                                scraped_cases += 1
-                            elif meta.get("scraped_links", 0) == meta.get(
-                                "total_links", 0
+                                completed_cases += 1
+                            elif meta.get("status") == "complete":
+                                completed_cases += 1
+                            elif (
+                                meta.get("scraped_links", 0) == meta.get("total_links", 0)
+                                and meta.get("total_links", 0) > 0
                             ):
-                                scraped_cases += 1
+                                completed_cases += 1
                 except:
                     pass
 
-    fully_completed = (total_cases > 0) and (scraped_cases >= total_cases)
+    fully_completed = (total_cases > 0) and (completed_cases >= total_cases)
 
     summary = {
         "date": date_str,
         "total_cases": total_cases,
         "scraped_cases": scraped_cases,
+        "completed_cases": completed_cases,
         "fully_completed": fully_completed,
+        "cases": cases_list,
+        "last_updated": datetime.now().isoformat(),
     }
 
     with open(summary_path, "w") as f:
         json.dump(summary, f, indent=2)
+    
+    print(f"  [DEBUG] Day summary updated: {scraped_cases}/{total_cases} scraped, {completed_cases}/{total_cases} completed")
 
     return summary
 
@@ -485,22 +647,27 @@ async def scrape_date(page, date_str, resume_case_num=None):
             await page.wait_for_timeout(1000)
 
             # Print entry count
+            total_entries = 0
             try:
                 info_text = await page.locator("#example_info").inner_text()
                 match = re.search(r"of\s+([\d,]+)\s+entries", info_text)
                 if match:
                     total_entries = int(match.group(1).replace(",", ""))
-                    print(f"Entry count: {total_entries}")
-                    # Update summary with total count
-                    update_day_summary(date_str, total_cases=total_entries)
+                    print(f"  [DEBUG] Entry count from page: {total_entries}")
                 else:
-                    print(f"Entry count: {info_text} (Regex failed)")
+                    print(f"  [DEBUG] Entry count parsing failed: {info_text}")
             except Exception as e:
-                print(f"Could not get entry count: {e}")
+                print(f"  [DEBUG] Could not get entry count: {e}")
 
-            # Scrape cases
+            # Scrape cases from table
+            print(f"  [DEBUG] Extracting case list from table...")
             cases = await scrape_cases(page)
-            print(f"Scraped {len(cases)} cases.")
+            print(f"  [DEBUG] Extracted {len(cases)} cases from table.")
+            
+            # *** SAVE CASE LIST FIRST (before processing individual cases) ***
+            print(f"  [DEBUG] Saving day summary with case list FIRST...")
+            update_day_summary(date_str, total_cases=len(cases), cases_list=cases)
+            print(f"  [SAVED] Day {date_str}: {len(cases)} cases saved to day_summary.json")
 
             # Process each case
             for case in cases:
@@ -541,15 +708,6 @@ async def run_search_loop(page, dates, resume_case_num=None):
 
     while dates:
         date_str = dates[0]
-
-        # Skip weekends
-        from datetime import datetime
-
-        dt = datetime.strptime(date_str, "%Y-%m-%d")
-        if dt.weekday() >= 5:  # 5=Sat, 6=Sun
-            print(f"Skipping weekend: {date_str}")
-            dates.pop(0)
-            continue
 
         # Pass resume_case_num only to the first date in the list (the one we failed on)
         # For subsequent dates, resume_case_num should be None
@@ -655,10 +813,49 @@ async def main():
             print("Restarting browser session...")
             kill_chrome()
             await asyncio.sleep(2)
+    
+    # Clean up Chrome on successful completion
+    print("Cleaning up Chrome...")
+    kill_chrome()
+
+
+
+
+def parse_args():
+    """Parse command line arguments."""
+    global START_DATE, END_DATE
+    
+    parser = argparse.ArgumentParser(
+        description="SF Superior Court Scraper - scrapes civil case data"
+    )
+    parser.add_argument(
+        "--start-date",
+        type=str,
+        default=START_DATE,
+        help=f"Start date (YYYY-MM-DD), default: {START_DATE}"
+    )
+    parser.add_argument(
+        "--end-date",
+        type=str,
+        default=END_DATE,
+        help=f"End date (YYYY-MM-DD), default: {END_DATE}"
+    )
+    
+    args = parser.parse_args()
+    
+    # Update global config
+    START_DATE = args.start_date
+    END_DATE = args.end_date
+    
+    print(f"[CONFIG] Date range: {START_DATE} to {END_DATE}")
+    
+    return args
 
 
 if __name__ == "__main__":
     try:
+        args = parse_args()
         asyncio.run(main())
     except KeyboardInterrupt:
-        print("\nExiting...")
+        print("\nExiting... Cleaning up Chrome.")
+        kill_chrome()
