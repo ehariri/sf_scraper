@@ -3,6 +3,7 @@ import asyncio
 import json
 import os
 import re
+import shutil
 import signal
 import subprocess
 import time
@@ -636,6 +637,9 @@ async def main():
     parser.add_argument(
         "--max-concurrent", type=int, default=5, help="Max concurrent downloads"
     )
+    parser.add_argument(
+        "--clear", action="store_true", help="Clear existing data before scraping"
+    )
     args = parser.parse_args()
 
     CHROME_PORT = args.port
@@ -653,6 +657,13 @@ async def main():
 
     dates = get_dates()
     resume_case_num = None
+
+    if args.clear:
+        for date_str in dates:
+            date_dir = Path(f"data/{date_str}")
+            if date_dir.exists():
+                shutil.rmtree(date_dir)
+                print(f"Cleared data for {date_str}")
 
     while dates:
         print(f"\n--- Starting Session. Remaining dates: {len(dates)} ---")

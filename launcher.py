@@ -52,6 +52,11 @@ def main():
         default=5,
         help="Max concurrent downloads per worker",
     )
+    parser.add_argument(
+        "--clear",
+        action="store_true",
+        help="Clear existing data before scraping",
+    )
     args = parser.parse_args()
 
     START_DATE = args.start_date
@@ -92,6 +97,9 @@ def main():
             "--max-concurrent",
             str(MAX_CONCURRENT),
         ]
+
+        if args.clear:
+            cmd.append("--clear")
 
         # Launch process
         p = subprocess.Popen(cmd)
