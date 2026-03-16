@@ -13,9 +13,10 @@ This project automates the scraping of civil case data from the San Francisco Su
 
 ## Scripts
 
-*   **`launcher.py`**: The main entry point for multi-process scraping. It splits a date range into chunks and launches multiple worker processes.
-*   **`worker.py`**: The worker script used by `launcher.py`. It handles the actual scraping for a assigned date range and port.
-*   **`scraper.py`**: A standalone script for single-process scraping with parallel document downloads.
+*   **`launcher.py`**: The main entry point for multi-process scraping. It now launches the concurrent `fast_scraper` worker by default.
+*   **`fast_scraper/scraper.py`**: The fastest worker path. It opens case detail tabs concurrently, extracts tables in one browser-side pass, and downloads documents concurrently.
+*   **`worker.py`**: The older worker implementation retained for reference.
+*   **`scraper.py`**: A standalone single-process scraper with parallel document downloads.
 *   **`legacy.py`**: The original single-process scraper (legacy).
 
 ## Setup
@@ -38,15 +39,16 @@ This is the fastest way to scrape a range of dates.
     *   `--start-date`: Start date (YYYY-MM-DD)
     *   `--end-date`: End date (YYYY-MM-DD)
     *   `--num-workers`: Number of parallel Chrome instances (default: 3)
-    *   `--max-concurrent`: Max concurrent downloads per worker (default: 5)
+    *   `--max-concurrent-cases`: Max concurrent case tabs per worker (default: 2)
+    *   `--max-concurrent-downloads`: Max concurrent document downloads per worker (default: 6)
 
 2.  **Run**:
     ```bash
-    # Default (3 workers, 5 concurrent downloads)
+    # Default (3 workers, 2 concurrent case tabs, 6 concurrent downloads)
     python launcher.py
 
     # Custom configuration
-    python launcher.py --start-date 2015-01-01 --end-date 2015-02-01 --num-workers 5 --max-concurrent 10
+    python launcher.py --start-date 2015-01-01 --end-date 2015-02-01 --num-workers 5 --max-concurrent-cases 2 --max-concurrent-downloads 6
     ```
 
 3.  **Solve Cloudflare**:
@@ -89,5 +91,6 @@ data/
 ## Notes
 
 *   **Restricted Cases**: Cases marked "Per CCP 1161.2" or "Case Is Not Available For Viewing" are skipped, and their status is recorded.
-*   **Rate Limiting**: The scraper uses a semaphore to limit concurrent downloads to avoid server bans.
+*   **Rate Limiting**: The fast worker uses separate semaphores for concurrent case tabs and document downloads.
 *   **Browser Stuck**: If a browser hangs, the script attempts to kill and restart the process automatically.
+*   **Per-worker profiles**: Each launcher worker uses its own Chrome profile, which avoids profile lock contention when multiple browsers run in parallel.

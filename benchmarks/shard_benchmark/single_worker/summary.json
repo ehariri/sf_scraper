@@ -1,0 +1,95 @@
+{
+  "scenario": "single_worker",
+  "timed_out": false,
+  "wall_elapsed_seconds": 332.575,
+  "scraped_cases": 14,
+  "total_cases": 162,
+  "completed_cases_per_minute": 2.526,
+  "workers": [
+    {
+      "name": "w1",
+      "port": 9611,
+      "start_date": "2022-01-03",
+      "end_date": "2022-01-05",
+      "returncode": 0,
+      "command": [
+        "/Users/jovik/Desktop/docket_gen/sf_scraper_fork/.venv/bin/python",
+        "-u",
+        "/Users/jovik/Desktop/docket_gen/sf_scraper_fork/fast_scraper/scraper.py",
+        "--port",
+        "9611",
+        "--start-date",
+        "2022-01-03",
+        "--end-date",
+        "2022-01-05",
+        "--data-root",
+        "/Users/jovik/Desktop/docket_gen/sf_scraper_fork/benchmarks/shard_benchmark/single_worker/data",
+        "--disable-hf-upload",
+        "--keep-local-pdfs",
+        "--max-concurrent-cases",
+        "2",
+        "--max-concurrent-downloads",
+        "6",
+        "--retry-passes",
+        "0"
+      ],
+      "log_path": "/Users/jovik/Desktop/docket_gen/sf_scraper_fork/benchmarks/shard_benchmark/single_worker/logs/w1.log"
+    }
+  ],
+  "days": [
+    {
+      "date": "2022-01-03",
+      "scraped_cases": 6,
+      "total_cases": 48,
+      "fully_completed": false,
+      "last_run": {
+        "mode": "full_day",
+        "started_at": "2026-03-13T20:36:56Z",
+        "finished_at": "2026-03-13T20:38:21Z",
+        "elapsed_seconds": 85.295,
+        "case_count": 48,
+        "pending_case_count": 48,
+        "failed_case_count": 42,
+        "retry_rounds_run": 0,
+        "max_concurrent_cases": 2,
+        "max_concurrent_downloads": 6
+      }
+    },
+    {
+      "date": "2022-01-04",
+      "scraped_cases": 3,
+      "total_cases": 43,
+      "fully_completed": false,
+      "last_run": {
+        "mode": "full_day",
+        "started_at": "2026-03-13T20:38:21Z",
+        "finished_at": "2026-03-13T20:39:48Z",
+        "elapsed_seconds": 87.207,
+        "case_count": 43,
+        "pending_case_count": 43,
+        "failed_case_count": 40,
+        "retry_rounds_run": 0,
+        "max_concurrent_cases": 2,
+        "max_concurrent_downloads": 6
+      }
+    },
+    {
+      "date": "2022-01-05",
+      "scraped_cases": 5,
+      "total_cases": 71,
+      "fully_completed": false,
+      "last_run": {
+        "mode": "full_day",
+        "started_at": "2026-03-13T20:39:48Z",
+        "finished_at": "2026-03-13T20:42:16Z",
+        "elapsed_seconds": 148.166,
+        "case_count": 71,
+        "pending_case_count": 71,
+        "failed_case_count": 66,
+        "retry_rounds_run": 0,
+        "max_concurrent_cases": 2,
+        "max_concurrent_downloads": 6
+      }
+    }
+  ]
+}

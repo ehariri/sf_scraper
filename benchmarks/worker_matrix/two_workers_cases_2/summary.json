@@ -1,0 +1,179 @@
+{
+  "scenario": "two_workers_cases_2",
+  "worker_count": 2,
+  "max_concurrent_cases": 2,
+  "timed_out": false,
+  "wall_elapsed_seconds": 429.464,
+  "scraped_cases": 18,
+  "total_cases": 262,
+  "completed_cases_per_minute": 2.515,
+  "workers": [
+    {
+      "name": "w1",
+      "port": 9631,
+      "start_date": "2022-01-03",
+      "end_date": "2022-01-05",
+      "returncode": 0,
+      "command": [
+        "/Users/jovik/Desktop/docket_gen/sf_scraper_fork/.venv/bin/python",
+        "-u",
+        "/Users/jovik/Desktop/docket_gen/sf_scraper_fork/fast_scraper/scraper.py",
+        "--port",
+        "9631",
+        "--start-date",
+        "2022-01-03",
+        "--end-date",
+        "2022-01-05",
+        "--data-root",
+        "/Users/jovik/Desktop/docket_gen/sf_scraper_fork/benchmarks/worker_matrix/two_workers_cases_2/data",
+        "--max-concurrent-cases",
+        "2",
+        "--disable-hf-upload",
+        "--keep-local-pdfs",
+        "--max-concurrent-downloads",
+        "6",
+        "--retry-passes",
+        "0",
+        "--search-timeout-ms",
+        "30000",
+        "--table-idle-timeout-ms",
+        "30000",
+        "--case-ready-poll-attempts",
+        "20"
+      ],
+      "log_path": "/Users/jovik/Desktop/docket_gen/sf_scraper_fork/benchmarks/worker_matrix/two_workers_cases_2/logs/w1.log"
+    },
+    {
+      "name": "w2",
+      "port": 9632,
+      "start_date": "2022-01-06",
+      "end_date": "2022-01-07",
+      "returncode": 0,
+      "command": [
+        "/Users/jovik/Desktop/docket_gen/sf_scraper_fork/.venv/bin/python",
+        "-u",
+        "/Users/jovik/Desktop/docket_gen/sf_scraper_fork/fast_scraper/scraper.py",
+        "--port",
+        "9632",
+        "--start-date",
+        "2022-01-06",
+        "--end-date",
+        "2022-01-07",
+        "--data-root",
+        "/Users/jovik/Desktop/docket_gen/sf_scraper_fork/benchmarks/worker_matrix/two_workers_cases_2/data",
+        "--max-concurrent-cases",
+        "2",
+        "--disable-hf-upload",
+        "--keep-local-pdfs",
+        "--max-concurrent-downloads",
+        "6",
+        "--retry-passes",
+        "0",
+        "--search-timeout-ms",
+        "30000",
+        "--table-idle-timeout-ms",
+        "30000",
+        "--case-ready-poll-attempts",
+        "20"
+      ],
+      "log_path": "/Users/jovik/Desktop/docket_gen/sf_scraper_fork/benchmarks/worker_matrix/two_workers_cases_2/logs/w2.log"
+    }
+  ],
+  "days": [
+    {
+      "date": "2022-01-03",
+      "scraped_cases": 5,
+      "total_cases": 48,
+      "fully_completed": false,
+      "last_run": {
+        "mode": "full_day",
+        "started_at": "2026-03-13T21:13:13Z",
+        "finished_at": "2026-03-13T21:15:26Z",
+        "elapsed_seconds": 132.36,
+        "case_count": 48,
+        "pending_case_count": 48,
+        "failed_case_count": 43,
+        "retry_rounds_run": 0,
+        "max_concurrent_cases": 2,
+        "max_concurrent_downloads": 6,
+        "case_launch_stagger_ms": 0
+      }
+    },
+    {
+      "date": "2022-01-04",
+      "scraped_cases": 2,
+      "total_cases": 43,
+      "fully_completed": false,
+      "last_run": {
+        "mode": "full_day",
+        "started_at": "2026-03-13T21:15:26Z",
+        "finished_at": "2026-03-13T21:17:28Z",
+        "elapsed_seconds": 122.177,
+        "case_count": 43,
+        "pending_case_count": 43,
+        "failed_case_count": 41,
+        "retry_rounds_run": 0,
+        "max_concurrent_cases": 2,
+        "max_concurrent_downloads": 6,
+        "case_launch_stagger_ms": 0
+      }
+    },
+    {
+      "date": "2022-01-05",
+      "scraped_cases": 4,
+      "total_cases": 71,
+      "fully_completed": false,
+      "last_run": {
+        "mode": "full_day",
+        "started_at": "2026-03-13T21:17:28Z",
+        "finished_at": "2026-03-13T21:20:10Z",
+        "elapsed_seconds": 162.367,
+        "case_count": 71,
+        "pending_case_count": 71,
+        "failed_case_count": 67,
+        "retry_rounds_run": 0,
+        "max_concurrent_cases": 2,
+        "max_concurrent_downloads": 6,
+        "case_launch_stagger_ms": 0
+      }
+    },
+    {
+      "date": "2022-01-06",
+      "scraped_cases": 3,
+      "total_cases": 48,
+      "fully_completed": false,
+      "last_run": {
+        "mode": "full_day",
+        "started_at": "2026-03-13T21:13:13Z",
+        "finished_at": "2026-03-13T21:15:11Z",
+        "elapsed_seconds": 117.643,
+        "case_count": 48,
+        "pending_case_count": 48,
+        "failed_case_count": 45,
+        "retry_rounds_run": 0,
+        "max_concurrent_cases": 2,
+        "max_concurrent_downloads": 6,
+        "case_launch_stagger_ms": 0
+      }
+    },
+    {
+      "date": "2022-01-07",
+      "scraped_cases": 4,
+      "total_cases": 52,
+      "fully_completed": false,
+      "last_run": {
+        "mode": "full_day",
+        "started_at": "2026-03-13T21:15:11Z",
+        "finished_at": "2026-03-13T21:17:33Z",
+        "elapsed_seconds": 142.385,
+        "case_count": 52,
+        "pending_case_count": 52,
+        "failed_case_count": 48,
+        "retry_rounds_run": 0,
+        "max_concurrent_cases": 2,
+        "max_concurrent_downloads": 6,
+        "case_launch_stagger_ms": 0
+      }
+    }
+  ]
+}
