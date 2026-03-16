@@ -4,7 +4,7 @@ from pathlib import Path
 from huggingface_hub import HfApi
 
 
-DEFAULT_REPO_ID = "Arifov/sf_superior_court"
+DEFAULT_REPO_ID = "please-the-bot/sf_superior_court"
 
 
 def main():

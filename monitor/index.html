@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SF Scraper Monitor</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <main class="page">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">SF Superior Court Pipeline</p>
+          <h1>Scrape and Sync Monitor</h1>
+          <p class="subhead">
+            Live view over local scrape coverage, local process health, and HF sync status.
+          </p>
+          <p class="scope-note">
+            Coverage and case counts are from the local `data/` tree unless a section explicitly says `HF`.
+          </p>
+        </div>
+        <div class="hero-meta">
+          <div class="meta-card">
+            <span class="label">Scope</span>
+            <strong id="scope-range">2020-2025</strong>
+          </div>
+          <div class="meta-card">
+            <span class="label">Updated</span>
+            <strong id="generated-at">-</strong>
+          </div>
+          <div class="meta-card">
+            <span class="label">Local Data</span>
+            <strong id="data-size">-</strong>
+          </div>
+        </div>
+      </header>
+
+      <nav class="tabs" aria-label="Monitor sections">
+        <button class="tab-button active" data-tab="services">Services</button>
+        <button class="tab-button" data-tab="calendar">Calendar</button>
+        <button class="tab-button" data-tab="logs">Logs</button>
+        <button class="tab-button" data-tab="coverage">Coverage</button>
+      </nav>
+
+      <section class="tab-panel active" data-tab-panel="services">
+        <section class="grid metrics" id="metric-cards"></section>
+
+        <section class="grid service-grid">
+          <article class="panel service-panel">
+            <div class="panel-header">
+              <h2>Local Scrape Service</h2>
+              <span id="scrape-status-badge" class="badge">-</span>
+            </div>
+            <div id="scrape-service"></div>
+          </article>
+          <article class="panel service-panel">
+            <div class="panel-header">
+              <h2>HF Sync Service</h2>
+              <span id="sync-status-badge" class="badge">-</span>
+            </div>
+            <div id="sync-service"></div>
+          </article>
+        </section>
+      </section>
+
+      <section class="tab-panel" data-tab-panel="calendar">
+        <section class="grid calendar-grid">
+          <article class="panel">
+            <div class="panel-header">
+              <h2>Local Coverage Calendar</h2>
+            </div>
+            <p class="calendar-note">
+              Darker cells mean fewer cases left to scrape. Untouched weekdays are separate from known zero-case days.
+            </p>
+            <div id="calendar-legend" class="calendar-legend"></div>
+            <div id="coverage-calendar" class="coverage-calendar"></div>
+          </article>
+        </section>
+      </section>
+
+      <section class="tab-panel" data-tab-panel="logs">
+        <section class="grid logs-grid">
+          <article class="panel">
+            <div class="panel-header">
+              <h2>Local Scrape Logs</h2>
+            </div>
+            <div id="scrape-logs"></div>
+          </article>
+          <article class="panel">
+            <div class="panel-header">
+              <h2>HF Sync Logs</h2>
+            </div>
+            <div id="sync-logs"></div>
+          </article>
+        </section>
+      </section>
+
+      <section class="tab-panel" data-tab-panel="coverage">
+        <section class="grid coverage-grid">
+          <article class="panel">
+            <div class="panel-header">
+              <h2>Local Year Coverage</h2>
+            </div>
+            <div id="year-rows" class="year-rows"></div>
+          </article>
+          <article class="panel">
+            <div class="panel-header">
+              <h2>Local Case Prefix Yield</h2>
+            </div>
+            <div id="prefix-rows" class="prefix-rows"></div>
+          </article>
+        </section>
+
+        <section class="grid lists-grid">
+          <article class="panel">
+            <div class="panel-header">
+              <h2>Recently Updated Local Days</h2>
+            </div>
+            <div id="latest-days" class="day-list"></div>
+          </article>
+          <article class="panel">
+            <div class="panel-header">
+              <h2>Lowest-Coverage Local Days</h2>
+            </div>
+            <div id="worst-days" class="day-list"></div>
+          </article>
+        </section>
+      </section>
+    </main>
+
+    <script src="/app.js"></script>
+  </body>
+  </html>

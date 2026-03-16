@@ -9,7 +9,7 @@ from huggingface_hub import HfApi, hf_hub_download
 from huggingface_hub.errors import EntryNotFoundError
 
 
-DEFAULT_REPO_ID = "Arifov/sf_superior_court"
+DEFAULT_REPO_ID = "please-the-bot/sf_superior_court"
 DEFAULT_DATA_DIR = Path("data")
 DEFAULT_OUTPUT = Path("HF_DATASET_CARD.md")
 

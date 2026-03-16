@@ -10,7 +10,7 @@ from huggingface_hub.errors import EntryNotFoundError
 from build_hf_dataset_card import build_card
 
 
-DEFAULT_REPO_ID = "Arifov/sf_superior_court"
+DEFAULT_REPO_ID = "please-the-bot/sf_superior_court"
 DEFAULT_DATA_DIR = Path("data")
 SYNC_METADATA_FILENAME = "sync_metadata.json"
 DATASET_CARD_FILENAME = "HF_DATASET_CARD.md"
@@ -125,6 +125,60 @@ def verify_day(api: HfApi, repo_id: str, day_dir: Path):
 def verify_case_dir(api: HfApi, repo_id: str, day_name: str, case_dir: Path):
     local = local_files_for_path(case_dir)
     remote = remote_files_for_prefix(api, repo_id, f"data/{day_name}/{case_dir.name}")
+
+    missing = sorted(set(local) - set(remote))
+    mismatched = sorted(
+        rel for rel, size in local.items() if rel in remote and remote[rel] != size
+    )
+    extra = sorted(set(remote) - set(local))
+
+    return {
+        "ok": not missing and not mismatched,
+        "missing": missing,
+        "mismatched": mismatched,
+        "extra_count": len(extra),
+        "local_count": len(local),
+        "remote_count": len(remote),
+    }
+
+
+def remote_files_for_case_from_day_remote(day_remote, case_name: str):
+    prefix = f"{case_name}/"
+    files = {}
+    for rel, size in day_remote.items():
+        if rel.startswith(prefix):
+            files[rel[len(prefix) :]] = size
+    return files
+
+
+def verify_case_dir_against_remote_map(case_dir: Path, remote_files: dict):
+    local = local_files_for_path(case_dir)
+
+    missing = sorted(set(local) - set(remote_files))
+    mismatched = sorted(
+        rel for rel, size in local.items() if rel in remote_files and remote_files[rel] != size
+    )
+    extra = sorted(set(remote_files) - set(local))
+
+    return {
+        "ok": not missing and not mismatched,
+        "missing": missing,
+        "mismatched": mismatched,
+        "extra_count": len(extra),
+        "local_count": len(local),
+        "remote_count": len(remote_files),
+    }
+
+
+def verify_root_files_against_remote_map(day_dir: Path, filenames, day_remote: dict):
+    local = {}
+    remote = {}
+    for filename in filenames:
+        path = day_dir / filename
+        if path.exists():
+            local[filename] = path.stat().st_size
+        if filename in day_remote:
+            remote[filename] = day_remote[filename]
 
     missing = sorted(set(local) - set(remote))
     mismatched = sorted(
@@ -313,6 +367,7 @@ def main():
             print("No eligible day folders found.")
         for day_dir in day_dirs:
             sync_metadata = load_sync_metadata(day_dir)
+            day_remote = None
             if args.unit == "day":
                 local = local_files_for_day(day_dir)
                 upload_started_at = utc_now_iso()
@@ -362,9 +417,12 @@ def main():
                 continue
 
             case_dirs = sorted([p for p in day_dir.iterdir() if p.is_dir()])
+            if case_dirs:
+                day_remote = remote_files_for_prefix(api, args.repo_id, f"data/{day_dir.name}")
             for case_dir in case_dirs:
                 local = local_files_for_path(case_dir)
-                existing = verify_case_dir(api, args.repo_id, day_dir.name, case_dir)
+                existing_remote = remote_files_for_case_from_day_remote(day_remote or {}, case_dir.name)
+                existing = verify_case_dir_against_remote_map(case_dir, existing_remote)
                 if existing["ok"]:
                     print(
                         f"Already mirrored {day_dir.name}/{case_dir.name}: "
@@ -400,7 +458,19 @@ def main():
                 )
                 upload_case_dir(api, args.repo_id, day_dir.name, case_dir)
                 verify_started_perf = time.perf_counter()
-                result = verify_case_dir(api, args.repo_id, day_dir.name, case_dir)
+                updated_remote = remote_files_for_prefix(
+                    api, args.repo_id, f"data/{day_dir.name}/{case_dir.name}"
+                )
+                result = verify_case_dir_against_remote_map(case_dir, updated_remote)
+                if day_remote is not None:
+                    prefix = f"{case_dir.name}/"
+                    day_remote = {
+                        rel: size
+                        for rel, size in day_remote.items()
+                        if not rel.startswith(prefix)
+                    }
+                    for rel, size in updated_remote.items():
+                        day_remote[f"{case_dir.name}/{rel}"] = size
                 verify_elapsed = round(time.perf_counter() - verify_started_perf, 3)
                 upload_elapsed = round(
                     time.perf_counter() - upload_started_perf - verify_elapsed, 3
@@ -441,7 +511,9 @@ def main():
                 if path.is_file()
             ]
             if root_files:
-                existing = verify_root_files(api, args.repo_id, day_dir, root_files)
+                if day_remote is None:
+                    day_remote = remote_files_for_prefix(api, args.repo_id, f"data/{day_dir.name}")
+                existing = verify_root_files_against_remote_map(day_dir, root_files, day_remote)
                 if existing["ok"]:
                     print(
                         f"Already mirrored day metadata {day_dir.name}: "
@@ -475,7 +547,8 @@ def main():
                     print(f"Uploading day metadata {day_dir.name}: {', '.join(root_files)}")
                     upload_day_root_files(api, args.repo_id, day_dir, root_files)
                     verify_started_perf = time.perf_counter()
-                    result = verify_root_files(api, args.repo_id, day_dir, root_files)
+                    day_remote = remote_files_for_prefix(api, args.repo_id, f"data/{day_dir.name}")
+                    result = verify_root_files_against_remote_map(day_dir, root_files, day_remote)
                     verify_elapsed = round(time.perf_counter() - verify_started_perf, 3)
                     upload_elapsed = round(
                         time.perf_counter() - upload_started_perf - verify_elapsed, 3

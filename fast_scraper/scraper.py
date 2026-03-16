@@ -45,7 +45,7 @@ RETRYABLE_ERROR_MARKERS = (
     "net::ERR_",
     "Target page, context or browser has been closed",
 )
-DEFAULT_HF_REPO_ID = "Arifov/sf_superior_court"
+DEFAULT_HF_REPO_ID = "please-the-bot/sf_superior_court"
 LOCAL_DATA_ROOT = Path("data")
 
 
@@ -130,6 +130,7 @@ def launch_chrome(port):
 
     cmd = [
         "open",
+        "-g",
         "-na",
         "Google Chrome",
         "--args",
@@ -584,12 +585,37 @@ async def upload_day_summary_to_hf(api, repo_id, date_str, summary):
         )
 
 
+async def upload_failed_cases_to_hf(api, repo_id, date_str, payload):
+    """Mirror failed_cases.json to the dataset repo."""
+    async with HF_UPLOAD_SEMAPHORE:
+        await create_hf_commit(
+            api,
+            repo_id,
+            [
+                CommitOperationAdd(
+                    path_in_repo=f"data/{date_str}/failed_cases.json",
+                    path_or_fileobj=json.dumps(payload, indent=2).encode("utf-8"),
+                )
+            ],
+            f"Update SF Superior Court failed cases {date_str}",
+        )
+
+
 def persist_pdf_blobs_locally(case_dir, pdf_blobs):
     """Persist in-memory PDFs to the case directory as a fallback."""
     case_dir.mkdir(parents=True, exist_ok=True)
     for filename, body in pdf_blobs.items():
         with open(case_dir / filename, "wb") as f:
             f.write(body)
+
+
+def delete_local_case_pdfs(case_dir):
+    """Delete locally cached PDFs for a case while keeping JSON metadata."""
+    if not case_dir.exists():
+        return
+    for path in case_dir.iterdir():
+        if path.is_file() and path.suffix.lower() == ".pdf":
+            path.unlink(missing_ok=True)
 
 
 async def save_doc(context, url, folder, filename, keep_local_pdfs):
@@ -699,7 +725,9 @@ async def extract_case_header_metadata(page):
         }
 
 
-async def scrape_case(context, case, filing_date, api, hf_repo_id, keep_local_pdfs):
+async def scrape_case(
+    context, case, filing_date, api, hf_repo_id, keep_local_pdfs, hf_only
+):
     """
     Scrape a single case in its own browser tab.
     Same logic as original but runs concurrently with other cases.
@@ -730,7 +758,7 @@ async def scrape_case(context, case, filing_date, api, hf_repo_id, keep_local_pd
                     if (
                         meta.get("scraped_links", 0) == meta.get("total_links", 0)
                         and meta.get("total_links", 0) > 0
-                        and storage != "local_fallback"
+                        and storage not in {"local_fallback", "hf_only_pending"}
                     ):
                         return
         except Exception:
@@ -907,6 +935,8 @@ async def scrape_case(context, case, filing_date, api, hf_repo_id, keep_local_pd
                 await upload_case_bundle_to_hf(
                     api, hf_repo_id, filing_date, case_num, output_data, pdf_blobs
                 )
+                if hf_only:
+                    delete_local_case_pdfs(case_dir)
                 output_data["metadata"]["timing"]["hf_upload_started_at"] = (
                     hf_upload_started_at
                 )
@@ -917,8 +947,11 @@ async def scrape_case(context, case, filing_date, api, hf_repo_id, keep_local_pd
                     time.perf_counter() - hf_upload_started_perf, 3
                 )
             except Exception as e:
-                persist_pdf_blobs_locally(case_dir, pdf_blobs)
-                output_data["metadata"]["storage"] = "local_fallback"
+                if not hf_only:
+                    persist_pdf_blobs_locally(case_dir, pdf_blobs)
+                    output_data["metadata"]["storage"] = "local_fallback"
+                else:
+                    output_data["metadata"]["storage"] = "hf_only_pending"
                 output_data["metadata"]["hf_upload_error"] = str(e)
                 output_data["metadata"]["timing"]["hf_upload_started_at"] = (
                     hf_upload_started_at
@@ -929,9 +962,14 @@ async def scrape_case(context, case, filing_date, api, hf_repo_id, keep_local_pd
                 output_data["metadata"]["timing"]["hf_upload_elapsed_seconds"] = round(
                     time.perf_counter() - hf_upload_started_perf, 3
                 )
-                tqdm.write(
-                    f"  HF upload failed for {case_num}; kept PDFs locally for retry"
-                )
+                if hf_only:
+                    tqdm.write(
+                        f"  HF upload failed for {case_num}; kept only JSON metadata locally"
+                    )
+                else:
+                    tqdm.write(
+                        f"  HF upload failed for {case_num}; kept PDFs locally for retry"
+                    )
 
         with open(json_path, "w") as f:
             json.dump(output_data, f, indent=2)
@@ -998,7 +1036,10 @@ def update_day_summary(date_str, total_cases=None, run_metadata=None):
                             timing = meta.get("timing", {})
                             if meta.get("status") == "restricted":
                                 scraped_cases += 1
-                            elif meta.get("scraped_links", 0) == meta.get(
+                            elif meta.get("storage") not in {
+                                "local_fallback",
+                                "hf_only_pending",
+                            } and meta.get("scraped_links", 0) == meta.get(
                                 "total_links", 0
                             ):
                                 scraped_cases += 1
@@ -1075,6 +1116,9 @@ def case_is_complete(date_str, case_num):
     if meta.get("status") == "restricted":
         return True
 
+    if meta.get("storage") in {"local_fallback", "hf_only_pending"}:
+        return False
+
     return meta.get("scraped_links", 0) == meta.get("total_links", 0)
 
 
@@ -1098,6 +1142,7 @@ def write_failed_cases(date_str, failed_cases):
     }
     with open(failed_path, "w") as f:
         json.dump(payload, f, indent=2)
+    return payload
 
 
 def case_link_for_session(case_num, session_id):
@@ -1193,6 +1238,11 @@ async def main():
         help="Keep downloaded PDFs on local disk after upload",
     )
     parser.add_argument(
+        "--hf-only",
+        action="store_true",
+        help="HF-first mode: discard PDF fallback on upload failures and keep only lightweight local metadata",
+    )
+    parser.add_argument(
         "--max-concurrent-hf-uploads", type=int, default=1,
         help="Max concurrent HF case/day-summary commits per worker",
     )
@@ -1243,11 +1293,18 @@ async def main():
     hf_repo_id = None if args.disable_hf_upload else args.hf_repo_id
     hf_api = HfApi() if hf_repo_id else None
 
+    if args.hf_only:
+        if not hf_repo_id:
+            raise SystemExit("--hf-only requires HF uploads to be enabled")
+        if args.keep_local_pdfs:
+            raise SystemExit("--hf-only cannot be combined with --keep-local-pdfs")
+
     dates = get_dates(args.start_date, args.end_date)
     print(f"Dates to scrape: {len(dates)} (weekdays only)")
     if hf_repo_id:
         print(f"Uploading case outputs to HF dataset: {hf_repo_id}")
     print(f"Keeping local PDFs: {args.keep_local_pdfs}")
+    print(f"HF-only mode: {args.hf_only}")
 
     if args.clear:
         for date_str in dates:
@@ -1381,6 +1438,7 @@ async def main():
                             hf_api,
                             hf_repo_id,
                             args.keep_local_pdfs,
+                            args.hf_only,
                         )
                     except SessionExpiredError:
                         tqdm.write(
@@ -1426,7 +1484,7 @@ async def main():
                 f"  {date_str} retry {retry_round}",
             )
 
-        write_failed_cases(date_str, failed_cases)
+        failed_payload = write_failed_cases(date_str, failed_cases)
 
         summary = update_day_summary(
             date_str,
@@ -1445,6 +1503,9 @@ async def main():
             },
         )
         if hf_repo_id:
+            await upload_failed_cases_to_hf(
+                hf_api, hf_repo_id, date_str, failed_payload
+            )
             await upload_day_summary_to_hf(hf_api, hf_repo_id, date_str, summary)
         print(
             f"  Date {date_str} done: "

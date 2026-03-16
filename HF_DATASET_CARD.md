@@ -111,7 +111,7 @@ The local working corpus is larger than the current HF upload:
 
 - **1,138** filing days on local disk
 - **86,014** discovered cases on local disk
-- **8,877** scraped cases on local disk
+- **9,629** scraped cases on local disk
 - **0** fully completed local filing days
 - Local coverage currently runs from **2020-01-02** through **2026-03-13**
 
@@ -121,12 +121,12 @@ Local year summary:
 | --- | ---: | ---: | ---: | ---: | ---: |
 | 2020 | 242 | 0 | 1,364 | 14,724 | 9.3% |
 | 2021 | 93 | 0 | 664 | 5,823 | 11.4% |
-| 2022 | 173 | 0 | 1,363 | 11,058 | 12.3% |
+| 2022 | 173 | 0 | 1,683 | 11,058 | 15.2% |
 | 2023 | 169 | 0 | 1,507 | 12,455 | 12.1% |
-| 2024 | 169 | 0 | 1,294 | 14,398 | 9.0% |
+| 2024 | 169 | 0 | 1,726 | 14,398 | 12.0% |
 | 2025 | 244 | 0 | 2,153 | 22,994 | 9.4% |
 | 2026 | 48 | 0 | 532 | 4,562 | 11.7% |
-| Total | 1,138 | 0 | 8,877 | 86,014 | 10.3% |
+| Total | 1,138 | 0 | 9,629 | 86,014 | 11.2% |
 
 Local month coverage:
 

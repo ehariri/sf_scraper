@@ -18,6 +18,7 @@ This project automates the scraping of civil case data from the San Francisco Su
 *   **`worker.py`**: The older worker implementation retained for reference.
 *   **`scraper.py`**: A standalone single-process scraper with parallel document downloads.
 *   **`legacy.py`**: The original single-process scraper (legacy).
+*   **`monitor_app.py`**: A local monitoring web app for scrape coverage, sync progress, live process health, and recent log errors/stalls.
 
 ## Setup
 
@@ -29,6 +30,18 @@ This project automates the scraping of civil case data from the San Francisco Su
 
 2.  **Chrome Installation**: Ensure Google Chrome is installed on your system.
 
+## Shared Operation
+
+For multi-machine operation, read [MULTI_MACHINE.md](MULTI_MACHINE.md).
+
+The short version:
+
+*   Use the shared HF dataset repo `please-the-bot/sf_superior_court`.
+*   Split machines by non-overlapping date ranges.
+*   Do not let two machines scrape the same filing day at the same time.
+*   Do not point two sync/prune jobs at the same local `data/` tree.
+*   Use `--hf-only` on low-disk machines, or local-first mode plus `sync_existing_to_hf_and_prune.py` on higher-disk machines.
+
 ## Usage
 
 ### Multi-Process Scraping (Recommended)
@@ -39,6 +52,8 @@ This is the fastest way to scrape a range of dates.
     *   `--start-date`: Start date (YYYY-MM-DD)
     *   `--end-date`: End date (YYYY-MM-DD)
     *   `--num-workers`: Number of parallel Chrome instances (default: 3)
+    *   `--base-port`: Base Chrome debug port for worker windows
+    *   `--data-root`: Local output root for this machine or run
     *   `--max-concurrent-cases`: Max concurrent case tabs per worker (default: 2)
     *   `--max-concurrent-downloads`: Max concurrent document downloads per worker (default: 6)
 
@@ -48,7 +63,7 @@ This is the fastest way to scrape a range of dates.
     python launcher.py
 
     # Custom configuration
-    python launcher.py --start-date 2015-01-01 --end-date 2015-02-01 --num-workers 5 --max-concurrent-cases 2 --max-concurrent-downloads 6
+    python launcher.py --start-date 2015-01-01 --end-date 2015-02-01 --num-workers 5 --base-port 9400 --data-root data_machine_a --max-concurrent-cases 2 --max-concurrent-downloads 6
     ```
 
 3.  **Solve Cloudflare**:
@@ -87,6 +102,47 @@ data/
 
 *   **`register_of_actions.json`**: Contains case metadata, parties, and the full register of actions.
 *   **`day_summary.json`**: Tracks the scraping progress for that date (total cases vs. scraped cases).
+
+## Monitoring
+
+Run the local dashboard to monitor scrape coverage, uploader health, stale processes, and recent log output:
+
+```bash
+cd /Users/jovik/Desktop/docket_gen/sf_scraper_fork
+source .venv/bin/activate
+python monitor_app.py --host 127.0.0.1 --port 8787
+```
+
+Then open:
+
+```text
+http://127.0.0.1:8787
+```
+
+To share the monitor with another device on the same network:
+
+```bash
+cd /Users/jovik/Desktop/docket_gen/sf_scraper_fork
+source .venv/bin/activate
+python monitor_app.py --public --port 8787
+```
+
+That binds the dashboard to `0.0.0.0` and prints candidate LAN URLs such as `http://192.168.x.x:8787`.
+
+The dashboard reads:
+
+*   `data/*/day_summary.json` for day-level coverage and timing
+*   `data/*/sync_metadata.json` for upload/prune progress
+*   `logs/*.log` for recent warnings/errors
+*   live `ps` output for scrape/sync process detection
+
+Status badges:
+
+*   **healthy**: active process with recent file activity
+*   **waiting**: likely blocked on Cloudflare or another manual gate
+*   **degraded**: active but showing elevated retries/timeouts
+*   **stalled**: active process with no recent file activity
+*   **error**: recent traceback or sync verification/rate-limit issue
 
 ## Notes
 
