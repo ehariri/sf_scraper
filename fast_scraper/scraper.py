@@ -812,7 +812,7 @@ def current_session_id_from_context(context):
 
 
 async def close_stale_scraper_tabs(context, keep_pages=None):
-    """Close leftover case/detail/helper tabs from prior work in this scraper profile."""
+    """Close leftover helper, case, captcha, and duplicate session tabs."""
     keep_ids = {id(page) for page in (keep_pages or []) if page is not None}
     closed = 0
     for page in list(context.pages):
@@ -823,6 +823,8 @@ async def close_stale_scraper_tabs(context, keep_pages=None):
             url == "about:blank"
             or "CaseNum=" in url
             or url.startswith("data:text/html")
+            or "/captcha/" in url
+            or "CaseInfo.dll?&SessionID=" in url
         )
         if not should_close:
             continue
