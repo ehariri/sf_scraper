@@ -944,6 +944,7 @@ async def scrape_case(
     case_dir = LOCAL_DATA_ROOT / filing_date / case_num
     case_dir.mkdir(parents=True, exist_ok=True)
     json_path = case_dir / "register_of_actions.json"
+    persist_local_pdfs = keep_local_pdfs or not hf_repo_id
     scrape_started_at = utc_now_iso()
     scrape_started_perf = time.perf_counter()
 
@@ -1030,7 +1031,7 @@ async def scrape_case(
                         action["doc_url"],
                         case_dir,
                         action["doc_filename"],
-                        keep_local_pdfs,
+                        persist_local_pdfs,
                     )
                 )
         # Download documents in parallel
@@ -1052,7 +1053,7 @@ async def scrape_case(
                     cached_docs += 1
 
         # Count successful downloads
-        if keep_local_pdfs:
+        if persist_local_pdfs:
             scraped_links = sum(
                 1
                 for a in actions
@@ -1061,7 +1062,7 @@ async def scrape_case(
         else:
             scraped_links = len(pdf_blobs)
 
-        storage_mode = "local" if keep_local_pdfs or not hf_repo_id else "huggingface"
+        storage_mode = "local" if persist_local_pdfs else "huggingface"
         output_data = {
             "metadata": {
                 "case_number": case_num,
@@ -1200,6 +1201,15 @@ def update_day_summary(date_str, total_cases=None, run_metadata=None):
                             timing = meta.get("timing", {})
                             if meta.get("status") == "restricted":
                                 scraped_cases += 1
+                            elif meta.get("storage") == "local":
+                                pdf_count = sum(
+                                    1
+                                    for path in cd.iterdir()
+                                    if path.is_file()
+                                    and path.suffix.lower() == ".pdf"
+                                )
+                                if pdf_count == meta.get("total_links", 0):
+                                    scraped_cases += 1
                             elif meta.get("storage") not in {
                                 "local_fallback",
                                 "hf_only_pending",
@@ -1282,6 +1292,11 @@ def case_is_complete(date_str, case_num):
 
     if meta.get("storage") in {"local_fallback", "hf_only_pending"}:
         return False
+
+    if meta.get("storage") == "local" and meta.get("total_links", 0) > 0:
+        case_dir = json_path.parent
+        pdf_count = sum(1 for path in case_dir.iterdir() if path.suffix.lower() == ".pdf")
+        return pdf_count == meta.get("total_links", 0)
 
     return meta.get("scraped_links", 0) == meta.get("total_links", 0)
 
