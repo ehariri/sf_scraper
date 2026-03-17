@@ -15,9 +15,9 @@ This project automates the scraping of civil case data from the San Francisco Su
 
 *   **`launcher.py`**: The main entry point for multi-process scraping. It now launches the concurrent `fast_scraper` worker by default.
 *   **`fast_scraper/scraper.py`**: The fastest worker path. It opens case detail tabs concurrently, extracts tables in one browser-side pass, and downloads documents concurrently.
-*   **`worker.py`**: The older worker implementation retained for reference.
-*   **`scraper.py`**: A standalone single-process scraper with parallel document downloads.
-*   **`legacy.py`**: The original single-process scraper (legacy).
+*   **`run_failed_cleanup_shard.py`**: Sharded failed-only cleanup runner for retry passes.
+*   **`sync_existing_to_hf_and_prune.py`**: Uploads local data to HF, verifies it remotely, and prunes local copies.
+*   **`upload_data_in_batches.py`**: Bulk uploader for draining large local backlogs to HF in sized batches.
 *   **`monitor_app.py`**: A local monitoring web app for scrape coverage, sync progress, live process health, and recent log errors/stalls.
 
 ## Setup
@@ -71,18 +71,21 @@ This is the fastest way to scrape a range of dates.
     *   **You must manually solve the Cloudflare challenge in EACH window.**
     *   Once solved, the scraper will automatically proceed.
 
-### Single-Process Scraping
+### Failed-Only Cleanup
 
-To scrape a specific date range using a single browser instance:
+After a first pass, rerun only the cases left in `failed_cases.json`:
 
-1.  **Configure**: Edit `scraper.py` to set `START_DATE` and `END_DATE`.
-
-2.  **Run**:
-    ```bash
-    python scraper.py
-    ```
-
-3.  **Solve Cloudflare**: Solve the challenge in the opened Chrome window.
+```bash
+python fast_scraper/scraper.py \
+  --start-date 2023-01-02 \
+  --end-date 2023-12-29 \
+  --failed-only \
+  --data-root data_2023 \
+  --port 9222 \
+  --max-concurrent-cases 2 \
+  --max-concurrent-downloads 6 \
+  --retry-passes 0
+```
 
 ## Output
 
@@ -103,6 +106,8 @@ data/
 *   **`register_of_actions.json`**: Contains case metadata, parties, and the full register of actions.
 *   **`day_summary.json`**: Tracks the scraping progress for that date (total cases vs. scraped cases).
 
+Benchmark scripts and summary markdown live under `benchmarks/`. Raw generated benchmark logs and JSON outputs are intentionally not tracked.
+
 ## Monitoring
 
 Run the local dashboard to monitor scrape coverage, uploader health, stale processes, and recent log output:
@@ -119,15 +124,11 @@ Then open:
 http://127.0.0.1:8787
 ```
 
-To share the monitor with another device on the same network:
+For a shareable hosted monitor, use:
 
-```bash
-cd /Users/jovik/Desktop/docket_gen/sf_scraper_fork
-source .venv/bin/activate
-python monitor_app.py --public --port 8787
+```text
+https://vercelmonitor.vercel.app
 ```
-
-That binds the dashboard to `0.0.0.0` and prints candidate LAN URLs such as `http://192.168.x.x:8787`.
 
 The dashboard reads:
 

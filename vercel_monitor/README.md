@@ -18,6 +18,6 @@ Required environment variable:
 
 - `MONITOR_UPSTREAM_ORIGIN`
 
-Example:
+Public monitor URL:
 
-- `https://advanced-pork-himself-spray.trycloudflare.com`
+- `https://vercelmonitor.vercel.app`

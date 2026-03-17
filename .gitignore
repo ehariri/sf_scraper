@@ -1,7 +1,12 @@
 data/
+data_*/
 venv/
 .DS_Store
 __pycache__/
 *.pyc
 logs/
 .playwright-browsers/
+vercel_monitor/.vercel/
+vercel_monitor/.vercel.team.bak/
+benchmarks/**/*.log
+benchmarks/**/summary.json

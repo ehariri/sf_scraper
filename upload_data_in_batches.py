@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 import argparse
+import json
+import re
 import shutil
 import time
 from pathlib import Path
@@ -14,6 +16,12 @@ from sync_existing_to_hf_and_prune import (
     refresh_monitor_remote_cache,
     verify_day,
 )
+
+
+ROOT = Path(__file__).resolve().parent
+SKIPPED_UPLOADS_ROOT = ROOT / "skipped_uploads"
+SKIPPED_UPLOADS_LOG = ROOT / "logs" / "hf_skipped_uploads.json"
+FAILED_UPLOAD_PATH_RE = re.compile(r"Error while uploading '([^']+)' to the Hub\.")
 
 
 def day_size_bytes(day_dir: Path):
@@ -101,23 +109,76 @@ def build_operations(batch):
     return operations
 
 
-def upload_batch(api, repo_id, batch_index, batch, batch_count):
-    operations = build_operations(batch)
-    if not operations:
-        return
+def extract_failed_repo_path(exc: Exception):
+    match = FAILED_UPLOAD_PATH_RE.search(str(exc))
+    if not match:
+        return None
+    return match.group(1)
+
+
+def record_skipped_upload(repo_path: str, quarantined_path: Path, reason: str):
+    SKIPPED_UPLOADS_LOG.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        payload = json.loads(SKIPPED_UPLOADS_LOG.read_text())
+        if not isinstance(payload, list):
+            payload = []
+    except Exception:
+        payload = []
+    payload.append(
+        {
+            "repo_path": repo_path,
+            "quarantined_path": str(quarantined_path),
+            "reason": reason,
+            "recorded_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        }
+    )
+    SKIPPED_UPLOADS_LOG.write_text(json.dumps(payload, indent=2) + "\n")
+
+
+def quarantine_failed_local_file(data_dir: Path, repo_path: str, reason: str):
+    if not repo_path.startswith("data/"):
+        return None
+    relative_path = Path(repo_path[len("data/") :])
+    local_path = data_dir / relative_path
+    if not local_path.exists():
+        return None
+    quarantined_path = SKIPPED_UPLOADS_ROOT / relative_path
+    quarantined_path.parent.mkdir(parents=True, exist_ok=True)
+    shutil.move(str(local_path), str(quarantined_path))
+    record_skipped_upload(repo_path, quarantined_path, reason)
+    print(f"Skipped failing upload file {repo_path} -> {quarantined_path}")
+    return quarantined_path
+
+
+def upload_batch(api, repo_id, data_dir: Path, batch_index, batch, batch_count):
     message = (
         f"Bulk sync SF Superior Court batch {batch_index}/{batch_count} "
         f"({len(batch['days'])} days)"
     )
-    run_hf_commit_with_retry(
-        lambda: api.create_commit(
-            repo_id=repo_id,
-            repo_type="dataset",
-            operations=operations,
-            commit_message=message,
-        ),
-        f"bulk batch upload {batch_index}/{batch_count}",
-    )
+    quarantined_repo_paths = set()
+    while True:
+        operations = build_operations(batch)
+        if not operations:
+            return
+        try:
+            run_hf_commit_with_retry(
+                lambda: api.create_commit(
+                    repo_id=repo_id,
+                    repo_type="dataset",
+                    operations=operations,
+                    commit_message=message,
+                ),
+                f"bulk batch upload {batch_index}/{batch_count}",
+            )
+            return
+        except RuntimeError as exc:
+            failed_repo_path = extract_failed_repo_path(exc)
+            if not failed_repo_path or failed_repo_path in quarantined_repo_paths:
+                raise
+            quarantined_path = quarantine_failed_local_file(data_dir, failed_repo_path, str(exc))
+            if not quarantined_path:
+                raise
+            quarantined_repo_paths.add(failed_repo_path)
 
 
 def verify_batch(api, repo_id, batch):
@@ -191,7 +252,7 @@ def main():
 
     for index, batch in enumerate(batches, start=1):
         started = time.perf_counter()
-        upload_batch(api, args.repo_id, index, batch, len(batches))
+        upload_batch(api, args.repo_id, args.data_dir, index, batch, len(batches))
         verify_batch(api, args.repo_id, batch)
         if not args.keep_local:
             prune_batch(batch)
