@@ -115,8 +115,8 @@ def move_chrome_windows(bounds):
 # --- Chrome Management ---
 
 
-def launch_chrome(port):
-    """Launches a real Chrome instance with remote debugging enabled."""
+def launch_chrome(port, manage_windows=False):
+    """Launch a real Chrome instance with remote debugging enabled."""
     profile = chrome_profile_for_port(port)
     profile.mkdir(exist_ok=True)
     window_x, window_y, window_width, window_height = preferred_chrome_window_bounds()
@@ -124,7 +124,8 @@ def launch_chrome(port):
     try:
         subprocess.check_output(f"lsof -i :{port}", shell=True)
         print(f"Chrome is already running on port {port}.")
-        move_chrome_windows((window_x, window_y, window_width, window_height))
+        if manage_windows:
+            move_chrome_windows((window_x, window_y, window_width, window_height))
         return
     except subprocess.CalledProcessError:
         pass
@@ -145,7 +146,8 @@ def launch_chrome(port):
     subprocess.Popen(cmd)
     print(f"Launched Chrome on port {port}. Waiting 2s for startup...")
     time.sleep(2)
-    move_chrome_windows((window_x, window_y, window_width, window_height))
+    if manage_windows:
+        move_chrome_windows((window_x, window_y, window_width, window_height))
 
 
 def kill_chrome(port):
@@ -196,6 +198,10 @@ class RetryableCaseError(Exception):
     def __init__(self, message, failed_case_num=None):
         super().__init__(message)
         self.failed_case_num = failed_case_num
+
+
+class RequestPathUnavailableError(Exception):
+    """Raised when the direct GetROA request path cannot be used for a case."""
 
 
 async def open_sf_page(port):
@@ -522,6 +528,7 @@ async def fetch_case_list_via_browser(page, date_str):
 DOWNLOAD_SEMAPHORE = None
 HF_UPLOAD_SEMAPHORE = None
 HF_COMMIT_MAX_ATTEMPTS = 8
+DOC_ID_RE = re.compile(r"DocID%3D(\d+)", re.IGNORECASE)
 
 
 def repo_case_dir(filing_date, case_num):
@@ -750,45 +757,119 @@ async def extract_case_header_metadata(page):
         }
 
 
-async def scrape_case(
-    context, case, filing_date, api, hf_repo_id, keep_local_pdfs, hf_only
-):
-    """
-    Scrape a single case in its own browser tab.
-    Same logic as original but runs concurrently with other cases.
-    """
-    link = case["link"]
-    link = absolute_case_url(link)
+def empty_case_header_metadata():
+    return {
+        "page_title": "",
+        "header_text": [],
+        "header_fields": {},
+    }
 
+
+def parse_case_identifiers(link):
     parsed_url = urlparse(link)
     qs = parse_qs(parsed_url.query)
     case_num = qs.get("CaseNum", ["Unknown"])[0]
+    session_id = qs.get("SessionID", [None])[0]
+    return case_num, session_id
 
-    case_dir = LOCAL_DATA_ROOT / filing_date / case_num
-    case_dir.mkdir(parents=True, exist_ok=True)
-    json_path = case_dir / "register_of_actions.json"
-    scrape_started_at = utc_now_iso()
-    scrape_started_perf = time.perf_counter()
 
-    # Check if already scraped
-    if json_path.exists():
+def action_from_roa_row(row):
+    doc_url = row.get("URL") or None
+    doc_id_match = DOC_ID_RE.search(doc_url or "")
+    doc_id = doc_id_match.group(1) if doc_id_match else None
+    action_date = (row.get("FILEDATE") or "").strip()
+    return {
+        "date": action_date,
+        "proceedings": (row.get("RTEXT") or "").strip(),
+        "fee": (row.get("FEE") or "").strip(),
+        "doc_url": absolute_case_url(doc_url),
+        "doc_id": doc_id,
+        "doc_filename": (
+            f"{action_date}_{doc_id or 'Unknown'}.pdf" if doc_url else None
+        ),
+    }
+
+
+async def fetch_case_actions_via_request(context, case_num, session_id):
+    if not session_id:
+        raise RequestPathUnavailableError(
+            f"Missing SessionID for request-based ROA fetch on {case_num}"
+        )
+
+    roa_url = (
+        f"{BASE_URL}/CaseInfo.dll/datasnap/rest/TServerMethods1/"
+        f"GetROA/{case_num}/{session_id}/"
+    )
+    last_error = None
+    for attempt in range(1, 4):
         try:
-            with open(json_path, "r") as f:
-                data = json.load(f)
-                if isinstance(data, dict) and "metadata" in data:
-                    meta = data["metadata"]
-                    if meta.get("status") == "restricted":
-                        return
-                    storage = meta.get("storage")
-                    if (
-                        meta.get("scraped_links", 0) == meta.get("total_links", 0)
-                        and meta.get("total_links", 0) > 0
-                        and storage not in {"local_fallback", "hf_only_pending"}
-                    ):
-                        return
-        except Exception:
-            pass
+            response = await context.request.get(
+                roa_url, timeout=SEARCH_RESULTS_TIMEOUT_MS
+            )
+            text = await response.text()
 
+            if all(marker in text for marker in SESSION_TIMEOUT_MARKERS):
+                raise SessionExpiredError(
+                    f"Session expired while fetching request ROA for {case_num}"
+                )
+
+            if response.status != 200:
+                raise RequestPathUnavailableError(
+                    f"GetROA returned HTTP {response.status} for {case_num}"
+                )
+
+            try:
+                payload = json.loads(text)
+            except json.JSONDecodeError as exc:
+                raise RequestPathUnavailableError(
+                    f"GetROA returned non-JSON for {case_num}: {exc}"
+                ) from exc
+
+            result = payload.get("result")
+            if not isinstance(result, list) or len(result) < 2:
+                raise RequestPathUnavailableError(
+                    f"GetROA payload missing result rows for {case_num}"
+                )
+
+            serialized_rows = result[1]
+            try:
+                if isinstance(serialized_rows, str):
+                    stripped_rows = serialized_rows.strip()
+                    raw_rows = json.loads(stripped_rows) if stripped_rows else []
+                elif isinstance(serialized_rows, list):
+                    raw_rows = serialized_rows
+                elif serialized_rows in (None, ""):
+                    raw_rows = []
+                else:
+                    raise TypeError(
+                        f"Unexpected row payload type: {type(serialized_rows)}"
+                    )
+            except Exception as exc:
+                raise RequestPathUnavailableError(
+                    f"GetROA row payload parse failed for {case_num}: {exc}"
+                ) from exc
+
+            if not isinstance(raw_rows, list):
+                raise RequestPathUnavailableError(
+                    f"GetROA row payload is not a list for {case_num}"
+                )
+
+            return (
+                [action_from_roa_row(row) for row in raw_rows],
+                empty_case_header_metadata(),
+            )
+        except SessionExpiredError:
+            raise
+        except (RequestPathUnavailableError, PlaywrightError) as exc:
+            last_error = exc
+            if attempt == 3:
+                break
+            await asyncio.sleep(0.5 * attempt)
+
+    raise last_error
+
+
+async def scrape_case_actions_via_browser(context, link, case_num):
     page = await context.new_page()
     try:
         await page.goto(link, wait_until="domcontentloaded")
@@ -799,40 +880,8 @@ async def scrape_case(
         state = await wait_for_case_page_state(page)
         header_metadata = await extract_case_header_metadata(page)
         if state == "restricted":
-            output_data = {
-                "metadata": {
-                    "case_number": case_num,
-                    "case_title": case.get("title", ""),
-                    "filing_date": filing_date,
-                    "case_url": link,
-                    "result_index": case.get("result_index"),
-                    "source": {
-                        "search_result_title": case.get("title", ""),
-                        "search_result_link": link,
-                        "source_filing_date": filing_date,
-                    },
-                    "case_header": header_metadata,
-                    "status": "restricted",
-                    "reason": "CCP 1161.2",
-                    "timing": {
-                        "scrape_started_at": scrape_started_at,
-                        "scrape_finished_at": utc_now_iso(),
-                        "scrape_elapsed_seconds": round(
-                            time.perf_counter() - scrape_started_perf, 3
-                        ),
-                        "download_elapsed_seconds": 0.0,
-                        "downloaded_bytes": 0,
-                        "downloaded_docs": 0,
-                        "cached_docs": 0,
-                        "download_attempts": 0,
-                    },
-                }
-            }
-            with open(json_path, "w") as f:
-                json.dump(output_data, f, indent=2)
-            return
+            return [], header_metadata, True
 
-        # Select "All" entries
         try:
             await page.select_option(
                 'select[name="example_length"]', "-1", timeout=3000
@@ -864,10 +913,114 @@ async def scrape_case(
         )
 
         actions = []
+        for action in raw_actions:
+            actions.append(
+                {
+                    "date": action["date"],
+                    "proceedings": action["proceedings"],
+                    "fee": action["fee"],
+                    "doc_url": absolute_case_url(action["doc_url"]),
+                    "doc_id": action["doc_id"],
+                    "doc_filename": action["doc_filename"],
+                }
+            )
+
+        return actions, header_metadata, False
+    finally:
+        await page.close()
+
+
+async def scrape_case(
+    context, case, filing_date, api, hf_repo_id, keep_local_pdfs, hf_only
+):
+    """
+    Scrape a single case in its own browser tab.
+    Same logic as original but runs concurrently with other cases.
+    """
+    link = case["link"]
+    link = absolute_case_url(link)
+    case_num, session_id = parse_case_identifiers(link)
+
+    case_dir = LOCAL_DATA_ROOT / filing_date / case_num
+    case_dir.mkdir(parents=True, exist_ok=True)
+    json_path = case_dir / "register_of_actions.json"
+    scrape_started_at = utc_now_iso()
+    scrape_started_perf = time.perf_counter()
+
+    # Check if already scraped
+    if json_path.exists():
+        try:
+            with open(json_path, "r") as f:
+                data = json.load(f)
+                if isinstance(data, dict) and "metadata" in data:
+                    meta = data["metadata"]
+                    if meta.get("status") == "restricted":
+                        return
+                    storage = meta.get("storage")
+                    if (
+                        meta.get("scraped_links", 0) == meta.get("total_links", 0)
+                        and meta.get("total_links", 0) > 0
+                        and storage not in {"local_fallback", "hf_only_pending"}
+                    ):
+                        return
+        except Exception:
+            pass
+
+    try:
+        restricted = False
+        roa_source = "request"
+        try:
+            actions, header_metadata = await fetch_case_actions_via_request(
+                context, case_num, session_id
+            )
+        except RequestPathUnavailableError as request_error:
+            tqdm.write(
+                f"  Request ROA unavailable for {case_num}; falling back to browser: {request_error}"
+            )
+            actions, header_metadata, restricted = await scrape_case_actions_via_browser(
+                context, link, case_num
+            )
+            roa_source = "browser_fallback"
+
+        if restricted:
+            output_data = {
+                "metadata": {
+                    "case_number": case_num,
+                    "case_title": case.get("title", ""),
+                    "filing_date": filing_date,
+                    "case_url": link,
+                    "result_index": case.get("result_index"),
+                    "source": {
+                        "search_result_title": case.get("title", ""),
+                        "search_result_link": link,
+                        "source_filing_date": filing_date,
+                    },
+                    "case_header": header_metadata,
+                    "roa_source": roa_source,
+                    "status": "restricted",
+                    "reason": "CCP 1161.2",
+                    "timing": {
+                        "scrape_started_at": scrape_started_at,
+                        "scrape_finished_at": utc_now_iso(),
+                        "scrape_elapsed_seconds": round(
+                            time.perf_counter() - scrape_started_perf, 3
+                        ),
+                        "download_elapsed_seconds": 0.0,
+                        "downloaded_bytes": 0,
+                        "downloaded_docs": 0,
+                        "cached_docs": 0,
+                        "download_attempts": 0,
+                    },
+                }
+            }
+            with open(json_path, "w") as f:
+                json.dump(output_data, f, indent=2)
+            return
+
         download_tasks = []
         total_links = 0
         pdf_filenames = []
-        for action in raw_actions:
+        for action in actions:
             if action["doc_url"]:
                 total_links += 1
                 pdf_filenames.append(action["doc_filename"])
@@ -880,17 +1033,6 @@ async def scrape_case(
                         keep_local_pdfs,
                     )
                 )
-            actions.append(
-                {
-                    "date": action["date"],
-                    "proceedings": action["proceedings"],
-                    "fee": action["fee"],
-                    "doc_url": absolute_case_url(action["doc_url"]),
-                    "doc_id": action["doc_id"],
-                    "doc_filename": action["doc_filename"],
-                }
-            )
-
         # Download documents in parallel
         pdf_blobs = {}
         download_elapsed_seconds = 0.0
@@ -933,6 +1075,7 @@ async def scrape_case(
                     "source_filing_date": filing_date,
                 },
                 "case_header": header_metadata,
+                "roa_source": roa_source,
                 "total_entries": len(actions),
                 "total_links": total_links,
                 "scraped_links": scraped_links,
@@ -1006,8 +1149,6 @@ async def scrape_case(
     except BrowserStuckError:
         raise
     except Exception as e:
-        if await page_has_session_timeout(page):
-            raise SessionExpiredError(f"Session expired while scraping case {case_num}")
         error_text = str(e)
         if "Execution context was destroyed" in error_text:
             raise BrowserStuckError(
@@ -1017,8 +1158,6 @@ async def scrape_case(
         if any(marker in error_text for marker in RETRYABLE_ERROR_MARKERS):
             raise RetryableCaseError(error_text, failed_case_num=case_num)
         tqdm.write(f"  Error scraping case {case_num}: {e}")
-    finally:
-        await page.close()
 
 
 # --- Progress Tracking (same format as original) ---
@@ -1304,6 +1443,16 @@ async def main():
         "--data-root", type=Path, default=LOCAL_DATA_ROOT,
         help="Root directory for scraped case data and day summaries",
     )
+    parser.add_argument(
+        "--manage-chrome-windows",
+        action="store_true",
+        help="Opt in to AppleScript window positioning for Chrome. Disabled by default to avoid affecting unrelated apps.",
+    )
+    parser.add_argument(
+        "--minimize-chrome-after-session",
+        action="store_true",
+        help="Opt in to minimizing Chrome after session setup. Disabled by default to avoid affecting unrelated Chrome windows.",
+    )
     args = parser.parse_args()
 
     SEARCH_RESULTS_TIMEOUT_MS = args.search_timeout_ms
@@ -1339,16 +1488,19 @@ async def main():
                 print(f"Cleared data for {date_str}")
 
     # Step 1: Launch Chrome and wait for Cloudflare
-    launch_chrome(args.port)
+    launch_chrome(args.port, manage_windows=args.manage_chrome_windows)
     session_id, cookies = await wait_for_session(args.port)
 
     # Step 2: Connect Playwright (persistent connection for the session)
     p, browser, page = await get_browser_page(args.port)
     context = page.context
 
-    # Step 3: Minimize Chrome so tabs don't pop to foreground
-    minimize_chrome()
-    print("Chrome minimized. Tabs will run in background.")
+    # Step 3: Leave Chrome alone by default so unrelated apps/windows are not affected.
+    if args.minimize_chrome_after_session:
+        minimize_chrome()
+        print("Chrome minimized. Tabs will run in background.")
+    else:
+        print("Chrome window management disabled. Leaving Chrome windows unchanged.")
 
     # Step 4: Process each date
     for date_str in dates:
