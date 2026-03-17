@@ -311,6 +311,10 @@ h1 {
   background: #c6d4ea;
 }
 
+.calendar-cell.hf_only {
+  background: #d9e3b0;
+}
+
 .calendar-cell.no_cases {
   background: #8d99ae;
 }
@@ -365,6 +369,24 @@ h1 {
   display: flex;
   flex-direction: column;
   gap: 6px;
+}
+
+.upload-inline {
+  margin-top: 14px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: #fbf7ee;
+}
+
+.upload-meta {
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.upload-message {
+  margin: 10px 0 0;
+  color: var(--muted);
 }
 
 .log-block + .log-block {

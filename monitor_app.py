@@ -3,6 +3,7 @@ import argparse
 import json
 import mimetypes
 import os
+import re
 import socket
 import subprocess
 import threading
@@ -13,6 +14,8 @@ from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse
+
+from hf_remote_state import load_remote_state
 
 
 ROOT = Path(__file__).resolve().parent
@@ -25,7 +28,7 @@ CACHE_LOCK = threading.Lock()
 CACHE = {}
 
 PROCESS_PATTERNS = {
-    "sync": ["sync_existing_to_hf_and_prune.py"],
+    "sync": ["sync_existing_to_hf_and_prune.py", "upload_data_in_batches.py"],
     "scrape": [
         "fast_scraper/scraper.py",
         "timed_scrape_runner.py",
@@ -39,6 +42,22 @@ SYNC_LOGS = [
     "hf_sync_wifi.log",
     "hf_completed_sync.log",
 ]
+ANSI_RE = re.compile(r"\x1b\[[0-9;?]*[A-Za-z]")
+LFS_PROGRESS_RE = re.compile(
+    r"Upload\s+(?P<total>\d+)\s+LFS files:\s+(?P<pct>\d+)%.*?(?P<done>\d+)/(?P=total)"
+)
+PREPARED_RE = re.compile(
+    r"Prepared\s+(?P<batch_count>\d+)\s+batches\s+from\s+(?P<day_count>\d+)\s+day folders"
+)
+BATCH_PLAN_RE = re.compile(
+    r"Batch\s+(?P<index>\d+)/(?P<total>\d+):\s+(?P<days>\d+)\s+days,\s+(?P<files>\d+)\s+files,\s+(?P<gb>[0-9.]+)\s+GB"
+)
+BATCH_FINISHED_RE = re.compile(
+    r"Batch\s+(?P<index>\d+)/(?P<total>\d+)\s+finished\s+in\s+(?P<seconds>[0-9.]+)s"
+)
+UPLOADING_DAY_RE = re.compile(
+    r"Uploading\s+(?P<day>\d{4}-\d{2}-\d{2})(?::\s+(?P<cases>\d+)\s+cases,\s+(?P<files>\d+)\s+files,\s+(?P<mb>[0-9.]+)\s+MB)?"
+)
 
 
 def utc_now():
@@ -129,6 +148,10 @@ def tail_log(path, line_count=40):
     }
 
 
+def strip_ansi(text):
+    return ANSI_RE.sub("", text).replace("\r", "\n")
+
+
 def list_scrape_logs():
     preferred = []
     others = []
@@ -140,6 +163,10 @@ def list_scrape_logs():
         else:
             others.append(path.name)
     return preferred + others
+
+
+def list_bulk_upload_logs():
+    return sorted(path.name for path in LOG_ROOT.glob("hf_bulk_upload*.log"))
 
 
 def collect_logs(log_names, line_count=40):
@@ -176,6 +203,64 @@ def directory_size_bytes(path):
     return cache_get_or_compute(("dir_size", str(path)), 60, compute)
 
 
+def iter_data_roots():
+    roots = []
+    if DATA_ROOT.exists():
+        roots.append(DATA_ROOT)
+    for path in sorted(ROOT.glob("data*")):
+        if not path.is_dir() or path == DATA_ROOT:
+            continue
+        roots.append(path)
+    return roots
+
+
+def total_data_size_bytes():
+    return sum(directory_size_bytes(path) for path in iter_data_roots())
+
+
+def latest_log_activity(log_names):
+    latest = None
+    for name in log_names:
+        path = LOG_ROOT / name
+        if not path.exists():
+            continue
+        try:
+            updated = datetime.fromtimestamp(path.stat().st_mtime, timezone.utc)
+        except FileNotFoundError:
+            continue
+        if latest is None or updated > latest:
+            latest = updated
+    return latest
+
+
+def cached_remote_state():
+    def compute():
+        return load_remote_state() or {"days": {}}
+
+    return cache_get_or_compute("cached_remote_state", 15, compute)
+
+
+def cached_remote_hf_day_summary_map():
+    state = cached_remote_state()
+    summaries = {}
+    for day, payload in (state.get("days") or {}).items():
+        if not (SCOPE_START <= day <= SCOPE_END):
+            continue
+        summaries[day] = {
+            "date": day,
+            "source": "hf",
+            "total_cases": int(payload.get("total_cases", 0) or 0),
+            "scraped_cases": int(payload.get("scraped_cases", 0) or 0),
+            "fully_completed": bool(payload.get("fully_completed", False)),
+            "updated_at_iso": payload.get("updated_at"),
+        }
+    return summaries
+
+
+def cached_remote_hf_day_folders():
+    return sorted(cached_remote_hf_day_summary_map().keys())
+
+
 def load_json(path):
     try:
         return json.loads(path.read_text())
@@ -184,12 +269,13 @@ def load_json(path):
 
 
 def iter_day_dirs():
-    for day_dir in sorted(DATA_ROOT.iterdir()):
-        if not day_dir.is_dir():
-            continue
-        if not (SCOPE_START <= day_dir.name <= SCOPE_END):
-            continue
-        yield day_dir
+    for root in iter_data_roots():
+        for day_dir in sorted(root.iterdir()):
+            if not day_dir.is_dir():
+                continue
+            if not (SCOPE_START <= day_dir.name <= SCOPE_END):
+                continue
+            yield day_dir
 
 
 def iter_scope_dates():
@@ -202,7 +288,7 @@ def iter_scope_dates():
 
 def collect_day_rows():
     def compute():
-        rows = []
+        rows_by_date = {}
         for day_dir in iter_day_dirs():
             summary_path = day_dir / "day_summary.json"
             summary = load_json(summary_path)
@@ -223,6 +309,7 @@ def collect_day_rows():
                 total_synced_bytes += payload.get("total_bytes", 0)
             row = {
                 "date": day_dir.name,
+                "root": day_dir.parent.name,
                 "year": day_dir.name[:4],
                 "month": day_dir.name[:7],
                 "total_cases": int(summary.get("total_cases", 0) or 0),
@@ -239,8 +326,25 @@ def collect_day_rows():
                 "sync_total_bytes": total_synced_bytes,
                 "timing": summary.get("timing") or {},
             }
-            rows.append(row)
-        return rows
+            existing = rows_by_date.get(row["date"])
+            if not existing:
+                rows_by_date[row["date"]] = row
+                continue
+
+            existing_updated = existing["updated_at"] or datetime.fromtimestamp(0, timezone.utc)
+            row_updated = row["updated_at"] or datetime.fromtimestamp(0, timezone.utc)
+            if (
+                row_updated > existing_updated
+                or (
+                    row_updated == existing_updated
+                    and (
+                        row["scraped_cases"] > existing["scraped_cases"]
+                        or row["total_cases"] > existing["total_cases"]
+                    )
+                )
+            ):
+                rows_by_date[row["date"]] = row
+        return [rows_by_date[key] for key in sorted(rows_by_date)]
 
     return cache_get_or_compute("day_rows", 15, compute)
 
@@ -368,8 +472,10 @@ def summarize_days(rows):
     }
 
 
-def build_calendar(rows):
+def build_calendar(rows, hf_days=None, hf_summaries=None):
     row_map = {row["date"]: row for row in rows}
+    hf_day_set = set(hf_days or [])
+    hf_summaries = hf_summaries or {}
     years = defaultdict(list)
 
     for current in iter_scope_dates():
@@ -378,10 +484,12 @@ def build_calendar(rows):
         if weekday >= 5:
             continue
         row = row_map.get(iso)
+        remote_row = hf_summaries.get(iso)
+        calendar_row = row or remote_row
 
-        if row:
-            total_cases = row["total_cases"]
-            scraped_cases = row["scraped_cases"]
+        if calendar_row:
+            total_cases = calendar_row["total_cases"]
+            scraped_cases = calendar_row["scraped_cases"]
             remaining_cases = max(0, total_cases - scraped_cases)
             if total_cases <= 0:
                 status = "no_cases"
@@ -396,13 +504,15 @@ def build_calendar(rows):
                     shade = 3
                 else:
                     shade = 4
-                status = "complete" if row["fully_completed"] else "touched"
+                status = "complete" if calendar_row["fully_completed"] else "touched"
+            source = "local" if row else "hf"
         else:
             total_cases = 0
             scraped_cases = 0
             remaining_cases = 0
             status = "untouched"
             shade = 0
+            source = "none"
 
         years[current.year].append(
             {
@@ -416,7 +526,9 @@ def build_calendar(rows):
                 "total_cases": total_cases,
                 "scraped_cases": scraped_cases,
                 "remaining_cases": remaining_cases,
-                "updated_at": row["updated_at_iso"] if row else None,
+                "updated_at": (row["updated_at_iso"] if row else (remote_row.get("updated_at_iso") if remote_row else None)),
+                "on_hf": iso in hf_day_set,
+                "source": source,
             }
         )
 
@@ -582,9 +694,159 @@ def summarize_case_prefixes():
     return cache_get_or_compute("case_prefixes", 120, compute)
 
 
+def parse_upload_status():
+    def compute():
+        latest_path = None
+        latest_mtime = None
+        for name in list_bulk_upload_logs():
+            path = LOG_ROOT / name
+            if not path.exists():
+                continue
+            try:
+                mtime = path.stat().st_mtime
+            except FileNotFoundError:
+                continue
+            if latest_mtime is None or mtime > latest_mtime:
+                latest_mtime = mtime
+                latest_path = path
+
+        if not latest_path:
+            return {
+                "active": False,
+                "status": "idle",
+                "stage": "idle",
+                "batch_index": None,
+                "batch_total": None,
+                "batch_days": None,
+                "batch_files": None,
+                "batch_size_gb": None,
+                "batches_finished": 0,
+                "prepared_batches": None,
+                "prepared_days": None,
+                "files_done": None,
+                "files_total": None,
+                "files_pct": None,
+                "current_day": None,
+                "message": "No bulk upload log found.",
+                "updated_at": None,
+            }
+
+        text = strip_ansi(latest_path.read_text(errors="replace"))
+        lines = [line.strip() for line in text.splitlines() if line.strip()]
+        prepared = None
+        batch_plans = {}
+        batch_finished = set()
+        current_batch_index = None
+        current_batch_total = None
+        current_day = None
+        files_done = None
+        files_total = None
+        files_pct = None
+        stage = "planning"
+        message = "Preparing bulk upload."
+
+        for line in lines:
+            match = PREPARED_RE.search(line)
+            if match:
+                prepared = {
+                    "batch_count": int(match.group("batch_count")),
+                    "day_count": int(match.group("day_count")),
+                }
+                continue
+
+            match = BATCH_PLAN_RE.search(line)
+            if match:
+                idx = int(match.group("index"))
+                batch_plans[idx] = {
+                    "days": int(match.group("days")),
+                    "files": int(match.group("files")),
+                    "size_gb": float(match.group("gb")),
+                }
+                if current_batch_index is None:
+                    current_batch_index = idx
+                    current_batch_total = int(match.group("total"))
+                continue
+
+            match = BATCH_FINISHED_RE.search(line)
+            if match:
+                idx = int(match.group("index"))
+                batch_finished.add(idx)
+                current_batch_index = idx + 1
+                current_batch_total = int(match.group("total"))
+                stage = "starting_next_batch"
+                message = f"Batch {idx}/{current_batch_total} finished."
+                continue
+
+            match = UPLOADING_DAY_RE.search(line)
+            if match:
+                current_day = match.group("day")
+                stage = "uploading_commit"
+                message = f"Uploading data for {current_day}."
+                continue
+
+            match = LFS_PROGRESS_RE.search(line)
+            if match:
+                files_total = int(match.group("total"))
+                files_done = int(match.group("done"))
+                files_pct = int(match.group("pct"))
+                stage = "uploading_lfs" if files_done < files_total else "finalizing_commit"
+                if current_batch_index and current_batch_total:
+                    message = f"Batch {current_batch_index}/{current_batch_total}: {files_done}/{files_total} files transferred."
+                else:
+                    message = f"{files_done}/{files_total} files transferred."
+                continue
+
+            lower = line.lower()
+            if lower.startswith("verified "):
+                stage = "verifying"
+                message = line
+                continue
+            if lower.startswith("deleted local "):
+                stage = "pruning"
+                message = line
+                continue
+            if (
+                "gateway time-out" in lower
+                or "too many requests" in lower
+                or "precondition failed" in lower
+                or "retrying in" in lower
+            ):
+                stage = "retrying"
+                message = line
+                continue
+
+        current_batch = batch_plans.get(current_batch_index, {})
+        updated_at = datetime.fromtimestamp(latest_path.stat().st_mtime, timezone.utc)
+        active = any("upload_data_in_batches.py" in row["command"] for row in matching_processes("sync"))
+        return {
+            "active": active,
+            "status": "active" if active else "idle",
+            "stage": stage,
+            "batch_index": current_batch_index,
+            "batch_total": current_batch_total,
+            "batch_days": current_batch.get("days"),
+            "batch_files": current_batch.get("files"),
+            "batch_size_gb": current_batch.get("size_gb"),
+            "batches_finished": len(batch_finished),
+            "prepared_batches": prepared["batch_count"] if prepared else None,
+            "prepared_days": prepared["day_count"] if prepared else None,
+            "files_done": files_done,
+            "files_total": files_total,
+            "files_pct": files_pct,
+            "current_day": current_day,
+            "message": message,
+            "updated_at": format_dt(updated_at),
+        }
+
+    return cache_get_or_compute("upload_status", 10, compute)
+
+
 def build_status():
     rows = collect_day_rows()
     corpus = summarize_days(rows)
+    remote_state = cached_remote_state()
+    hf_days = cached_remote_hf_day_folders()
+    hf_summaries = cached_remote_hf_day_summary_map()
     scrape_logs = collect_logs(list_scrape_logs(), line_count=35)
     sync_logs = collect_logs(SYNC_LOGS, line_count=35)
     scrape_processes = matching_processes("scrape")
@@ -598,24 +860,36 @@ def build_status():
         (row["sync_updated_at"] for row in rows if row["sync_updated_at"]),
         default=None,
     )
+    latest_sync_at = max(
+        [dt for dt in [latest_sync_at, latest_log_activity(SYNC_LOGS + list_bulk_upload_logs())] if dt],
+        default=None,
+    )
+    upload_status = parse_upload_status()
 
     return {
         "generated_at": format_dt(utc_now()),
         "scope": corpus["scope"],
         "corpus": corpus,
         "storage": {
-            "data_bytes": directory_size_bytes(DATA_ROOT),
-            "data_human": human_bytes(directory_size_bytes(DATA_ROOT)),
+            "data_bytes": total_data_size_bytes(),
+            "data_human": human_bytes(total_data_size_bytes()),
+        },
+        "remote_cache": {
+            "repo_id": remote_state.get("repo_id"),
+            "generated_at": remote_state.get("generated_at"),
+            "head_commit": remote_state.get("head_commit") or {},
+            "day_count": int(remote_state.get("day_count", 0) or 0),
         },
         "services": {
             "scrape": derive_service_status(
                 "scrape", scrape_processes, latest_scrape_at, scrape_logs
             ),
             "sync": derive_service_status("sync", sync_processes, latest_sync_at, sync_logs),
+            "upload": upload_status,
         },
-        "logs": {"scrape": scrape_logs, "sync": sync_logs},
+        "logs": {"scrape": scrape_logs, "sync": sync_logs + collect_logs(list_bulk_upload_logs(), line_count=35)},
         "prefixes": summarize_case_prefixes(),
-        "calendar": build_calendar(rows),
+        "calendar": build_calendar(rows, hf_days, hf_summaries),
     }
 
 

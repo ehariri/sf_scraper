@@ -55,7 +55,7 @@ function metricCard(label, value, subtext, pct) {
   `;
 }
 
-function renderService(service, containerId, badgeId) {
+function renderService(service, containerId, badgeId, extraHtml = "") {
   const badge = document.getElementById(badgeId);
   badge.className = badgeClass(service.status);
   badge.textContent = serviceBadgeText(service);
@@ -78,8 +78,55 @@ function renderService(service, containerId, badgeId) {
       <div><span class="label">Processes</span><strong>${service.process_count}</strong></div>
       <div><span class="label">Last activity</span><strong>${fmtRelative(service.latest_activity_at)}</strong></div>
     </div>
+    ${extraHtml}
     ${issues}
     <ul class="process-list">${processLines}</ul>
+  `;
+}
+
+function stageLabel(stage) {
+  const labels = {
+    idle: "Idle",
+    planning: "Planning batches",
+    starting_next_batch: "Starting next batch",
+    uploading_commit: "Building commit",
+    uploading_lfs: "Uploading files",
+    finalizing_commit: "Finalizing commit",
+    verifying: "Verifying remote files",
+    pruning: "Pruning local data",
+    retrying: "Retrying after HF error",
+    complete: "Complete",
+  };
+  return labels[stage] || stage || "Unknown";
+}
+
+function renderUploadSummary(upload) {
+  const batchText =
+    upload.batch_index && upload.batch_total
+      ? `Batch ${upload.batch_index} / ${upload.batch_total}`
+      : "No active batch";
+  const detailText =
+    upload.files_total
+      ? `${fmtInt(upload.files_done)} / ${fmtInt(upload.files_total)} files`
+      : upload.batch_days
+        ? `${fmtInt(upload.batch_days)} days in batch`
+        : "Waiting for upload activity";
+  const pct = upload.files_pct ?? 0;
+
+  return `
+    <div class="upload-inline">
+      <div class="year-header">
+        <strong>${stageLabel(upload.stage)}</strong>
+        <span>${batchText}</span>
+      </div>
+      ${progressBar(pct, 100)}
+      <div class="year-meta upload-meta">
+        <span>${detailText}</span>
+        ${upload.current_day ? `<span>Current day ${upload.current_day}</span>` : ""}
+        <span>${fmtRelative(upload.updated_at)}</span>
+      </div>
+      <p class="upload-message">${upload.message || "No current upload activity."}</p>
+    </div>
   `;
 }
 
@@ -212,6 +259,8 @@ function renderCalendar(calendar) {
                 ? "Known zero-case weekday"
                 : `${fmtInt(day.scraped_cases)} / ${fmtInt(day.total_cases)} scraped`,
             day.remaining_cases ? `${fmtInt(day.remaining_cases)} remaining` : null,
+            day.source === "hf" ? "HF only" : null,
+            day.on_hf && day.source === "local" ? "Also present on HF" : null,
             day.updated_at ? `Updated ${fmtRelative(day.updated_at)}` : null,
           ]
             .filter(Boolean)
@@ -287,7 +336,12 @@ async function refresh() {
   ].join("");
 
   renderService(payload.services.scrape, "scrape-service", "scrape-status-badge");
-  renderService(payload.services.sync, "sync-service", "sync-status-badge");
+  renderService(
+    payload.services.sync,
+    "sync-service",
+    "sync-status-badge",
+    renderUploadSummary(payload.services.upload)
+  );
   renderCalendar(payload.calendar);
   renderYearRows(corpus.years);
   renderPrefixRows(payload.prefixes);

@@ -4,22 +4,61 @@ import shutil
 import time
 from pathlib import Path
 
-from huggingface_hub import HfApi
-from huggingface_hub.errors import EntryNotFoundError
+from huggingface_hub import CommitOperationAdd, HfApi
+from huggingface_hub.errors import EntryNotFoundError, HfHubHTTPError
 
 from build_hf_dataset_card import build_card
+from hf_remote_state import refresh_remote_state_cache
 
 
 DEFAULT_REPO_ID = "please-the-bot/sf_superior_court"
 DEFAULT_DATA_DIR = Path("data")
 SYNC_METADATA_FILENAME = "sync_metadata.json"
 DATASET_CARD_FILENAME = "HF_DATASET_CARD.md"
+HF_COMMIT_MAX_ATTEMPTS = 8
+DATASET_ROOT_FILENAMES = {"day_summary.json", "failed_cases.json"}
 
 
 def utc_now_iso():
     from datetime import datetime
 
     return datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
+
+
+def is_hf_commit_conflict(exc: Exception):
+    if not isinstance(exc, HfHubHTTPError):
+        return False
+    response = getattr(exc, "response", None)
+    status_code = getattr(response, "status_code", None)
+    if status_code in {412, 429}:
+        return True
+    text = str(exc).lower()
+    return (
+        "precondition failed" in text
+        or "a commit has happened since" in text
+        or "too many requests" in text
+        or "rate limit" in text
+    )
+
+
+def run_hf_commit_with_retry(action, description: str, max_attempts: int = HF_COMMIT_MAX_ATTEMPTS):
+    for attempt in range(1, max_attempts + 1):
+        try:
+            return action()
+        except Exception as exc:
+            if not is_hf_commit_conflict(exc) or attempt == max_attempts:
+                raise
+            response = getattr(exc, "response", None)
+            status_code = getattr(response, "status_code", None)
+            if status_code == 429:
+                delay = min(1800, 60 * attempt)
+            else:
+                delay = min(30, 1.5 * (2 ** (attempt - 1)))
+            print(
+                f"HF commit conflict during {description} "
+                f"(attempt {attempt}/{max_attempts}). Retrying in {delay:.1f}s..."
+            )
+            time.sleep(delay)
 
 
 def load_day_summary(day_dir: Path):
@@ -226,23 +265,76 @@ def verify_root_files(api: HfApi, repo_id: str, day_dir: Path, filenames):
 
 
 def upload_day(api: HfApi, repo_id: str, day_dir: Path):
-    api.upload_folder(
-        repo_id=repo_id,
-        repo_type="dataset",
-        folder_path=day_dir,
-        path_in_repo=f"data/{day_dir.name}",
-        commit_message=f"Upload SF Superior Court day {day_dir.name}",
+    run_hf_commit_with_retry(
+        lambda: api.upload_folder(
+            repo_id=repo_id,
+            repo_type="dataset",
+            folder_path=day_dir,
+            path_in_repo=f"data/{day_dir.name}",
+            commit_message=f"Upload SF Superior Court day {day_dir.name}",
+        ),
+        f"day upload {day_dir.name}",
     )
 
 
 def upload_case_dir(api: HfApi, repo_id: str, day_name: str, case_dir: Path):
-    api.upload_folder(
-        repo_id=repo_id,
-        repo_type="dataset",
-        folder_path=case_dir,
-        path_in_repo=f"data/{day_name}/{case_dir.name}",
-        commit_message=f"Upload SF Superior Court case {day_name}/{case_dir.name}",
+    run_hf_commit_with_retry(
+        lambda: api.upload_folder(
+            repo_id=repo_id,
+            repo_type="dataset",
+            folder_path=case_dir,
+            path_in_repo=f"data/{day_name}/{case_dir.name}",
+            commit_message=f"Upload SF Superior Court case {day_name}/{case_dir.name}",
+        ),
+        f"case upload {day_name}/{case_dir.name}",
     )
+
+
+def upload_case_batch(api: HfApi, repo_id: str, day_name: str, case_dirs, root_filenames=None):
+    operations = []
+    total_bytes = 0
+
+    for case_dir in case_dirs:
+        for path in sorted(case_dir.rglob("*")):
+            if not path.is_file():
+                continue
+            rel = path.relative_to(case_dir).as_posix()
+            operations.append(
+                CommitOperationAdd(
+                    path_in_repo=f"data/{day_name}/{case_dir.name}/{rel}",
+                    path_or_fileobj=str(path),
+                )
+            )
+            total_bytes += path.stat().st_size
+
+    for filename in sorted(root_filenames or []):
+        path = case_dirs[0].parent / filename
+        if not path.exists():
+            continue
+        operations.append(
+            CommitOperationAdd(
+                path_in_repo=f"data/{day_name}/{filename}",
+                path_or_fileobj=str(path),
+            )
+        )
+        total_bytes += path.stat().st_size
+
+    if not operations:
+        return 0
+
+    run_hf_commit_with_retry(
+        lambda: api.create_commit(
+            repo_id=repo_id,
+            repo_type="dataset",
+            operations=operations,
+            commit_message=(
+                f"Upload SF Superior Court cases {day_name} "
+                f"({len(case_dirs)} cases)"
+            ),
+        ),
+        f"case batch upload {day_name} ({len(case_dirs)} cases)",
+    )
+    return total_bytes
 
 
 def upload_day_root_files(api: HfApi, repo_id: str, day_dir: Path, filenames):
@@ -258,12 +350,15 @@ def upload_day_root_files(api: HfApi, repo_id: str, day_dir: Path, filenames):
                 shutil.copy2(source, temp_root / filename)
         if not any(temp_root.iterdir()):
             return
-        api.upload_folder(
-            repo_id=repo_id,
-            repo_type="dataset",
-            folder_path=temp_root,
-            path_in_repo=f"data/{day_dir.name}",
-            commit_message=f"Upload SF Superior Court day metadata {day_dir.name}",
+        run_hf_commit_with_retry(
+            lambda: api.upload_folder(
+                repo_id=repo_id,
+                repo_type="dataset",
+                folder_path=temp_root,
+                path_in_repo=f"data/{day_dir.name}",
+                commit_message=f"Upload SF Superior Court day metadata {day_dir.name}",
+            ),
+            f"day metadata upload {day_dir.name}",
         )
     finally:
         shutil.rmtree(temp_root, ignore_errors=True)
@@ -272,12 +367,24 @@ def upload_day_root_files(api: HfApi, repo_id: str, day_dir: Path, filenames):
 def upload_dataset_card(api: HfApi, repo_id: str, data_dir: Path):
     card_path = Path(__file__).resolve().parent / DATASET_CARD_FILENAME
     card_path.write_text(build_card(data_dir, repo_id))
-    api.upload_file(
-        path_or_fileobj=str(card_path),
-        path_in_repo="README.md",
-        repo_id=repo_id,
-        repo_type="dataset",
-        commit_message="Refresh dataset card after sync",
+    run_hf_commit_with_retry(
+        lambda: api.upload_file(
+            path_or_fileobj=str(card_path),
+            path_in_repo="README.md",
+            repo_id=repo_id,
+            repo_type="dataset",
+            commit_message="Refresh dataset card after sync",
+        ),
+        "dataset card refresh",
+    )
+
+
+def refresh_monitor_remote_cache(repo_id: str):
+    result = refresh_remote_state_cache(repo_id=repo_id)
+    state = result["state"]
+    print(
+        f"Refreshed HF remote cache: changed={result['changed']} "
+        f"days={state.get('day_count', 0)}"
     )
 
 
@@ -417,8 +524,15 @@ def main():
                 continue
 
             case_dirs = sorted([p for p in day_dir.iterdir() if p.is_dir()])
+            dataset_root_files = [
+                path.name
+                for path in sorted(day_dir.iterdir())
+                if path.is_file() and path.name in DATASET_ROOT_FILENAMES
+            ]
             if case_dirs:
                 day_remote = remote_files_for_prefix(api, args.repo_id, f"data/{day_dir.name}")
+            pending_case_dirs = []
+
             for case_dir in case_dirs:
                 local = local_files_for_path(case_dir)
                 existing_remote = remote_files_for_case_from_day_remote(day_remote or {}, case_dir.name)
@@ -450,65 +564,111 @@ def main():
                         print(f"Deleted local {case_dir}")
                     loop_had_changes = True
                     continue
-                upload_started_at = utc_now_iso()
-                upload_started_perf = time.perf_counter()
+                pending_case_dirs.append(case_dir)
+
+            if pending_case_dirs:
+                batch_started_at = utc_now_iso()
+                batch_started_perf = time.perf_counter()
+                pending_local = {
+                    case_dir.name: local_files_for_path(case_dir) for case_dir in pending_case_dirs
+                }
+                batch_file_count = sum(len(files) for files in pending_local.values())
+                batch_total_bytes = sum(
+                    sum(files.values()) for files in pending_local.values()
+                )
                 print(
-                    f"Uploading {day_dir.name}/{case_dir.name}: {len(local)} files, "
-                    f"{sum(local.values()) / 1024 / 1024:.1f} MB"
+                    f"Uploading {day_dir.name}: {len(pending_case_dirs)} cases, "
+                    f"{batch_file_count} files, {batch_total_bytes / 1024 / 1024:.1f} MB"
                 )
-                upload_case_dir(api, args.repo_id, day_dir.name, case_dir)
+                upload_case_batch(
+                    api,
+                    args.repo_id,
+                    day_dir.name,
+                    pending_case_dirs,
+                    root_filenames=dataset_root_files,
+                )
                 verify_started_perf = time.perf_counter()
-                updated_remote = remote_files_for_prefix(
-                    api, args.repo_id, f"data/{day_dir.name}/{case_dir.name}"
-                )
-                result = verify_case_dir_against_remote_map(case_dir, updated_remote)
-                if day_remote is not None:
-                    prefix = f"{case_dir.name}/"
-                    day_remote = {
-                        rel: size
-                        for rel, size in day_remote.items()
-                        if not rel.startswith(prefix)
-                    }
-                    for rel, size in updated_remote.items():
-                        day_remote[f"{case_dir.name}/{rel}"] = size
+                day_remote = remote_files_for_prefix(api, args.repo_id, f"data/{day_dir.name}")
                 verify_elapsed = round(time.perf_counter() - verify_started_perf, 3)
                 upload_elapsed = round(
-                    time.perf_counter() - upload_started_perf - verify_elapsed, 3
+                    time.perf_counter() - batch_started_perf - verify_elapsed, 3
                 )
-                print(
-                    f"Verified {day_dir.name}/{case_dir.name}: local={result['local_count']} "
-                    f"remote={result['remote_count']} extra_remote={result['extra_count']}"
-                )
-                if not result["ok"]:
-                    raise RuntimeError(
-                        f"Verification failed for {day_dir.name}/{case_dir.name}: "
-                        f"missing={len(result['missing'])}, mismatched={len(result['mismatched'])}"
+
+                for case_dir in pending_case_dirs:
+                    local = pending_local[case_dir.name]
+                    updated_remote = remote_files_for_case_from_day_remote(day_remote, case_dir.name)
+                    result = verify_case_dir_against_remote_map(case_dir, updated_remote)
+                    print(
+                        f"Verified {day_dir.name}/{case_dir.name}: local={result['local_count']} "
+                        f"remote={result['remote_count']} extra_remote={result['extra_count']}"
                     )
-                record_case_sync(
-                    sync_metadata,
-                    case_dir.name,
-                    {
-                        "started_at": upload_started_at,
-                        "finished_at": utc_now_iso(),
-                        "upload_elapsed_seconds": upload_elapsed,
-                        "verify_elapsed_seconds": verify_elapsed,
-                        "file_count": len(local),
-                        "total_bytes": sum(local.values()),
-                        "verified_local_count": result["local_count"],
-                        "verified_remote_count": result["remote_count"],
-                        "pruned_local": not args.keep_local,
-                    },
-                )
-                save_sync_metadata(day_dir, sync_metadata)
-                if not args.keep_local:
-                    shutil.rmtree(case_dir)
-                    print(f"Deleted local {case_dir}")
-                loop_had_changes = True
+                    if not result["ok"]:
+                        raise RuntimeError(
+                            f"Verification failed for {day_dir.name}/{case_dir.name}: "
+                            f"missing={len(result['missing'])}, mismatched={len(result['mismatched'])}"
+                        )
+                    record_case_sync(
+                        sync_metadata,
+                        case_dir.name,
+                        {
+                            "started_at": batch_started_at,
+                            "finished_at": utc_now_iso(),
+                            "upload_elapsed_seconds": upload_elapsed,
+                            "verify_elapsed_seconds": verify_elapsed,
+                            "file_count": len(local),
+                            "total_bytes": sum(local.values()),
+                            "verified_local_count": result["local_count"],
+                            "verified_remote_count": result["remote_count"],
+                            "pruned_local": not args.keep_local,
+                            "batch_case_count": len(pending_case_dirs),
+                        },
+                    )
+                    save_sync_metadata(day_dir, sync_metadata)
+                    if not args.keep_local:
+                        shutil.rmtree(case_dir)
+                        print(f"Deleted local {case_dir}")
+                    loop_had_changes = True
+
+                if dataset_root_files:
+                    root_result = verify_root_files_against_remote_map(
+                        day_dir, dataset_root_files, day_remote
+                    )
+                    print(
+                        f"Verified day metadata {day_dir.name}: local={root_result['local_count']} "
+                        f"remote={root_result['remote_count']} extra_remote={root_result['extra_count']}"
+                    )
+                    if not root_result["ok"]:
+                        raise RuntimeError(
+                            f"Verification failed for day metadata {day_dir.name}: "
+                            f"missing={len(root_result['missing'])}, mismatched={len(root_result['mismatched'])}"
+                        )
+                    for filename in dataset_root_files:
+                        local_path = day_dir / filename
+                        if local_path.exists():
+                            record_root_sync(
+                                sync_metadata,
+                                filename,
+                                {
+                                    "started_at": batch_started_at,
+                                    "finished_at": utc_now_iso(),
+                                    "upload_elapsed_seconds": upload_elapsed,
+                                    "verify_elapsed_seconds": verify_elapsed,
+                                    "size": local_path.stat().st_size,
+                                    "pruned_local": not args.keep_local,
+                                    "batched_with_cases": True,
+                                },
+                            )
+                    save_sync_metadata(day_dir, sync_metadata)
+                    if not args.keep_local:
+                        for filename in dataset_root_files:
+                            (day_dir / filename).unlink(missing_ok=True)
+                    loop_had_changes = True
 
             root_files = [
                 path.name
                 for path in sorted(day_dir.iterdir())
                 if path.is_file()
+                and path.name in DATASET_ROOT_FILENAMES
             ]
             if root_files:
                 if day_remote is None:
@@ -593,6 +753,8 @@ def main():
             print("Refreshing HF dataset card...")
             upload_dataset_card(api, args.repo_id, args.data_dir)
             print("Dataset card refreshed.")
+            print("Refreshing HF remote cache...")
+            refresh_monitor_remote_cache(args.repo_id)
         print(
             f"Sync pass finished: started_at={loop_started_at} "
             f"elapsed_seconds={loop_elapsed} day_count={len(day_dirs)}"

@@ -16,7 +16,7 @@
             Live view over local scrape coverage, local process health, and HF sync status.
           </p>
           <p class="scope-note">
-            Coverage and case counts are from the local `data/` tree unless a section explicitly says `HF`.
+            Coverage panels are local-first, but the calendar merges local day progress with HF-uploaded day presence.
           </p>
         </div>
         <div class="hero-meta">
@@ -67,10 +67,10 @@
         <section class="grid calendar-grid">
           <article class="panel">
             <div class="panel-header">
-              <h2>Local Coverage Calendar</h2>
+              <h2>Combined HF + Local Calendar</h2>
             </div>
             <p class="calendar-note">
-              Darker cells mean fewer cases left to scrape. Untouched weekdays are separate from known zero-case days.
+              Darker cells mean fewer local cases left to scrape. HF-only days are distinct from untouched weekdays and known zero-case days.
             </p>
             <div id="calendar-legend" class="calendar-legend"></div>
             <div id="coverage-calendar" class="coverage-calendar"></div>

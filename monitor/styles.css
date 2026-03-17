@@ -367,6 +367,24 @@ h1 {
   gap: 6px;
 }
 
+.upload-inline {
+  margin-top: 14px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: #fbf7ee;
+}
+
+.upload-meta {
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.upload-message {
+  margin: 10px 0 0;
+  color: var(--muted);
+}
+
 .log-block + .log-block {
   margin-top: 14px;
 }

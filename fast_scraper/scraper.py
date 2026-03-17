@@ -22,6 +22,7 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
 from huggingface_hub import CommitOperationAdd, HfApi
+from huggingface_hub.errors import HfHubHTTPError
 from playwright.async_api import Error as PlaywrightError
 from playwright.async_api import TimeoutError as PlaywrightTimeoutError
 from playwright.async_api import async_playwright
@@ -520,10 +521,22 @@ async def fetch_case_list_via_browser(page, date_str):
 
 DOWNLOAD_SEMAPHORE = None
 HF_UPLOAD_SEMAPHORE = None
+HF_COMMIT_MAX_ATTEMPTS = 8
 
 
 def repo_case_dir(filing_date, case_num):
     return f"data/{filing_date}/{case_num}"
+
+
+def is_hf_commit_conflict(exc: Exception):
+    if not isinstance(exc, HfHubHTTPError):
+        return False
+    response = getattr(exc, "response", None)
+    status_code = getattr(response, "status_code", None)
+    if status_code == 412:
+        return True
+    text = str(exc).lower()
+    return "precondition failed" in text or "a commit has happened since" in text
 
 
 async def create_hf_commit(api, repo_id, operations, message):
@@ -532,15 +545,27 @@ async def create_hf_commit(api, repo_id, operations, message):
         return
 
     loop = asyncio.get_running_loop()
-    await loop.run_in_executor(
-        None,
-        lambda: api.create_commit(
-            repo_id=repo_id,
-            repo_type="dataset",
-            operations=operations,
-            commit_message=message,
-        ),
-    )
+    for attempt in range(1, HF_COMMIT_MAX_ATTEMPTS + 1):
+        try:
+            await loop.run_in_executor(
+                None,
+                lambda: api.create_commit(
+                    repo_id=repo_id,
+                    repo_type="dataset",
+                    operations=operations,
+                    commit_message=message,
+                ),
+            )
+            return
+        except Exception as exc:
+            if not is_hf_commit_conflict(exc) or attempt == HF_COMMIT_MAX_ATTEMPTS:
+                raise
+            delay = min(30, 1.5 * (2 ** (attempt - 1)))
+            print(
+                f"HF commit conflict during '{message}' "
+                f"(attempt {attempt}/{HF_COMMIT_MAX_ATTEMPTS}). Retrying in {delay:.1f}s..."
+            )
+            await asyncio.sleep(delay)
 
 
 async def upload_case_bundle_to_hf(api, repo_id, filing_date, case_num, output_data, pdf_blobs):
