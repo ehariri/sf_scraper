@@ -118,13 +118,13 @@ source .venv/bin/activate
 python monitor_app.py --host 127.0.0.1 --port 8787
 ```
 
-Then open:
+On the scraper machine itself, open:
 
 ```text
 http://127.0.0.1:8787
 ```
 
-For a shareable hosted monitor, use:
+For sharing the monitor with other people or devices, use the hosted Vercel deployment instead of any local-network address:
 
 ```text
 https://vercelmonitor.vercel.app
