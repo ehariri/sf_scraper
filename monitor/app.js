@@ -160,83 +160,6 @@ function renderLogs(containerId, logs) {
     .join("");
 }
 
-function stageLabel(stage) {
-  const labels = {
-    idle: "Idle",
-    planning: "Planning batches",
-    starting_next_batch: "Starting next batch",
-    uploading_commit: "Building commit",
-    uploading_lfs: "Uploading files",
-    finalizing_commit: "Finalizing commit",
-    verifying: "Verifying remote files",
-    pruning: "Pruning local data",
-    retrying: "Retrying after HF error",
-    complete: "Complete",
-  };
-  return labels[stage] || stage || "Unknown";
-}
-
-function renderUploadStatus(upload) {
-  const batchText =
-    upload.batch_index && upload.batch_total
-      ? `Batch ${upload.batch_index} / ${upload.batch_total}`
-      : "No active batch";
-  const batchPct =
-    upload.batch_total > 0 && upload.batch_index
-      ? (upload.batches_finished / upload.batch_total) * 100
-      : 0;
-  const filePct = upload.files_pct ?? 0;
-  const details = [
-    upload.batch_days ? `${fmtInt(upload.batch_days)} days in batch` : null,
-    upload.batch_files ? `${fmtInt(upload.batch_files)} files in batch` : null,
-    upload.batch_size_gb ? `${upload.batch_size_gb.toFixed(2)} GB target` : null,
-    upload.current_day ? `Current day ${upload.current_day}` : null,
-    upload.log_name ? `Log ${upload.log_name}` : null,
-  ]
-    .filter(Boolean)
-    .map((text) => `<span>${text}</span>`)
-    .join("");
-
-  const fileProgress = upload.files_total
-    ? `
-      <div class="upload-progress-block">
-        <div class="year-header">
-          <strong>File Transfer</strong>
-          <span>${fmtInt(upload.files_done)} / ${fmtInt(upload.files_total)} files</span>
-        </div>
-        ${progressBar(filePct, 100)}
-      </div>
-    `
-    : "";
-
-  document.getElementById("upload-status").innerHTML = `
-    <div class="upload-status-grid">
-      <div class="upload-stat">
-        <span class="label">Stage</span>
-        <strong>${stageLabel(upload.stage)}</strong>
-      </div>
-      <div class="upload-stat">
-        <span class="label">Batch</span>
-        <strong>${batchText}</strong>
-      </div>
-      <div class="upload-stat">
-        <span class="label">Last update</span>
-        <strong>${fmtRelative(upload.updated_at)}</strong>
-      </div>
-    </div>
-    <div class="upload-progress-block">
-      <div class="year-header">
-        <strong>Batch Progress</strong>
-        <span>${fmtInt(upload.batches_finished)} finished${upload.prepared_batches ? ` of ${fmtInt(upload.prepared_batches)}` : ""}</span>
-      </div>
-      ${progressBar(batchPct, 100)}
-    </div>
-    ${fileProgress}
-    <div class="year-meta upload-meta">${details}</div>
-    <p class="upload-message">${upload.message || "No current upload activity."}</p>
-  `;
-}
-
 function bindTabs() {
   if (tabsBound) return;
   tabsBound = true;
@@ -365,7 +288,6 @@ async function refresh() {
 
   renderService(payload.services.scrape, "scrape-service", "scrape-status-badge");
   renderService(payload.services.sync, "sync-service", "sync-status-badge");
-  renderUploadStatus(payload.services.upload);
   renderCalendar(payload.calendar);
   renderYearRows(corpus.years);
   renderPrefixRows(payload.prefixes);
