@@ -16,7 +16,7 @@
             Live view over local scrape coverage, local process health, and HF sync status.
           </p>
           <p class="scope-note">
-            Coverage panels are local-first, but the calendar merges local day progress with HF-uploaded day presence.
+            Coverage panels merge cached HF day summaries with local progress. The case-prefix panel remains local-only.
           </p>
         </div>
         <div class="hero-meta">
@@ -99,7 +99,7 @@
         <section class="grid coverage-grid">
           <article class="panel">
             <div class="panel-header">
-              <h2>Local Year Coverage</h2>
+              <h2>Combined Year Coverage</h2>
             </div>
             <div id="year-rows" class="year-rows"></div>
           </article>
@@ -114,13 +114,13 @@
         <section class="grid lists-grid">
           <article class="panel">
             <div class="panel-header">
-              <h2>Recently Updated Local Days</h2>
+              <h2>Recently Updated Days</h2>
             </div>
             <div id="latest-days" class="day-list"></div>
           </article>
           <article class="panel">
             <div class="panel-header">
-              <h2>Lowest-Coverage Local Days</h2>
+              <h2>Lowest-Coverage Days</h2>
             </div>
             <div id="worst-days" class="day-list"></div>
           </article>

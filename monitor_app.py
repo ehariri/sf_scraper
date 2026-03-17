@@ -349,6 +349,62 @@ def collect_day_rows():
     return cache_get_or_compute("day_rows", 15, compute)
 
 
+def combine_day_rows(local_rows, hf_summaries):
+    combined = {}
+
+    for row in local_rows:
+        payload = dict(row)
+        payload["source"] = "local"
+        combined[row["date"]] = payload
+
+    for day, remote_row in (hf_summaries or {}).items():
+        updated_at = parse_iso8601(remote_row.get("updated_at_iso"))
+        if day not in combined:
+            combined[day] = {
+                "date": day,
+                "root": "hf",
+                "year": day[:4],
+                "month": day[:7],
+                "total_cases": int(remote_row.get("total_cases", 0) or 0),
+                "scraped_cases": int(remote_row.get("scraped_cases", 0) or 0),
+                "fully_completed": bool(remote_row.get("fully_completed", False)),
+                "updated_at": updated_at,
+                "updated_at_iso": remote_row.get("updated_at_iso"),
+                "failed_case_count": 0,
+                "last_run": {},
+                "sync_updated_at": None,
+                "sync_updated_at_iso": None,
+                "sync_case_records": 0,
+                "sync_pruned_cases": 0,
+                "sync_total_bytes": 0,
+                "timing": {},
+                "source": "hf",
+            }
+            continue
+
+        local_row = combined[day]
+        merged = dict(local_row)
+        merged["total_cases"] = max(
+            int(local_row.get("total_cases", 0) or 0),
+            int(remote_row.get("total_cases", 0) or 0),
+        )
+        merged["scraped_cases"] = max(
+            int(local_row.get("scraped_cases", 0) or 0),
+            int(remote_row.get("scraped_cases", 0) or 0),
+        )
+        merged["fully_completed"] = bool(local_row.get("fully_completed")) or bool(
+            remote_row.get("fully_completed", False)
+        )
+        local_updated = local_row.get("updated_at")
+        if updated_at and (not local_updated or updated_at > local_updated):
+            merged["updated_at"] = updated_at
+            merged["updated_at_iso"] = remote_row.get("updated_at_iso")
+        merged["source"] = "both"
+        combined[day] = merged
+
+    return [combined[key] for key in sorted(combined)]
+
+
 def summarize_days(rows):
     year_buckets = defaultdict(
         lambda: {
@@ -842,11 +898,12 @@ def parse_upload_status():
 
 
 def build_status():
-    rows = collect_day_rows()
-    corpus = summarize_days(rows)
     remote_state = cached_remote_state()
     hf_days = cached_remote_hf_day_folders()
     hf_summaries = cached_remote_hf_day_summary_map()
+    rows = collect_day_rows()
+    combined_rows = combine_day_rows(rows, hf_summaries)
+    corpus = summarize_days(combined_rows)
     scrape_logs = collect_logs(list_scrape_logs(), line_count=35)
     sync_logs = collect_logs(SYNC_LOGS, line_count=35)
     scrape_processes = matching_processes("scrape")

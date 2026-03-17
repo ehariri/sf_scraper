@@ -183,6 +183,7 @@ function renderDayList(containerId, rows) {
           <div class="year-meta">
             <span>${fmtInt(row.scraped_cases)} / ${fmtInt(row.total_cases)} scraped</span>
             <span>${row.failed_case_count} failed queued</span>
+            <span>${row.source === "both" ? "HF + local" : row.source === "hf" ? "HF only" : "local only"}</span>
           </div>
         </div>
       `
@@ -301,15 +302,15 @@ async function refresh() {
   const corpus = payload.corpus;
   document.getElementById("metric-cards").innerHTML = [
     metricCard(
-      "Local Case Coverage",
+      "HF + Local Case Coverage",
       `${fmtInt(corpus.scraped_cases)} / ${fmtInt(corpus.total_cases)}`,
-      `${fmtPct(corpus.coverage_pct)} of locally discovered cases scraped`,
+      `${fmtPct(corpus.coverage_pct)} of combined discovered cases scraped`,
       corpus.coverage_pct
     ),
     metricCard(
-      "Local Day Completion",
+      "HF + Local Day Completion",
       `${fmtInt(corpus.full_days)} / ${fmtInt(corpus.total_days)}`,
-      `${fmtPct(corpus.full_day_pct)} of local filing days fully scraped`,
+      `${fmtPct(corpus.full_day_pct)} of combined filing days fully scraped`,
       corpus.full_day_pct
     ),
     metricCard(
