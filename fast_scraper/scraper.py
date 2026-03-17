@@ -10,6 +10,7 @@ This version processes N cases at once, which should be ~5x faster.
 
 import argparse
 import asyncio
+import html
 import json
 import os
 import re
@@ -19,7 +20,7 @@ import subprocess
 import time
 from datetime import datetime, timedelta
 from pathlib import Path
-from urllib.parse import parse_qs, urlparse
+from urllib.parse import parse_qs, urlencode, urlparse
 
 from huggingface_hub import CommitOperationAdd, HfApi
 from huggingface_hub.errors import HfHubHTTPError
@@ -36,6 +37,7 @@ SEARCH_RESULTS_TIMEOUT_MS = 30000
 TABLE_IDLE_TIMEOUT_MS = 30000
 CASE_READY_POLL_ATTEMPTS = 20
 CASE_LAUNCH_STAGGER_MS = 0
+USE_REQUEST_ROA = True
 SESSION_TIMEOUT_MARKERS = (
     "Your session has timed out",
     "Please refresh the page and start again",
@@ -529,6 +531,11 @@ DOWNLOAD_SEMAPHORE = None
 HF_UPLOAD_SEMAPHORE = None
 HF_COMMIT_MAX_ATTEMPTS = 8
 DOC_ID_RE = re.compile(r"DocID%3D(\d+)", re.IGNORECASE)
+CASE_VAR_RE = {
+    "casenum": re.compile(r"casenum\s*=\s*['\"]([^'\"]+)['\"]", re.IGNORECASE),
+    "seshID": re.compile(r"seshID\s*=\s*['\"]([^'\"]+)['\"]", re.IGNORECASE),
+    "accessCode": re.compile(r"accessCode\s*=\s*['\"]([^'\"]*)['\"]", re.IGNORECASE),
+}
 
 
 def repo_case_dir(filing_date, case_num):
@@ -773,6 +780,61 @@ def parse_case_identifiers(link):
     return case_num, session_id
 
 
+def replace_case_session_id(link, session_id):
+    if not link or not session_id:
+        return link
+    parsed_url = urlparse(link)
+    qs = parse_qs(parsed_url.query)
+    qs["SessionID"] = [session_id]
+    return parsed_url._replace(query=urlencode(qs, doseq=True)).geturl()
+
+
+def html_has_cloudflare_challenge(html):
+    if not html:
+        return False
+    lowered = html.lower()
+    return (
+        "g-recaptcha" in lowered
+        or "challenge-platform" in lowered
+        or "follow the prompt so that the court can verify" in lowered
+        or "compat=recaptcha" in lowered
+    )
+
+
+def current_session_id_from_context(context):
+    for pg in context.pages:
+        if "SessionID=" not in pg.url:
+            continue
+        _, session_id = parse_case_identifiers(pg.url)
+        if session_id:
+            return session_id
+    return None
+
+
+async def close_stale_scraper_tabs(context, keep_pages=None):
+    """Close leftover case/detail/helper tabs from prior work in this scraper profile."""
+    keep_ids = {id(page) for page in (keep_pages or []) if page is not None}
+    closed = 0
+    for page in list(context.pages):
+        if id(page) in keep_ids:
+            continue
+        url = page.url or ""
+        should_close = (
+            url == "about:blank"
+            or "CaseNum=" in url
+            or url.startswith("data:text/html")
+        )
+        if not should_close:
+            continue
+        try:
+            await page.close()
+            closed += 1
+        except Exception:
+            pass
+    if closed:
+        print(f"Closed {closed} stale Chrome tabs.")
+
+
 def action_from_roa_row(row):
     doc_url = row.get("URL") or None
     doc_id_match = DOC_ID_RE.search(doc_url or "")
@@ -790,32 +852,81 @@ def action_from_roa_row(row):
     }
 
 
-async def fetch_case_actions_via_request(context, case_num, session_id):
-    if not session_id:
-        raise RequestPathUnavailableError(
-            f"Missing SessionID for request-based ROA fetch on {case_num}"
-        )
+def parse_case_request_vars(html, fallback_case_num):
+    values = {}
+    for key, pattern in CASE_VAR_RE.items():
+        match = pattern.search(html)
+        values[key] = match.group(1) if match else ""
 
-    roa_url = (
-        f"{BASE_URL}/CaseInfo.dll/datasnap/rest/TServerMethods1/"
-        f"GetROA/{case_num}/{session_id}/"
-    )
+    case_num = values["casenum"] or fallback_case_num
+    sesh_id = values["seshID"]
+    access_code = values["accessCode"]
+    if not sesh_id:
+        raise RequestPathUnavailableError(
+            f"Case page did not expose seshID for {fallback_case_num}"
+        )
+    return case_num, sesh_id, access_code
+
+
+async def fetch_case_actions_via_request(context, link, case_num):
     last_error = None
     for attempt in range(1, 4):
+        helper_page = await context.new_page()
         try:
-            response = await context.request.get(
-                roa_url, timeout=SEARCH_RESULTS_TIMEOUT_MS
+            live_session_id = current_session_id_from_context(context)
+            normalized_link = replace_case_session_id(link, live_session_id)
+            anchor_link = html.escape(normalized_link, quote=True)
+            await helper_page.set_content(
+                f'<html><body><a id="go" href="{anchor_link}" target="_self">go</a></body></html>'
             )
-            text = await response.text()
+            async with helper_page.expect_navigation(
+                wait_until="domcontentloaded", timeout=SEARCH_RESULTS_TIMEOUT_MS
+            ):
+                await helper_page.click("#go")
+            case_page_html = await helper_page.content()
+
+            if all(marker in case_page_html for marker in SESSION_TIMEOUT_MARKERS):
+                raise SessionExpiredError(
+                    f"Session expired while bootstrapping request ROA for {case_num}"
+                )
+            if html_has_cloudflare_challenge(case_page_html):
+                raise RetryableCaseError(
+                    f"Cloudflare challenge page returned for request bootstrap {case_num}",
+                    failed_case_num=case_num,
+                )
+
+            request_case_num, request_sesh_id, access_code = parse_case_request_vars(
+                case_page_html, case_num
+            )
+            response_payload = await helper_page.evaluate(
+                """
+                async ({ caseNum, seshID, accessCode }) => {
+                    const roaUrl =
+                        `/ci/CaseInfo.dll/datasnap/rest/TServerMethods1/GetROA/${caseNum}/${seshID}/${accessCode || ''}`;
+                    const response = await fetch(roaUrl, { credentials: 'include' });
+                    return {
+                        status: response.status,
+                        text: await response.text(),
+                    };
+                }
+                """,
+                {
+                    "caseNum": request_case_num,
+                    "seshID": request_sesh_id,
+                    "accessCode": access_code,
+                },
+            )
+            response_status = response_payload.get("status")
+            text = response_payload.get("text", "")
 
             if all(marker in text for marker in SESSION_TIMEOUT_MARKERS):
                 raise SessionExpiredError(
                     f"Session expired while fetching request ROA for {case_num}"
                 )
 
-            if response.status != 200:
+            if response_status != 200:
                 raise RequestPathUnavailableError(
-                    f"GetROA returned HTTP {response.status} for {case_num}"
+                    f"GetROA returned HTTP {response_status} for {case_num}"
                 )
 
             try:
@@ -829,6 +940,14 @@ async def fetch_case_actions_via_request(context, case_num, session_id):
             if not isinstance(result, list) or len(result) < 2:
                 raise RequestPathUnavailableError(
                     f"GetROA payload missing result rows for {case_num}"
+                )
+            if result[0] == -1:
+                raise RequestPathUnavailableError(
+                    f"GetROA returned session-invalid sentinel for {case_num}"
+                )
+            if result[0] == 0:
+                raise RequestPathUnavailableError(
+                    f"GetROA returned zero rows for {case_num}; verifying via browser"
                 )
 
             serialized_rows = result[1]
@@ -858,13 +977,15 @@ async def fetch_case_actions_via_request(context, case_num, session_id):
                 [action_from_roa_row(row) for row in raw_rows],
                 empty_case_header_metadata(),
             )
-        except SessionExpiredError:
+        except (SessionExpiredError, RetryableCaseError):
             raise
         except (RequestPathUnavailableError, PlaywrightError) as exc:
             last_error = exc
             if attempt == 3:
                 break
             await asyncio.sleep(0.5 * attempt)
+        finally:
+            await helper_page.close()
 
     raise last_error
 
@@ -940,6 +1061,8 @@ async def scrape_case(
     link = case["link"]
     link = absolute_case_url(link)
     case_num, session_id = parse_case_identifiers(link)
+    live_session_id = current_session_id_from_context(context)
+    link = replace_case_session_id(link, live_session_id or session_id)
 
     case_dir = LOCAL_DATA_ROOT / filing_date / case_num
     case_dir.mkdir(parents=True, exist_ok=True)
@@ -969,19 +1092,25 @@ async def scrape_case(
 
     try:
         restricted = False
-        roa_source = "request"
-        try:
-            actions, header_metadata = await fetch_case_actions_via_request(
-                context, case_num, session_id
-            )
-        except RequestPathUnavailableError as request_error:
-            tqdm.write(
-                f"  Request ROA unavailable for {case_num}; falling back to browser: {request_error}"
-            )
+        roa_source = "browser_only"
+        if USE_REQUEST_ROA:
+            roa_source = "request"
+            try:
+                actions, header_metadata = await fetch_case_actions_via_request(
+                    context, link, case_num
+                )
+            except RequestPathUnavailableError as request_error:
+                tqdm.write(
+                    f"  Request ROA unavailable for {case_num}; falling back to browser: {request_error}"
+                )
+                actions, header_metadata, restricted = await scrape_case_actions_via_browser(
+                    context, link, case_num
+                )
+                roa_source = "browser_fallback"
+        else:
             actions, header_metadata, restricted = await scrape_case_actions_via_browser(
                 context, link, case_num
             )
-            roa_source = "browser_fallback"
 
         if restricted:
             output_data = {
@@ -1149,6 +1278,8 @@ async def scrape_case(
         raise
     except BrowserStuckError:
         raise
+    except RetryableCaseError:
+        raise
     except Exception as e:
         error_text = str(e)
         if "Execution context was destroyed" in error_text:
@@ -1201,6 +1332,8 @@ def update_day_summary(date_str, total_cases=None, run_metadata=None):
                             timing = meta.get("timing", {})
                             if meta.get("status") == "restricted":
                                 scraped_cases += 1
+                            elif not meta.get("roa_source"):
+                                continue
                             elif meta.get("storage") == "local":
                                 pdf_count = sum(
                                     1
@@ -1290,7 +1423,13 @@ def case_is_complete(date_str, case_num):
     if meta.get("status") == "restricted":
         return True
 
+    if not meta.get("roa_source"):
+        return False
+
     if meta.get("storage") in {"local_fallback", "hf_only_pending"}:
+        return False
+
+    if meta.get("roa_source") == "request" and meta.get("total_entries", 0) == 0:
         return False
 
     if meta.get("storage") == "local" and meta.get("total_links", 0) > 0:
@@ -1376,6 +1515,7 @@ async def main():
     global SEARCH_RESULTS_TIMEOUT_MS, TABLE_IDLE_TIMEOUT_MS, CASE_READY_POLL_ATTEMPTS
     global CASE_LAUNCH_STAGGER_MS
     global LOCAL_DATA_ROOT
+    global USE_REQUEST_ROA
 
     parser = argparse.ArgumentParser(
         description="Fast SF Court Scraper (concurrent tabs)"
@@ -1468,6 +1608,11 @@ async def main():
         action="store_true",
         help="Opt in to minimizing Chrome after session setup. Disabled by default to avoid affecting unrelated Chrome windows.",
     )
+    parser.add_argument(
+        "--disable-request-roa",
+        action="store_true",
+        help="Force the legacy browser-tab case scrape path instead of using direct GetROA requests.",
+    )
     args = parser.parse_args()
 
     SEARCH_RESULTS_TIMEOUT_MS = args.search_timeout_ms
@@ -1475,6 +1620,7 @@ async def main():
     CASE_READY_POLL_ATTEMPTS = args.case_ready_poll_attempts
     CASE_LAUNCH_STAGGER_MS = args.case_launch_stagger_ms
     LOCAL_DATA_ROOT = args.data_root
+    USE_REQUEST_ROA = not args.disable_request_roa
 
     DOWNLOAD_SEMAPHORE = asyncio.Semaphore(args.max_concurrent_downloads)
     HF_UPLOAD_SEMAPHORE = asyncio.Semaphore(args.max_concurrent_hf_uploads)
@@ -1494,6 +1640,7 @@ async def main():
         print(f"Uploading case outputs to HF dataset: {hf_repo_id}")
     print(f"Keeping local PDFs: {args.keep_local_pdfs}")
     print(f"HF-only mode: {args.hf_only}")
+    print(f"Request-based ROA: {USE_REQUEST_ROA}")
 
     if args.clear:
         for date_str in dates:
@@ -1509,6 +1656,7 @@ async def main():
     # Step 2: Connect Playwright (persistent connection for the session)
     p, browser, page = await get_browser_page(args.port)
     context = page.context
+    await close_stale_scraper_tabs(context, keep_pages=[page])
 
     # Step 3: Leave Chrome alone by default so unrelated apps/windows are not affected.
     if args.minimize_chrome_after_session:
@@ -1535,10 +1683,12 @@ async def main():
             nonlocal session_id, page
             async with session_refresh_lock:
                 session_id, page = await refresh_session(page, args.port)
+                await close_stale_scraper_tabs(context, keep_pages=[page])
 
         # Reset page to clean state before each search
         try:
             session_id, page = await prepare_search_page(page, session_id, args.port)
+            await close_stale_scraper_tabs(context, keep_pages=[page])
         except Exception as e:
             print(f"  Skipping {date_str} after search-page failure: {e}")
             continue
@@ -1639,6 +1789,11 @@ async def main():
                         await recover_shared_session()
                         failures.append(case)
                     except (BrowserStuckError, RetryableCaseError) as e:
+                        if "Cloudflare challenge page returned for request bootstrap" in str(e):
+                            tqdm.write(
+                                f"  Cloudflare challenge hit during request bootstrap for {case['case_num']}; refreshing session"
+                            )
+                            await recover_shared_session()
                         tqdm.write(
                             f"  Retrying later {case['case_num']}: {e}"
                         )
