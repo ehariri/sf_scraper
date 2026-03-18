@@ -902,10 +902,30 @@ async def fetch_case_actions_via_request(context, link, case_num):
             )
             response_payload = await helper_page.evaluate(
                 """
-                async ({ caseNum, seshID, accessCode }) => {
+                async ({ caseNum, seshID, accessCode, timeoutMs }) => {
                     const roaUrl =
                         `/ci/CaseInfo.dll/datasnap/rest/TServerMethods1/GetROA/${caseNum}/${seshID}/${accessCode || ''}`;
-                    const response = await fetch(roaUrl, { credentials: 'include' });
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+                    let response;
+                    try {
+                        response = await fetch(roaUrl, {
+                            credentials: 'include',
+                            signal: controller.signal,
+                        });
+                    } catch (error) {
+                        if (error && error.name === 'AbortError') {
+                            return {
+                                timeout: true,
+                                error: `GetROA fetch timed out after ${timeoutMs}ms`,
+                            };
+                        }
+                        return {
+                            error: error ? String(error) : 'Unknown fetch error',
+                        };
+                    } finally {
+                        clearTimeout(timeoutId);
+                    }
                     return {
                         status: response.status,
                         text: await response.text(),
@@ -916,8 +936,18 @@ async def fetch_case_actions_via_request(context, link, case_num):
                     "caseNum": request_case_num,
                     "seshID": request_sesh_id,
                     "accessCode": access_code,
+                    "timeoutMs": SEARCH_RESULTS_TIMEOUT_MS,
                 },
             )
+            if response_payload.get("timeout"):
+                raise RetryableCaseError(
+                    f"GetROA fetch timed out for {case_num}",
+                    failed_case_num=case_num,
+                )
+            if response_payload.get("error"):
+                raise RequestPathUnavailableError(
+                    f"GetROA fetch failed for {case_num}: {response_payload['error']}"
+                )
             response_status = response_payload.get("status")
             text = response_payload.get("text", "")
 
