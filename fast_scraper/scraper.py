@@ -676,7 +676,9 @@ async def save_doc(context, url, folder, filename, keep_local_pdfs):
         for attempt in range(3):
             started = time.perf_counter()
             try:
-                response = await context.request.get(url)
+                response = await context.request.get(
+                    url, timeout=SEARCH_RESULTS_TIMEOUT_MS
+                )
                 if response.status == 200:
                     body = await response.body()
                     if keep_local_pdfs:
