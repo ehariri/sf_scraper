@@ -1,0 +1,116 @@
+{
+  "metadata": {
+    "case_number": "APP24008740",
+    "case_title": "ISMAIL MERINO VS. SUPERIOR COURT OF SAN FRANCISCO",
+    "filing_date": "2024-01-02",
+    "case_url": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=APP24008740&SessionID=57FF609CAB963F17892576CF6B0FE4211F23D67B",
+    "result_index": 0,
+    "source": {
+      "search_result_title": "ISMAIL MERINO VS. SUPERIOR COURT OF SAN FRANCISCO",
+      "search_result_link": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=APP24008740&SessionID=57FF609CAB963F17892576CF6B0FE4211F23D67B",
+      "source_filing_date": "2024-01-02"
+    },
+    "case_header": {
+      "page_title": "",
+      "header_text": [],
+      "header_fields": {}
+    },
+    "roa_source": "request",
+    "total_entries": 10,
+    "total_links": 10,
+    "scraped_links": 10,
+    "storage": "local",
+    "timing": {
+      "scrape_started_at": "2026-03-17T21:39:16Z",
+      "scrape_finished_at": "2026-03-17T21:39:23Z",
+      "scrape_elapsed_seconds": 7.394,
+      "download_elapsed_seconds": 11.298,
+      "downloaded_bytes": 2260346,
+      "downloaded_docs": 10,
+      "cached_docs": 0,
+      "download_attempts": 10
+    }
+  },
+  "actions": [
+    {
+      "date": "2024-01-05 13:17:24",
+      "proceedings": "EMERGENCY APPLICATION FOR STAY OF TRIAL PROCEEDINGS AND PROPOSED ORDER FILED BY PETITIONER MERINO, ISMAIL",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=57FF609CAB963F17892576CF6B0FE4211F23D67B&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DA%26DocID%3D08872058%26Timestamp%3D20260317143917%26Digest%3D0d6b4b9352b459dee27bf07d473570e0b842939a",
+      "doc_id": "08872058",
+      "doc_filename": "2024-01-05 13:17:24_08872058.pdf"
+    },
+    {
+      "date": "2024-01-09 10:07:24",
+      "proceedings": "SUPPLEMENTAL EXHIBITS IN SUPPORT OF PETITION FOR A WRIT OF MANDATE OR PROHIBITION FILED BY PETITIONER MERINO, ISMAIL",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=57FF609CAB963F17892576CF6B0FE4211F23D67B&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DA%26DocID%3D08875465%26Timestamp%3D20260317143917%26Digest%3D762dc84459788effcf213c792a2f7811058822d0",
+      "doc_id": "08875465",
+      "doc_filename": "2024-01-09 10:07:24_08875465.pdf"
+    },
+    {
+      "date": "2024-01-02 09:30:01",
+      "proceedings": "WRIT OF MANDATE FILED BY PETITIONER MERINO, ISMAIL AS TO RESPONDENT SUPERIOR COURT OF SAN FRANCISCO",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=57FF609CAB963F17892576CF6B0FE4211F23D67B&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DA%26DocID%3D08866058%26Timestamp%3D20260317143917%26Digest%3D2161a65a9257e1b6a0b820dc516ab89bd1c932bc",
+      "doc_id": "08866058",
+      "doc_filename": "2024-01-02 09:30:01_08866058.pdf"
+    },
+    {
+      "date": "2024-01-08 08:09:06",
+      "proceedings": "ORDER GRANTING APPLICATION FOR STAY OF TRIAL PROCEEDINGS, UNTIL FURTHER ORDER OF THIS COURT",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=57FF609CAB963F17892576CF6B0FE4211F23D67B&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DA%26DocID%3D08873341%26Timestamp%3D20260317143917%26Digest%3D4eafd96023fba656f0bc06d381f568a4cbea6d4f",
+      "doc_id": "08873341",
+      "doc_filename": "2024-01-08 08:09:06_08873341.pdf"
+    },
+    {
+      "date": "2024-01-08 09:18:43",
+      "proceedings": "PALMA NOTICE",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=57FF609CAB963F17892576CF6B0FE4211F23D67B&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DA%26DocID%3D08873485%26Timestamp%3D20260317143917%26Digest%3D8a36d9dc5ce951af2e80ba463eec959b1c33f996",
+      "doc_id": "08873485",
+      "doc_filename": "2024-01-08 09:18:43_08873485.pdf"
+    },
+    {
+      "date": "2024-01-19 08:13:52",
+      "proceedings": "LETTER FROM NATALIE FUCHS FILED BY THIRD PARTY THE PEOPLE OF THE STATE OF CALIFORNIA",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=57FF609CAB963F17892576CF6B0FE4211F23D67B&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DA%26DocID%3D08891407%26Timestamp%3D20260317143917%26Digest%3Db8d07d8bc8259d868f9f63be2ef9f19360c18c0f",
+      "doc_id": "08891407",
+      "doc_filename": "2024-01-19 08:13:52_08891407.pdf"
+    },
+    {
+      "date": "2024-02-07 11:52:34",
+      "proceedings": "REMITTITUR ISSUED",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=57FF609CAB963F17892576CF6B0FE4211F23D67B&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DA%26DocID%3D08916281%26Timestamp%3D20260317143917%26Digest%3D03342c9439fe7591522b826d1932431017439547",
+      "doc_id": "08916281",
+      "doc_filename": "2024-02-07 11:52:34_08916281.pdf"
+    },
+    {
+      "date": "2024-01-25 09:39:31",
+      "proceedings": "ORDER DIRECTING RESPONDENT TO VACATE ORDER OF DECEMBER 26, 2023 AND ENTER NEW ORDER AND DIFFERENT ORDER (SEE SCAN FOR DETAILS)THE STAY PREVIOUSLY ISSUED BY APPELLATE DIVISION IS VACATED.",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=57FF609CAB963F17892576CF6B0FE4211F23D67B&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DA%26DocID%3D08897564%26Timestamp%3D20260317143917%26Digest%3D3913b92d6f3ad6fc5a536d77ddca6e28ae52815c",
+      "doc_id": "08897564",
+      "doc_filename": "2024-01-25 09:39:31_08897564.pdf"
+    },
+    {
+      "date": "2024-02-06 14:37:13",
+      "proceedings": "MOTION FOR IMMEDIATE ISSUANCE OF REMITTITUR (TRANSACTION ID # 71968974) FILED BY PETITIONER MERINO, ISMAIL",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=57FF609CAB963F17892576CF6B0FE4211F23D67B&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DA%26DocID%3D08914705%26Timestamp%3D20260317143917%26Digest%3Dda9a0e57d0acc171359c9950c151fc4b284c79b9",
+      "doc_id": "08914705",
+      "doc_filename": "2024-02-06 14:37:13_08914705.pdf"
+    },
+    {
+      "date": "2024-02-07 10:28:39",
+      "proceedings": "ORDER ISSUING REMITTITUR",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=57FF609CAB963F17892576CF6B0FE4211F23D67B&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DA%26DocID%3D08915957%26Timestamp%3D20260317143917%26Digest%3Da0c5e5e04184551c9a1dcaa95f9ee9855545223c",
+      "doc_id": "08915957",
+      "doc_filename": "2024-02-07 10:28:39_08915957.pdf"
+    }
+  ]
+}

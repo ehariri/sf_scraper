@@ -206,6 +206,10 @@ class RequestPathUnavailableError(Exception):
     """Raised when the direct GetROA request path cannot be used for a case."""
 
 
+class CloudflareSolveTimeoutError(Exception):
+    """Raised when a manual Cloudflare solve does not happen in time."""
+
+
 async def open_sf_page(port):
     """Navigate to the court site, then disconnect to let Cloudflare verify."""
     cdp = f"http://localhost:{port}"
@@ -223,7 +227,7 @@ async def open_sf_page(port):
         print(f"Navigation error: {e}")
 
 
-async def wait_for_session(port):
+async def wait_for_session(port, max_wait_seconds=None):
     """
     Poll Chrome via brief CDP connections until Cloudflare is solved.
     Returns (session_id, cookies).
@@ -234,8 +238,16 @@ async def wait_for_session(port):
     print("Waiting for Cloudflare to be solved...")
     print(">>> Please solve the Cloudflare challenge in the Chrome window. <<<")
     await asyncio.sleep(1)
+    started = time.monotonic()
 
     while True:
+        if (
+            max_wait_seconds is not None
+            and (time.monotonic() - started) >= max_wait_seconds
+        ):
+            raise CloudflareSolveTimeoutError(
+                f"Timed out waiting {max_wait_seconds}s for Cloudflare solve"
+            )
         try:
             async with async_playwright() as p:
                 browser = await p.chromium.connect_over_cdp(cdp)
@@ -400,7 +412,7 @@ async def get_session_page(context, session_id=None):
     return await context.new_page()
 
 
-async def refresh_session(page, port):
+async def refresh_session(page, port, max_wait_seconds=90):
     """Re-enter the court site and wait for a fresh SessionID."""
     print("Session expired. Refreshing session...")
     context = page.context
@@ -409,7 +421,7 @@ async def refresh_session(page, port):
     except Exception:
         pass
 
-    session_id, _ = await wait_for_session(port)
+    session_id, _ = await wait_for_session(port, max_wait_seconds=max_wait_seconds)
     session_url = f"{TARGET_URL}?&SessionID={session_id}"
     active_page = await get_session_page(context, session_id)
 
@@ -1740,7 +1752,11 @@ async def main():
             try:
                 cases = await fetch_case_list_via_browser(page, date_str)
             except SessionExpiredError:
-                await recover_shared_session()
+                try:
+                    await recover_shared_session()
+                except CloudflareSolveTimeoutError as e:
+                    print(f"  Skipping {date_str} after session refresh timeout: {e}")
+                    continue
                 cases = await fetch_case_list_via_browser(page, date_str)
             except (PlaywrightTimeoutError, PlaywrightError) as e:
                 print(f"  Skipping {date_str} after search failure: {e}")
@@ -1820,14 +1836,24 @@ async def main():
                         tqdm.write(
                             f"  Session expired while scraping {case['case_num']}; queued for retry"
                         )
-                        await recover_shared_session()
+                        try:
+                            await recover_shared_session()
+                        except CloudflareSolveTimeoutError as e:
+                            tqdm.write(
+                                f"  Cloudflare solve timed out while refreshing session for {case['case_num']}: {e}"
+                            )
                         failures.append(case)
                     except (BrowserStuckError, RetryableCaseError) as e:
                         if "Cloudflare challenge page returned for request bootstrap" in str(e):
                             tqdm.write(
                                 f"  Cloudflare challenge hit during request bootstrap for {case['case_num']}; refreshing session"
                             )
-                            await recover_shared_session()
+                            try:
+                                await recover_shared_session()
+                            except CloudflareSolveTimeoutError as refresh_error:
+                                tqdm.write(
+                                    f"  Cloudflare solve timed out while refreshing session for {case['case_num']}: {refresh_error}"
+                                )
                         tqdm.write(
                             f"  Retrying later {case['case_num']}: {e}"
                         )
@@ -1858,7 +1884,13 @@ async def main():
                 f"  Retry pass {retry_round} for {date_str}: "
                 f"{len(failed_cases)} cases at concurrency {retry_concurrency}"
             )
-            await recover_shared_session()
+            try:
+                await recover_shared_session()
+            except CloudflareSolveTimeoutError as e:
+                tqdm.write(
+                    f"  Stopping retry pass {retry_round} for {date_str} after session refresh timeout: {e}"
+                )
+                break
             failed_cases = await run_case_batch(
                 failed_cases,
                 retry_concurrency,

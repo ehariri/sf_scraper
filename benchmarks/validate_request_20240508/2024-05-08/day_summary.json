@@ -1,0 +1,27 @@
+{
+  "date": "2024-05-08",
+  "total_cases": 75,
+  "scraped_cases": 19,
+  "fully_completed": false,
+  "updated_at": "2026-03-17T22:55:00Z",
+  "timing": {
+    "cases_with_timing": 19,
+    "total_scrape_elapsed_seconds": 150.641,
+    "total_download_elapsed_seconds": 348.949,
+    "total_downloaded_bytes": 217848741,
+    "total_downloaded_docs": 362
+  },
+  "last_run": {
+    "mode": "full_day",
+    "started_at": "2026-03-17T22:51:05Z",
+    "finished_at": "2026-03-17T22:55:00Z",
+    "elapsed_seconds": 234.694,
+    "case_count": 75,
+    "pending_case_count": 75,
+    "failed_case_count": 56,
+    "retry_rounds_run": 0,
+    "max_concurrent_cases": 2,
+    "max_concurrent_downloads": 6,
+    "case_launch_stagger_ms": 0
+  }
+}

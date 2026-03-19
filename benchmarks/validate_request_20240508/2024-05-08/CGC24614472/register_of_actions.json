@@ -1,0 +1,156 @@
+{
+  "metadata": {
+    "case_number": "CGC24614472",
+    "case_title": "ROSAURA VILLICANA ET AL VS. FORD MOTOR COMPANY, A DELAWARE CORPORATION ET AL",
+    "filing_date": "2024-05-08",
+    "case_url": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=CGC24614472&SessionID=873A8BF59A9DB1CAE0639A1284EDD24DF0AECA7E",
+    "result_index": 5,
+    "source": {
+      "search_result_title": "ROSAURA VILLICANA ET AL VS. FORD MOTOR COMPANY, A DELAWARE CORPORATION ET AL",
+      "search_result_link": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=CGC24614472&SessionID=873A8BF59A9DB1CAE0639A1284EDD24DF0AECA7E",
+      "source_filing_date": "2024-05-08"
+    },
+    "case_header": {
+      "page_title": "",
+      "header_text": [],
+      "header_fields": {}
+    },
+    "roa_source": "request",
+    "total_entries": 15,
+    "total_links": 13,
+    "scraped_links": 13,
+    "storage": "local",
+    "timing": {
+      "scrape_started_at": "2026-03-17T22:51:29Z",
+      "scrape_finished_at": "2026-03-17T22:51:39Z",
+      "scrape_elapsed_seconds": 9.935,
+      "download_elapsed_seconds": 10.839,
+      "downloaded_bytes": 7154308,
+      "downloaded_docs": 13,
+      "cached_docs": 0,
+      "download_attempts": 13
+    }
+  },
+  "actions": [
+    {
+      "date": "2024-05-08 11:44:27",
+      "proceedings": "CIVIL CASE COVERSHEET FILED (TRANSACTION ID # 210080200) FILED BY PLAINTIFF VILLICANA, ROSAURA , AN INDIVIDUAL GRANADOS, MARGARITO PEREZ , AN INDIVIDUAL",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=873A8BF59A9DB1CAE0639A1284EDD24DF0AECA7E&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09048610%26Timestamp%3D20260317155133%26Digest%3D007e3e291389e10dde38b9ccc5948e56ccbbc91e",
+      "doc_id": "09048610",
+      "doc_filename": "2024-05-08 11:44:27_09048610.pdf"
+    },
+    {
+      "date": "2024-08-13 11:42:27",
+      "proceedings": "*FEE PAID FOR [PROPOSED] STIPULATED PROTECTIVE ORDER (TRANSACTION ID # 74034152) FILED BY DEFENDANT FORD MOTOR COMPANY HANSEL FORD, INC. D/B/A HANSEL FORD",
+      "fee": "$20.00",
+      "doc_url": null,
+      "doc_id": null,
+      "doc_filename": null
+    },
+    {
+      "date": "2024-08-27 08:31:52",
+      "proceedings": "STIPULATION TO ADR (TRANSACTION ID # 74157694) FILED BY VILLICANA, ROSAURA , AN INDIVIDUAL GRANADOS, MARGARITO PEREZ , AN INDIVIDUAL FORD MOTOR COMPANY HANSEL FORD, INC. D/B/A HANSEL FORD",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=873A8BF59A9DB1CAE0639A1284EDD24DF0AECA7E&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09204607%26Timestamp%3D20260317155133%26Digest%3D7de6b83fa15cdf9d8971f210e122596d5f144f7a",
+      "doc_id": "09204607",
+      "doc_filename": "2024-08-27 08:31:52_09204607.pdf"
+    },
+    {
+      "date": "2024-10-01 10:39:50",
+      "proceedings": "JURY FEES (TRANSACTION ID # 74641956) DEPOSITED BY PLAINTIFF VILLICANA, ROSAURA , AN INDIVIDUAL GRANADOS, MARGARITO PEREZ , AN INDIVIDUAL",
+      "fee": "$150.00",
+      "doc_url": null,
+      "doc_id": null,
+      "doc_filename": null
+    },
+    {
+      "date": "2024-05-08 11:44:26",
+      "proceedings": "CONTRACT/WARRANTY, COMPLAINT (TRANSACTION ID # 210080200) FILED BY PLAINTIFF VILLICANA, ROSAURA , AN INDIVIDUAL GRANADOS, MARGARITO PEREZ , AN INDIVIDUAL AS TO DEFENDANT FORD MOTOR COMPANY, A DELAWARE CORPORATION HANSEL FORD, INC., A CALIFORNIA CORPORATION D/B/A HANSEL FORD DOES 1 TO 10, INCLUSIVE NO SUMMONS ISSUED, JUDICIAL COUNCIL CIVIL CASE COVER SHEET NOT FILED CASE MANAGEMENT CONFERENCE SCHEDULED FOR OCT-09-2024 PROOF OF SERVICE DUE ON                  JUL-08-2024 CASE MANAGEMENT STATEMENT DUE ON         SEP-16-2024",
+      "fee": "$435.00",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=873A8BF59A9DB1CAE0639A1284EDD24DF0AECA7E&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09048609%26Timestamp%3D20260317155133%26Digest%3D00ed7883b758cc77f4d00a1fdc3d4a1e055da38c",
+      "doc_id": "09048609",
+      "doc_filename": "2024-05-08 11:44:26_09048609.pdf"
+    },
+    {
+      "date": "2024-10-28 10:21:23",
+      "proceedings": "NOTICE OF SETTLEMENT (TRANSACTION ID # 74883315) FILED BY PLAINTIFF VILLICANA, ROSAURA , AN INDIVIDUAL GRANADOS, MARGARITO PEREZ , AN INDIVIDUAL",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=873A8BF59A9DB1CAE0639A1284EDD24DF0AECA7E&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09297952%26Timestamp%3D20260317155133%26Digest%3D7e65f202249df762896fb1557fe2cadce11ffd72",
+      "doc_id": "09297952",
+      "doc_filename": "2024-10-28 10:21:23_09297952.pdf"
+    },
+    {
+      "date": "2024-05-16 12:29:39",
+      "proceedings": "SUMMONS ON COMPLAINT (TRANSACTION ID # 210081970), PROOF OF SERVICE ONLY, FILED BY PLAINTIFF VILLICANA, ROSAURA , AN INDIVIDUAL GRANADOS, MARGARITO PEREZ , AN INDIVIDUAL SERVED MAY-13-2024, PERSONAL SERVICE AS TO DEFENDANT HANSEL FORD, INC., A CALIFORNIA CORPORATION D/B/A HANSEL FORD",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=873A8BF59A9DB1CAE0639A1284EDD24DF0AECA7E&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09060489%26Timestamp%3D20260317155133%26Digest%3Dbbef9070e9e6189867331a61aea832d94fe5336f",
+      "doc_id": "09060489",
+      "doc_filename": "2024-05-16 12:29:39_09060489.pdf"
+    },
+    {
+      "date": "2024-09-24 15:42:18",
+      "proceedings": "CASE MANAGEMENT STATEMENT (TRANSACTION ID # 74584769) FILED BY DEFENDANT FORD MOTOR COMPANY HANSEL FORD, INC. D/B/A HANSEL FORD JURY DEMANDED, ESTIMATED TIME FOR TRIAL: 7.0 DAYS",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=873A8BF59A9DB1CAE0639A1284EDD24DF0AECA7E&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09248060%26Timestamp%3D20260317155133%26Digest%3D2c689fe3129490d3198ca1a4c0e6f0f4c459ba48",
+      "doc_id": "09248060",
+      "doc_filename": "2024-09-24 15:42:18_09248060.pdf"
+    },
+    {
+      "date": "2024-09-25 13:34:39",
+      "proceedings": "NOTICE OF TIME AND PLACE OF TRIAL, COURT TRIAL SET FOR JUL-28-2025 AT 9:30 AM IN DEPT. 206. CASE MANAGEMENT CONFERENCE ON OCT-09-2024 IS OFF CALENDAR. NOTICE SENT BY COURT.",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=873A8BF59A9DB1CAE0639A1284EDD24DF0AECA7E&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09249886%26Timestamp%3D20260317155133%26Digest%3D9d0f5e54b18b1775b5e4c19f75587b2228bcc211",
+      "doc_id": "09249886",
+      "doc_filename": "2024-09-25 13:34:39_09249886.pdf"
+    },
+    {
+      "date": "2025-07-07 13:42:50",
+      "proceedings": "REMOVED FROM MASTER COURT CALENDAR SET FOR JUL-28-2025 - CASE SETTLED PER NOTICE OF SETTLEMENT FILED ON OCT-28-2024. ASSIGNED TO DEPT. 610 ON APR-07-2026 AT 10:30 AM FOR DISMISSAL PER CRC 3.1385. (206)",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=873A8BF59A9DB1CAE0639A1284EDD24DF0AECA7E&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09696886%26Timestamp%3D20260317155133%26Digest%3Dde09203eeddd34635598b845d769a5c971b6fde2",
+      "doc_id": "09696886",
+      "doc_filename": "2025-07-07 13:42:50_09696886.pdf"
+    },
+    {
+      "date": "2024-05-08 11:45:26",
+      "proceedings": "NOTICE TO PLAINTIFF",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=873A8BF59A9DB1CAE0639A1284EDD24DF0AECA7E&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09048663%26Timestamp%3D20260317155133%26Digest%3D4a1191dcba5ec45771fff576a42156281d2a7dbe",
+      "doc_id": "09048663",
+      "doc_filename": "2024-05-08 11:45:26_09048663.pdf"
+    },
+    {
+      "date": "2024-05-08 11:55:43",
+      "proceedings": "SUMMONS ISSUED (TRANSACTION ID # 210080200) TO PLAINTIFF VILLICANA, ROSAURA , AN INDIVIDUAL GRANADOS, MARGARITO PEREZ , AN INDIVIDUAL",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=873A8BF59A9DB1CAE0639A1284EDD24DF0AECA7E&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09048611%26Timestamp%3D20260317155133%26Digest%3De6429840844cdffd3fc111bb89d4c1747e42d13b",
+      "doc_id": "09048611",
+      "doc_filename": "2024-05-08 11:55:43_09048611.pdf"
+    },
+    {
+      "date": "2024-05-16 12:29:38",
+      "proceedings": "SUMMONS ON COMPLAINT (TRANSACTION ID # 210081970), PROOF OF SERVICE ONLY, FILED BY PLAINTIFF VILLICANA, ROSAURA , AN INDIVIDUAL GRANADOS, MARGARITO PEREZ , AN INDIVIDUAL SERVED MAY-10-2024, PERSONAL SERVICE AS TO DEFENDANT FORD MOTOR COMPANY, A DELAWARE CORPORATION",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=873A8BF59A9DB1CAE0639A1284EDD24DF0AECA7E&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09060488%26Timestamp%3D20260317155133%26Digest%3D3a5eafe9e931e975146c036525d0fb38097c09ed",
+      "doc_id": "09060488",
+      "doc_filename": "2024-05-16 12:29:38_09060488.pdf"
+    },
+    {
+      "date": "2024-08-14 09:28:25",
+      "proceedings": "STIPULATED PROTECTIVE ORDER",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=873A8BF59A9DB1CAE0639A1284EDD24DF0AECA7E&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09186514%26Timestamp%3D20260317155133%26Digest%3D89ce7dc315313e13ff19299d4134f8ad0ff67d39",
+      "doc_id": "09186514",
+      "doc_filename": "2024-08-14 09:28:25_09186514.pdf"
+    },
+    {
+      "date": "2024-06-10 16:32:45",
+      "proceedings": "ANSWER TO COMPLAINT FILED BY DEFENDANT FORD MOTOR COMPANY HANSEL FORD, INC. D/B/A HANSEL FORD",
+      "fee": "$870.00",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=873A8BF59A9DB1CAE0639A1284EDD24DF0AECA7E&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09092905%26Timestamp%3D20260317155133%26Digest%3Db9d47d1c0da3ba32a390878dcaf56b96c2a7ded6",
+      "doc_id": "09092905",
+      "doc_filename": "2024-06-10 16:32:45_09092905.pdf"
+    }
+  ]
+}

@@ -7,11 +7,13 @@ import re
 
 from huggingface_hub import HfApi, hf_hub_download
 from huggingface_hub.errors import EntryNotFoundError
+from hf_remote_state import DEFAULT_CACHE_PATH, load_remote_state
 
 
 DEFAULT_REPO_ID = "please-the-bot/sf_superior_court"
 DEFAULT_DATA_DIR = Path("data")
 DEFAULT_OUTPUT = Path("HF_DATASET_CARD.md")
+DEFAULT_CACHE_PATH_ARG = DEFAULT_CACHE_PATH
 
 MONTH_NAMES = {
     1: "Jan",
@@ -166,6 +168,67 @@ def summarize_remote(api: HfApi, repo_id: str, days):
     }
 
 
+def summarize_remote_from_cache(cache_payload, repo_id: str):
+    if not cache_payload:
+        return None
+    if cache_payload.get("repo_id") != repo_id:
+        return None
+
+    days = cache_payload.get("days") or {}
+    if not days:
+        return None
+
+    years = defaultdict(lambda: {"days": 0, "cases": 0})
+    months = defaultdict(lambda: {"days": 0, "cases": 0})
+    total_cases = 0
+    total_discovered_cases = 0
+    matched_days_with_totals = 0
+    per_day_cases = []
+
+    for day, payload in sorted(days.items()):
+        scraped_cases = int(payload.get("scraped_cases", 0) or 0)
+        total_cases_for_day = int(payload.get("total_cases", 0) or 0)
+
+        years[day[:4]]["days"] += 1
+        years[day[:4]]["cases"] += scraped_cases
+        months[day[:7]]["days"] += 1
+        months[day[:7]]["cases"] += scraped_cases
+        total_cases += scraped_cases
+        per_day_cases.append(scraped_cases)
+
+        if total_cases_for_day:
+            total_discovered_cases += total_cases_for_day
+            matched_days_with_totals += 1
+
+    per_day_cases = sorted(per_day_cases)
+    mean_cases_per_day = (total_cases / len(per_day_cases)) if per_day_cases else 0.0
+    if not per_day_cases:
+        median_cases_per_day = 0.0
+    elif len(per_day_cases) % 2 == 1:
+        median_cases_per_day = float(per_day_cases[len(per_day_cases) // 2])
+    else:
+        mid = len(per_day_cases) // 2
+        median_cases_per_day = (per_day_cases[mid - 1] + per_day_cases[mid]) / 2.0
+    scrape_rate = (
+        (total_cases / total_discovered_cases) * 100 if total_discovered_cases else None
+    )
+
+    return {
+        "days": sorted(days),
+        "years": years,
+        "months": months,
+        "total_cases": total_cases,
+        "case_types": {},
+        "total_discovered_cases": total_discovered_cases,
+        "matched_days_with_totals": matched_days_with_totals,
+        "mean_cases_per_day": mean_cases_per_day,
+        "median_cases_per_day": median_cases_per_day,
+        "scrape_rate": scrape_rate,
+        "generated_at": cache_payload.get("generated_at"),
+        "head_commit": (cache_payload.get("head_commit") or {}).get("commit_id"),
+    }
+
+
 def case_type_prefix(case_number: str):
     match = re.match(r"([A-Z]+)", case_number)
     return match.group(1) if match else "UNKNOWN"
@@ -205,17 +268,8 @@ def render_card(
     remote_summary,
 ):
     remote_years = remote_summary["years"]
-    remote_months = remote_summary["months"]
     remote_total_cases = remote_summary["total_cases"]
-    remote_case_types = remote_summary["case_types"]
     today = date.today().isoformat()
-
-    local_day_count = len(rows)
-    local_scraped = sum(row["scraped_cases"] for row in rows)
-    local_total = sum(row["total_cases"] for row in rows)
-    local_full_days = sum(1 for row in rows if row["fully_completed"])
-    local_first = rows[0]["day"] if rows else "n/a"
-    local_last = rows[-1]["day"] if rows else "n/a"
 
     remote_year_lines = []
     for year in sorted(remote_years):
@@ -223,35 +277,6 @@ def render_card(
         remote_year_lines.append(
             f"| {year} | {bucket['days']} | {bucket['cases']:,} |"
         )
-    remote_month_lines = []
-    for month in sorted(remote_months):
-        bucket = remote_months[month]
-        remote_month_lines.append(
-            f"| {month} | {bucket['days']} | {bucket['cases']:,} |"
-        )
-    remote_case_type_lines = []
-    for prefix, count in sorted(
-        remote_case_types.items(), key=lambda item: (-item[1], item[0])
-    ):
-        share = (count / remote_total_cases * 100) if remote_total_cases else 0.0
-        remote_case_type_lines.append(f"| {prefix} | {count:,} | {share:.1f}% |")
-
-    local_year_lines = []
-    for year in sorted(local_years):
-        bucket = local_years[year]
-        rate = (
-            (bucket["scraped_cases"] / bucket["total_cases"]) * 100
-            if bucket["total_cases"]
-            else 0.0
-        )
-        local_year_lines.append(
-            f"| {year} | {bucket['days']} | {bucket['full_days']} | "
-            f"{bucket['scraped_cases']:,} | {bucket['total_cases']:,} | {rate:.1f}% |"
-        )
-    total_rate = (local_scraped / local_total * 100) if local_total else 0.0
-    local_month_lines = []
-    for year in sorted(local_months):
-        local_month_lines.append(f"- **{year}**: {compress_months(local_months[year])}")
     return f"""---
 pretty_name: SF Superior Court Docket and ROA Scrape
 language:
@@ -274,9 +299,9 @@ tags:
 
 This dataset contains San Francisco Superior Court filing-day search results, case-level register-of-actions exports, and downloaded docket PDFs collected from the court's public portal.
 
-This card reflects the current state of the scrape as of **{today}**.
+This card describes the dataset currently present in the Hugging Face repo as of **{today}**.
 
-## Dataset state
+## Overview
 
 The Hugging Face dataset repo currently contains:
 
@@ -290,73 +315,35 @@ The Hugging Face dataset repo currently contains:
 
 In this project, a case counts as **uploaded** when a case directory with `register_of_actions.json` is present in the HF dataset repo.
 
-## HF coverage by year
+## What Is In The Repo
 
-The table below summarizes the dataset that is actually present in the HF repo.
+Each filing day lives under `data/YYYY-MM-DD/`.
+
+Typical contents:
+
+- `day_summary.json`: filing-day level counts and scrape metadata
+- `failed_cases.json`: cases discovered for that filing day that were not yet successfully scraped at the time of upload
+- `CASE_NUMBER/register_of_actions.json`: case-level metadata and register-of-actions rows
+- `CASE_NUMBER/*.pdf`: docket PDFs when document links were available
+
+## Current HF Coverage
+
+The table below summarizes the filing days and uploaded cases currently present in the HF repo.
 
 | Year | Filing days in HF | Uploaded cases in HF |
 | --- | ---: | ---: |
 {chr(10).join(remote_year_lines)}
 | Total | {len(remote_days)} | {remote_total_cases:,} |
 
-## HF coverage by month
-
-Month-level coverage currently present in the HF repo:
-
-| Month | Filing days in HF | Uploaded cases in HF |
-| --- | ---: | ---: |
-{chr(10).join(remote_month_lines)}
-
-## HF case type distribution
-
-Case types here are approximated from the leading alphabetic prefix of the case number stored in each uploaded case directory.
-
-| Case prefix | Uploaded cases in HF | Share of HF uploaded cases |
-| --- | ---: | ---: |
-{chr(10).join(remote_case_type_lines)}
-
-## Local backlog pending sync
-
-The local working corpus is larger than the current HF upload:
-
-- **{local_day_count:,}** filing days on local disk
-- **{local_total:,}** discovered cases on local disk
-- **{local_scraped:,}** scraped cases on local disk
-- **{local_full_days:,}** fully completed local filing days
-- Local coverage currently runs from **{local_first}** through **{local_last}**
-
-Local year summary:
-
-| Year | Filing days | Fully completed days | Scraped cases | Discovered cases | Scrape rate |
-| --- | ---: | ---: | ---: | ---: | ---: |
-{chr(10).join(local_year_lines)}
-| Total | {local_day_count:,} | {local_full_days:,} | {local_scraped:,} | {local_total:,} | {total_rate:.1f}% |
-
-Local month coverage:
-
-{chr(10).join(local_month_lines)}
-
-## Data layout
-
-Each filing-day folder lives under `data/YYYY-MM-DD/`.
-
-Typical contents:
-
-- `day_summary.json`: filing-day level counts and run metadata
-- `failed_cases.json`: cases that were discovered but not successfully scraped
-- `sync_metadata.json`: upload/prune verification metadata when the day has been synced
-- `CASE_NUMBER/register_of_actions.json`: case-level metadata and action rows
-- `CASE_NUMBER/*.pdf`: downloaded docket PDFs when available
-
-## Important limitations
+## Limitations
 
 - This is an **in-progress scrape**, not a final frozen release.
-- The court site is operationally unstable under automation, so many days are only partially complete after the first pass.
-- The Hugging Face repo may lag the local working corpus because upload and prune happen asynchronously.
-- Coverage is not uniform across case families. Straight civil prefixes tend to scrape more reliably than some family, probate, or related case categories.
+- Many filing days are only partially complete.
+- Coverage is not uniform across case families.
+- The presence of `failed_cases.json` in a day folder means that filing day still had unresolved cases at the time that version of the day was uploaded.
 - This dataset is derived from a public court portal and should be used with appropriate care around privacy, legal process, and downstream publication.
 
-## Intended use
+## Intended Use
 
 This corpus is being built to support:
 
@@ -367,12 +354,17 @@ This corpus is being built to support:
 """
 
 
-def build_card(data_dir: Path, repo_id: str):
-    api = HfApi()
+def build_card(data_dir: Path, repo_id: str, cache_path: Path = DEFAULT_CACHE_PATH_ARG):
     rows = load_day_summaries(data_dir)
     local_years, local_months = summarize_local(rows)
-    remote_days = remote_day_folders(api, repo_id)
-    remote_summary = summarize_remote(api, repo_id, remote_days)
+    remote_cache = load_remote_state(cache_path)
+    remote_summary = summarize_remote_from_cache(remote_cache, repo_id)
+    if remote_summary is not None:
+        remote_days = remote_summary["days"]
+    else:
+        api = HfApi()
+        remote_days = remote_day_folders(api, repo_id)
+        remote_summary = summarize_remote(api, repo_id, remote_days)
     return render_card(
         data_dir,
         repo_id,
@@ -389,9 +381,10 @@ def main():
     parser.add_argument("--repo-id", default=DEFAULT_REPO_ID)
     parser.add_argument("--data-dir", type=Path, default=DEFAULT_DATA_DIR)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
+    parser.add_argument("--cache-path", type=Path, default=DEFAULT_CACHE_PATH_ARG)
     args = parser.parse_args()
 
-    card = build_card(args.data_dir, args.repo_id)
+    card = build_card(args.data_dir, args.repo_id, args.cache_path)
     args.output.write_text(card)
     print(f"Wrote dataset card to {args.output}")
 

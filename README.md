@@ -138,6 +138,18 @@ The dashboard reads:
 *   `logs/*.log` for recent warnings/errors
 *   live `ps` output for scrape/sync process detection
 
+Source of truth for the monitor UI:
+
+*   Edit `monitor/index.html`, `monitor/app.js`, and `monitor/styles.css`
+*   Do not edit the copied Vercel frontend files in `vercel_monitor/` directly
+*   After monitor UI changes, run:
+
+```bash
+python sync_vercel_monitor.py
+```
+
+That refreshes the Vercel frontend copies and the committed `vercel_monitor/status-snapshot.json` fallback.
+
 Status badges:
 
 *   **healthy**: active process with recent file activity

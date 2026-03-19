@@ -1,0 +1,35 @@
+{
+  "metadata": {
+    "case_number": "CGC24611345",
+    "case_title": "BANK OF AMERICA, N.A. VS. ANDEE TERESE LEWIS",
+    "filing_date": "2024-01-02",
+    "case_url": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=CGC24611345&SessionID=57FF609CAB963F17892576CF6B0FE4211F23D67B",
+    "result_index": 8,
+    "source": {
+      "search_result_title": "BANK OF AMERICA, N.A. VS. ANDEE TERESE LEWIS",
+      "search_result_link": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=CGC24611345&SessionID=57FF609CAB963F17892576CF6B0FE4211F23D67B",
+      "source_filing_date": "2024-01-02"
+    },
+    "case_header": {
+      "page_title": "",
+      "header_text": [],
+      "header_fields": {}
+    },
+    "roa_source": "request",
+    "total_entries": 0,
+    "total_links": 0,
+    "scraped_links": 0,
+    "storage": "local",
+    "timing": {
+      "scrape_started_at": "2026-03-17T21:39:27Z",
+      "scrape_finished_at": "2026-03-17T21:39:27Z",
+      "scrape_elapsed_seconds": 0.259,
+      "download_elapsed_seconds": 0.0,
+      "downloaded_bytes": 0,
+      "downloaded_docs": 0,
+      "cached_docs": 0,
+      "download_attempts": 0
+    }
+  },
+  "actions": []
+}

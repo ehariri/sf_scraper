@@ -1,0 +1,108 @@
+{
+  "metadata": {
+    "case_number": "PES24307303",
+    "case_title": "THE ESTATE OF MARK CHESTER ANTICEVICH",
+    "filing_date": "2024-05-08",
+    "case_url": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=PES24307303&SessionID=AD97D3A62D4C2133D2BD1D5316C4F679B93E561B",
+    "result_index": 70,
+    "source": {
+      "search_result_title": "THE ESTATE OF MARK CHESTER ANTICEVICH",
+      "search_result_link": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=PES24307303&SessionID=AD97D3A62D4C2133D2BD1D5316C4F679B93E561B",
+      "source_filing_date": "2024-05-08"
+    },
+    "case_header": {
+      "page_title": "",
+      "header_text": [],
+      "header_fields": {}
+    },
+    "roa_source": "request",
+    "total_entries": 9,
+    "total_links": 6,
+    "scraped_links": 6,
+    "storage": "local",
+    "timing": {
+      "scrape_started_at": "2026-03-17T22:54:38Z",
+      "scrape_finished_at": "2026-03-17T22:54:46Z",
+      "scrape_elapsed_seconds": 8.532,
+      "download_elapsed_seconds": 4.975,
+      "downloaded_bytes": 2177346,
+      "downloaded_docs": 6,
+      "cached_docs": 0,
+      "download_attempts": 6
+    }
+  },
+  "actions": [
+    {
+      "date": "2024-05-23 10:54:08",
+      "proceedings": "COPYING FEES (2 PAGE, 1 CERTIFIED COPY) PAID BY PETITIONER PUBLIC ADMINISTRATOR",
+      "fee": "$41.00",
+      "doc_url": null,
+      "doc_id": null,
+      "doc_filename": null
+    },
+    {
+      "date": "2025-01-13 14:28:11",
+      "proceedings": "PAYMENT OF EXEMPT FEES (MAY-08-2024 PETITION FOR SUMMARY PROBATE (PUBLIC ADMIN)) PAID BY PETITIONER PUBLIC ADMINISTRATOR",
+      "fee": "$205.00",
+      "doc_url": null,
+      "doc_id": null,
+      "doc_filename": null
+    },
+    {
+      "date": "2024-05-22 08:32:49",
+      "proceedings": "ORDER EX PARTE AUTHORIZING SUMMARY DISPOSITION OF DECEDENT'S ESTATE",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=AD97D3A62D4C2133D2BD1D5316C4F679B93E561B&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DP%26DocID%3D09067715%26Timestamp%3D20260317155441%26Digest%3Dc28f3313b0b1c4193fb1649df11ca2ee3a69ad2f",
+      "doc_id": "09067715",
+      "doc_filename": "2024-05-22 08:32:49_09067715.pdf"
+    },
+    {
+      "date": "2024-05-08 15:36:31",
+      "proceedings": "PETITION AND ORDER BY SPECIAL ADMINISTRATOR FOR SUMMARY DISPOSITION (P.C. 7660) (TRANSACTION ID # 73003749) FILED BY PETITIONER PUBLIC ADMINISTRATOR AS TO DECEDENT ANTICEVICH, MARK CHESTER",
+      "fee": "$205.00",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=AD97D3A62D4C2133D2BD1D5316C4F679B93E561B&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DP%26DocID%3D09049361%26Timestamp%3D20260317155441%26Digest%3D31a132eab4e5ee1e8bf995c268e29c05fb456f87",
+      "doc_id": "09049361",
+      "doc_filename": "2024-05-08 15:36:31_09049361.pdf"
+    },
+    {
+      "date": "2025-03-20 12:34:17",
+      "proceedings": "PUBLIC ADMINISTRATOR'S STATEMENT OF PROPERTY AND DISPOSITION AND RECEIPTS (TRANSACTION ID # 75903657) FILED BY PETITIONER PUBLIC ADMINISTRATOR",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=AD97D3A62D4C2133D2BD1D5316C4F679B93E561B&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DP%26DocID%3D09519569%26Timestamp%3D20260317155441%26Digest%3D1c94880cfa7fd32459556034b2dbad4745e7a07c",
+      "doc_id": "09519569",
+      "doc_filename": "2025-03-20 12:34:17_09519569.pdf"
+    },
+    {
+      "date": "2024-05-10 12:06:16",
+      "proceedings": "NOTICE OF HEARING (TRANSACTION ID # 73025292) FILED BY PETITIONER PUBLIC ADMINISTRATOR",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=AD97D3A62D4C2133D2BD1D5316C4F679B93E561B&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DP%26DocID%3D09052617%26Timestamp%3D20260317155441%26Digest%3Dad82c83af47f04731ea2a7d6d36a91c208f9a923",
+      "doc_id": "09052617",
+      "doc_filename": "2024-05-10 12:06:16_09052617.pdf"
+    },
+    {
+      "date": "2025-01-13 14:28:12",
+      "proceedings": "PAYMENT OF EXEMPT FEES (MAY-23-2024 COPIES) PAID BY PETITIONER PUBLIC ADMINISTRATOR",
+      "fee": "$41.00",
+      "doc_url": null,
+      "doc_id": null,
+      "doc_filename": null
+    },
+    {
+      "date": "2024-07-26 13:58:40",
+      "proceedings": "NOTICE TO CREDITORS (TRANSACTION ID # 73817587) FILED BY PETITIONER PUBLIC ADMINISTRATOR",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=AD97D3A62D4C2133D2BD1D5316C4F679B93E561B&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DP%26DocID%3D09160972%26Timestamp%3D20260317155441%26Digest%3Db4195ad516cfb9ab2b80058f2f154bffe7590ef1",
+      "doc_id": "09160972",
+      "doc_filename": "2024-07-26 13:58:40_09160972.pdf"
+    },
+    {
+      "date": "2025-04-23 11:07:12",
+      "proceedings": "RECEIPT ON DISTRIBUTION (TRANSACTION ID # 76133944) FILED BY PETITIONER PUBLIC ADMINISTRATOR",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=AD97D3A62D4C2133D2BD1D5316C4F679B93E561B&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DP%26DocID%3D09576018%26Timestamp%3D20260317155441%26Digest%3D6519d07d503933c55854e988a64a3b04aad12772",
+      "doc_id": "09576018",
+      "doc_filename": "2025-04-23 11:07:12_09576018.pdf"
+    }
+  ]
+}

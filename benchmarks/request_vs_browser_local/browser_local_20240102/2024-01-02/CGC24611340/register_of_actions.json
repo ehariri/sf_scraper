@@ -1,0 +1,44 @@
+{
+  "metadata": {
+    "case_number": "CGC24611340",
+    "case_title": "JENNIFER HERNANDEZ VS. BURGER KING COMPANY LLC, A FLORIDA LIMITED ET AL",
+    "filing_date": "2024-01-02",
+    "case_url": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=CGC24611340&SessionID=51FE073E235038581452ACE19712070DFBEADA01",
+    "result_index": 3,
+    "source": {
+      "search_result_title": "JENNIFER HERNANDEZ VS. BURGER KING COMPANY LLC, A FLORIDA LIMITED ET AL",
+      "search_result_link": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=CGC24611340&SessionID=51FE073E235038581452ACE19712070DFBEADA01",
+      "source_filing_date": "2024-01-02"
+    },
+    "case_header": {
+      "page_title": "Case Information",
+      "header_text": [],
+      "header_fields": {}
+    },
+    "roa_source": "browser_only",
+    "total_entries": 1,
+    "total_links": 0,
+    "scraped_links": 0,
+    "storage": "local",
+    "timing": {
+      "scrape_started_at": "2026-03-17T21:40:05Z",
+      "scrape_finished_at": "2026-03-17T21:40:11Z",
+      "scrape_elapsed_seconds": 5.424,
+      "download_elapsed_seconds": 0.0,
+      "downloaded_bytes": 0,
+      "downloaded_docs": 0,
+      "cached_docs": 0,
+      "download_attempts": 0
+    }
+  },
+  "actions": [
+    {
+      "date": "No data available in table",
+      "proceedings": "",
+      "fee": "",
+      "doc_url": null,
+      "doc_id": null,
+      "doc_filename": null
+    }
+  ]
+}

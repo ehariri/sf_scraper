@@ -1,0 +1,220 @@
+{
+  "metadata": {
+    "case_number": "CGC24614481",
+    "case_title": "JPMORGAN CHASE BANK, N.A. VS. MERCEDES M TAYLOR",
+    "filing_date": "2024-05-08",
+    "case_url": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=CGC24614481&SessionID=F9DFF57A53F189DBF17A71C2753955E86B100324",
+    "result_index": 12,
+    "source": {
+      "search_result_title": "JPMORGAN CHASE BANK, N.A. VS. MERCEDES M TAYLOR",
+      "search_result_link": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=CGC24614481&SessionID=F9DFF57A53F189DBF17A71C2753955E86B100324",
+      "source_filing_date": "2024-05-08"
+    },
+    "case_header": {
+      "page_title": "",
+      "header_text": [],
+      "header_fields": {}
+    },
+    "roa_source": "request",
+    "total_entries": 23,
+    "total_links": 22,
+    "scraped_links": 22,
+    "storage": "local",
+    "timing": {
+      "scrape_started_at": "2026-03-17T22:51:50Z",
+      "scrape_finished_at": "2026-03-17T22:52:00Z",
+      "scrape_elapsed_seconds": 10.187,
+      "download_elapsed_seconds": 24.19,
+      "downloaded_bytes": 8617955,
+      "downloaded_docs": 22,
+      "cached_docs": 0,
+      "download_attempts": 22
+    }
+  },
+  "actions": [
+    {
+      "date": "2025-01-28 10:13:05",
+      "proceedings": "DECLARATION RE NON - ACTIVE MILITARY STATUS (TRANSACTION ID # 75528551) FILED BY PLAINTIFF JPMORGAN CHASE BANK, N.A.",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=F9DFF57A53F189DBF17A71C2753955E86B100324&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09434168%26Timestamp%3D20260317155152%26Digest%3Dd141b10c1817a549b08a2253181b302408d78a15",
+      "doc_id": "09434168",
+      "doc_filename": "2025-01-28 10:13:05_09434168.pdf"
+    },
+    {
+      "date": "2024-05-08 14:43:32",
+      "proceedings": "DECLARATION OF PROPER VENUE (TRANSACTION ID # 73002646) FILED BY PLAINTIFF JPMORGAN CHASE BANK, N.A.",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=F9DFF57A53F189DBF17A71C2753955E86B100324&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09049176%26Timestamp%3D20260317155152%26Digest%3D77d70315feb360df0c793bc3cb2391e6a776f88c",
+      "doc_id": "09049176",
+      "doc_filename": "2024-05-08 14:43:32_09049176.pdf"
+    },
+    {
+      "date": "2025-01-28 10:13:04",
+      "proceedings": "STATEMENT OF CASE (TRANSACTION ID # 75528551) FILED BY PLAINTIFF JPMORGAN CHASE BANK, N.A.",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=F9DFF57A53F189DBF17A71C2753955E86B100324&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09434167%26Timestamp%3D20260317155152%26Digest%3D9c2a7e61ce437df3f31ec84e67d7e23860ecfda5",
+      "doc_id": "09434167",
+      "doc_filename": "2025-01-28 10:13:04_09434167.pdf"
+    },
+    {
+      "date": "2025-08-29 11:36:07",
+      "proceedings": "ORDER TO SHOW CAUSE SET FOR SEP-23-2025 CONTINUED TO NOV-25-2025 AT 10:30 AM IN DEPARTMENT 610 FOR FAILURE TO ENTER DEFAULT JUDGMENT. NOTICE SENT BY COURT.",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=F9DFF57A53F189DBF17A71C2753955E86B100324&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09787173%26Timestamp%3D20260317155152%26Digest%3D5e3f7e1dffabe5dcf08f00e3e4f1d68335641bb5",
+      "doc_id": "09787173",
+      "doc_filename": "2025-08-29 11:36:07_09787173.pdf"
+    },
+    {
+      "date": "2025-10-31 13:50:59",
+      "proceedings": "DECLARATION RE NON ACTIVE MILITARY STATUS (TRANSACTION ID # 77502197) FILED BY PLAINTIFF JPMORGAN CHASE BANK, N.A.",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=F9DFF57A53F189DBF17A71C2753955E86B100324&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09891069%26Timestamp%3D20260317155152%26Digest%3Dd362bc415267e9e38324a6a93f7a71dd13d0acc0",
+      "doc_id": "09891069",
+      "doc_filename": "2025-10-31 13:50:59_09891069.pdf"
+    },
+    {
+      "date": "2025-11-21 14:24:46",
+      "proceedings": "ORDER TO SHOW CAUSE SET FOR NOV-25-2025 CONTINUED TO MAR-24-2026 AT 10:30 AM IN DEPARTMENT 610 FOR FAILURE TO ENTER DEFAULT JUDGMENT. NOTICE SENT BY COURT.",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=F9DFF57A53F189DBF17A71C2753955E86B100324&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09927051%26Timestamp%3D20260317155152%26Digest%3D564e5b6f6c5b60504474027e9d8ceb90e42bd554",
+      "doc_id": "09927051",
+      "doc_filename": "2025-11-21 14:24:46_09927051.pdf"
+    },
+    {
+      "date": "2026-03-04 10:56:07",
+      "proceedings": "ORDER TO SHOW CAUSE OF MAR-24-2026 IS OFF CALENDAR. JUDGMENT ON FILE. NOTICE SENT BY COURT.",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=F9DFF57A53F189DBF17A71C2753955E86B100324&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D10087179%26Timestamp%3D20260317155152%26Digest%3D55d25a68f13ba10eeeb320f732e2a4a0fcb8ffec",
+      "doc_id": "10087179",
+      "doc_filename": "2026-03-04 10:56:07_10087179.pdf"
+    },
+    {
+      "date": "2024-05-08 14:43:29",
+      "proceedings": "EXEMPT COLLECTIONS (RULE 3.740), COMPLAINT (TRANSACTION ID # 73002646) FILED BY PLAINTIFF JPMORGAN CHASE BANK, N.A. AS TO DEFENDANT TAYLOR, MERCEDES M NO SUMMONS ISSUED, JUDICIAL COUNCIL CIVIL CASE COVER SHEET NOT FILED PROOF OF SERVICE DUE ON                  NOV-04-2024",
+      "fee": "$225.00",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=F9DFF57A53F189DBF17A71C2753955E86B100324&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09049172%26Timestamp%3D20260317155152%26Digest%3Dd314f36f698c891a520ee327adedeb679bff5ab1",
+      "doc_id": "09049172",
+      "doc_filename": "2024-05-08 14:43:29_09049172.pdf"
+    },
+    {
+      "date": "2025-06-04 05:54:03",
+      "proceedings": "DEFAULT JUDGMENT REJECTED, E-FILING REJECT, (TRANSACTION ID # 76392111) SUBMITTED BY PLAINTIFF JPMORGAN CHASE BANK, N.A. AS TO DEFENDANT TAYLOR, MERCEDES M",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=F9DFF57A53F189DBF17A71C2753955E86B100324&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09797578%26Timestamp%3D20260317155152%26Digest%3Dbe3a63e8e3dee6d68764a5d575d4bb394545c622",
+      "doc_id": "09797578",
+      "doc_filename": "2025-06-04 05:54:03_09797578.pdf"
+    },
+    {
+      "date": "2025-11-17 09:29:19",
+      "proceedings": "PROOF OF SERVICE BY MAIL (TRANSACTION ID # 77794682) FILED BY PLAINTIFF JPMORGAN CHASE BANK, N.A.",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=F9DFF57A53F189DBF17A71C2753955E86B100324&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09914806%26Timestamp%3D20260317155152%26Digest%3Df0cd15ed6859d6557f31a8c632e2cdfabc4284d4",
+      "doc_id": "09914806",
+      "doc_filename": "2025-11-17 09:29:19_09914806.pdf"
+    },
+    {
+      "date": "2024-10-21 09:41:56",
+      "proceedings": "SUMMONS ON COMPLAINT (TRANSACTION ID # 74804003) FILED BY PLAINTIFF JPMORGAN CHASE BANK, N.A. SERVED OCT-04-2024, PERSONAL SERVICE AS TO DEFENDANT TAYLOR, MERCEDES M",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=F9DFF57A53F189DBF17A71C2753955E86B100324&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09286924%26Timestamp%3D20260317155152%26Digest%3Dcc4dfdef6c3f9f22fffb0e214a39eef677b06076",
+      "doc_id": "09286924",
+      "doc_filename": "2024-10-21 09:41:56_09286924.pdf"
+    },
+    {
+      "date": "2025-10-31 13:50:58",
+      "proceedings": "STATEMENT OF CASE (TRANSACTION ID # 77502197) FILED BY PLAINTIFF JPMORGAN CHASE BANK, N.A.",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=F9DFF57A53F189DBF17A71C2753955E86B100324&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09891068%26Timestamp%3D20260317155152%26Digest%3De3fad6522dc8d845cff98a93ca1e47c5d6866412",
+      "doc_id": "09891068",
+      "doc_filename": "2025-10-31 13:50:58_09891068.pdf"
+    },
+    {
+      "date": "2025-12-01 00:00:00",
+      "proceedings": "REQUEST FOR DEFAULT REJECTED, E-FILING REJECT, (TRANSACTION ID # 77883271) SUBMITTED BY PLAINTIFF JPMORGAN CHASE BANK, N.A. AS TO DEFENDANT TAYLOR, MERCEDES M",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=F9DFF57A53F189DBF17A71C2753955E86B100324&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09960853%26Timestamp%3D20260317155152%26Digest%3Dcef1af192356cba68fdae1cb069064b94fca2242",
+      "doc_id": "09960853",
+      "doc_filename": "2025-12-01 00:00:00_09960853.pdf"
+    },
+    {
+      "date": "2024-05-08 15:04:34",
+      "proceedings": "SUMMONS ISSUED (TRANSACTION ID # 73002646) TO PLAINTIFF JPMORGAN CHASE BANK, N.A.",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=F9DFF57A53F189DBF17A71C2753955E86B100324&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09049175%26Timestamp%3D20260317155152%26Digest%3D28478f03be0abbc36e14995b8fbe18dbb698f41f",
+      "doc_id": "09049175",
+      "doc_filename": "2024-05-08 15:04:34_09049175.pdf"
+    },
+    {
+      "date": "2024-10-31 15:19:26",
+      "proceedings": "CRC 3.740 REVIEW",
+      "fee": "",
+      "doc_url": null,
+      "doc_id": null,
+      "doc_filename": null
+    },
+    {
+      "date": "2025-05-06 13:34:30",
+      "proceedings": "ORDER TO SHOW CAUSE SET FOR JUN-24-2025 IN DEPARTMENT 610 AT 10:30 AM FOR FAILURE TO ENTER DEFAULT JUDGMENT. NOTICE SENT BY COURT.",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=F9DFF57A53F189DBF17A71C2753955E86B100324&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09598379%26Timestamp%3D20260317155152%26Digest%3D0a70770d06bfd7a92dd6c0e386243cf8442c4742",
+      "doc_id": "09598379",
+      "doc_filename": "2025-05-06 13:34:30_09598379.pdf"
+    },
+    {
+      "date": "2025-11-17 09:29:18",
+      "proceedings": "DECLARATION OF COUNSEL FOR PLAINTIFF RE: ORDER TO SHOW CAUSE (TRANSACTION ID # 77794682) FILED BY PLAINTIFF JPMORGAN CHASE BANK, N.A.",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=F9DFF57A53F189DBF17A71C2753955E86B100324&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09914805%26Timestamp%3D20260317155152%26Digest%3Dac5ea4380c08c345388eb3be93cd1a91a711760d",
+      "doc_id": "09914805",
+      "doc_filename": "2025-11-17 09:29:18_09914805.pdf"
+    },
+    {
+      "date": "2024-05-08 14:43:30",
+      "proceedings": "CIVIL CASE COVERSHEET FILED (TRANSACTION ID # 73002646) FILED BY PLAINTIFF JPMORGAN CHASE BANK, N.A.",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=F9DFF57A53F189DBF17A71C2753955E86B100324&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09049174%26Timestamp%3D20260317155152%26Digest%3Da03737214a7e03c8d4ff470e04a0edff9751aee1",
+      "doc_id": "09049174",
+      "doc_filename": "2024-05-08 14:43:30_09049174.pdf"
+    },
+    {
+      "date": "2025-01-28 10:13:03",
+      "proceedings": "REQUEST FOR ENTRY OF DEFAULT/DEFAULT ENTERED, CLERK'S JUDGMENT, DECLARATION OF NON-MILITARY STATUS (TRANSACTION ID # 75528551) AS TO DEFENDANT TAYLOR, MERCEDES M",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=F9DFF57A53F189DBF17A71C2753955E86B100324&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09434166%26Timestamp%3D20260317155152%26Digest%3D4b9fdb4fd16f1337dd77eddbe1e2780ac88a9f7d",
+      "doc_id": "09434166",
+      "doc_filename": "2025-01-28 10:13:03_09434166.pdf"
+    },
+    {
+      "date": "2025-01-31 11:24:39",
+      "proceedings": "DEFAULT JUDGMENT REJECTED, E-FILING REJECT, SUBMITTED BY PLAINTIFF JPMORGAN CHASE BANK, N.A. AS TO DEFENDANT TAYLOR, MERCEDES M",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=F9DFF57A53F189DBF17A71C2753955E86B100324&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09441523%26Timestamp%3D20260317155152%26Digest%3Daf8a83c2852526bd5c55094f540b1297f08656cd",
+      "doc_id": "09441523",
+      "doc_filename": "2025-01-31 11:24:39_09441523.pdf"
+    },
+    {
+      "date": "2025-06-12 10:56:01",
+      "proceedings": "ORDER TO SHOW CAUSE SET FOR JUN-24-2025 CONTINUED TO SEP-23-2025 AT 10:30 AM IN DEPARTMENT 610 FOR FAILURE TO ENTER DEFAULT JUDGMENT. NOTICE SENT BY COURT.",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=F9DFF57A53F189DBF17A71C2753955E86B100324&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09658959%26Timestamp%3D20260317155152%26Digest%3D0883fc2439422e027e08ad691e191d14aa2f440e",
+      "doc_id": "09658959",
+      "doc_filename": "2025-06-12 10:56:01_09658959.pdf"
+    },
+    {
+      "date": "2025-10-31 13:50:57",
+      "proceedings": "REQUEST FOR ENTRY OF DEFAULT/DEFAULT ENTERED, CLERK'S JUDGMENT, DECLARATION OF NON-MILITARY STATUS (TRANSACTION ID # 77502197) AS TO DEFENDANT TAYLOR, MERCEDES M",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=F9DFF57A53F189DBF17A71C2753955E86B100324&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09891067%26Timestamp%3D20260317155152%26Digest%3D394d27e83540628705f98a090045a1361cb63524",
+      "doc_id": "09891067",
+      "doc_filename": "2025-10-31 13:50:57_09891067.pdf"
+    },
+    {
+      "date": "2025-10-31 13:51:00",
+      "proceedings": "UNDER APPLICATION TO THE CLERK FOR JUDGMENT UNDER SEC 585(1) C.C.P., IT IS ADJUDGED THAT PLAINTIFF JPMORGAN CHASE BANK, N.A. RECOVER FROM DEFENDANT TAYLOR, MERCEDES M $9,091.58 PRINCIPAL, TOTAL JUDGMENT $9,091.58, SEE SCANNED DOCUMENT (TRANSACTION ID # 77502197)",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=F9DFF57A53F189DBF17A71C2753955E86B100324&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09891070%26Timestamp%3D20260317155152%26Digest%3De7012a4abfd78f2737953c40745b7482b5b67b5c",
+      "doc_id": "09891070",
+      "doc_filename": "2025-10-31 13:51:00_09891070.pdf"
+    }
+  ]
+}

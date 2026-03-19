@@ -1,0 +1,398 @@
+{
+  "date": "2024-05-08",
+  "updated_at": "2026-03-17T22:55:00Z",
+  "failed_cases": [
+    {
+      "case_num": "CGC24614471",
+      "link": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=CGC24614471&SessionID=B6F3C6D68F30525E80DDB2E2A0546E2F895D751C",
+      "title": "DISCOVER BANK VS. JIMMY Y ZHOU ET AL",
+      "result_index": 4,
+      "source_filing_date": "2024-05-08"
+    },
+    {
+      "case_num": "CGC24614478",
+      "link": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=CGC24614478&SessionID=B6F3C6D68F30525E80DDB2E2A0546E2F895D751C",
+      "title": "SHATRICE BROUGHTON VS. FIVE KEYS SCHOOLS AND PROGRAMS, A CALIFORNIA ET AL",
+      "result_index": 9,
+      "source_filing_date": "2024-05-08"
+    },
+    {
+      "case_num": "CGC24614484",
+      "link": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=CGC24614484&SessionID=B6F3C6D68F30525E80DDB2E2A0546E2F895D751C",
+      "title": "WELLS FARGO BANK, N.A. VS. SHELLEY LINDGREN",
+      "result_index": 15,
+      "source_filing_date": "2024-05-08"
+    },
+    {
+      "case_num": "CGC24614485",
+      "link": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=CGC24614485&SessionID=B6F3C6D68F30525E80DDB2E2A0546E2F895D751C",
+      "title": "JUANA ROLDAN DEWILSON VS. BLUE AND GOLD FLEET ET AL",
+      "result_index": 16,
+      "source_filing_date": "2024-05-08"
+    },
+    {
+      "case_num": "CGC24614486",
+      "link": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=CGC24614486&SessionID=B6F3C6D68F30525E80DDB2E2A0546E2F895D751C",
+      "title": "KIM C. SCUDDER VS. DOE SECURITY COMPANY ET AL",
+      "result_index": 17,
+      "source_filing_date": "2024-05-08"
+    },
+    {
+      "case_num": "CGC24614487",
+      "link": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=CGC24614487&SessionID=B6F3C6D68F30525E80DDB2E2A0546E2F895D751C",
+      "title": "DIANA ROJAS ET AL VS. UBER TECHNOLOGIES, INC., A DELAWARE CORPORATION ET AL",
+      "result_index": 18,
+      "source_filing_date": "2024-05-08"
+    },
+    {
+      "case_num": "CGC24614488",
+      "link": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=CGC24614488&SessionID=B6F3C6D68F30525E80DDB2E2A0546E2F895D751C",
+      "title": "WELLS FARGO BANK, N.A. VS. JIMMY W TANG",
+      "result_index": 19,
+      "source_filing_date": "2024-05-08"
+    },
+    {
+      "case_num": "CGC24614489",
+      "link": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=CGC24614489&SessionID=B6F3C6D68F30525E80DDB2E2A0546E2F895D751C",
+      "title": "C. L. VS. MOBILITY HOLDINGS, LIMITED ET AL",
+      "result_index": 20,
+      "source_filing_date": "2024-05-08"
+    },
+    {
+      "case_num": "CGC24614491",
+      "link": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=CGC24614491&SessionID=B6F3C6D68F30525E80DDB2E2A0546E2F895D751C",
+      "title": "OLGA ORPILLA ET AL VS. JOSEPHINE C. ORPILLA ET AL",
+      "result_index": 21,
+      "source_filing_date": "2024-05-08"
+    },
+    {
+      "case_num": "CGC24614493",
+      "link": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=CGC24614493&SessionID=B6F3C6D68F30525E80DDB2E2A0546E2F895D751C",
+      "title": "ANDREW ELLENBERG-WILEY VS. SAN FRANCISCO AIDS FOUNDATION, A CALIFORNIA ET AL",
+      "result_index": 22,
+      "source_filing_date": "2024-05-08"
+    },
+    {
+      "case_num": "CGC24614494",
+      "link": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=CGC24614494&SessionID=B6F3C6D68F30525E80DDB2E2A0546E2F895D751C",
+      "title": "WELLS FARGO BANK, N.A. VS. CHELSEA M MAUVAIS",
+      "result_index": 23,
+      "source_filing_date": "2024-05-08"
+    },
+    {
+      "case_num": "CGC24614496",
+      "link": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=CGC24614496&SessionID=B6F3C6D68F30525E80DDB2E2A0546E2F895D751C",
+      "title": "DAVID MOLINA VS. FORD MOTOR COMPANY, A DELAWARE CORPORATION ET AL",
+      "result_index": 24,
+      "source_filing_date": "2024-05-08"
+    },
+    {
+      "case_num": "CGC24614497",
+      "link": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=CGC24614497&SessionID=B6F3C6D68F30525E80DDB2E2A0546E2F895D751C",
+      "title": "JINGDE YANG ET AL VS. ALEXANDER SHTEYNGOLTS ET AL",
+      "result_index": 25,
+      "source_filing_date": "2024-05-08"
+    },
+    {
+      "case_num": "CGC24614500",
+      "link": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=CGC24614500&SessionID=B6F3C6D68F30525E80DDB2E2A0546E2F895D751C",
+      "title": "JPMORGAN CHASE BANK, N.A. VS. BENJAMIN T SCHEMPER",
+      "result_index": 26,
+      "source_filing_date": "2024-05-08"
+    },
+    {
+      "case_num": "CNC24558786",
+      "link": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=CNC24558786&SessionID=B6F3C6D68F30525E80DDB2E2A0546E2F895D751C",
+      "title": "IN RE: ALEXANDRA VICTORIA KOLTUN",
+      "result_index": 27,
+      "source_filing_date": "2024-05-08"
+    },
+    {
+      "case_num": "CNC24558787",
+      "link": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=CNC24558787&SessionID=B6F3C6D68F30525E80DDB2E2A0546E2F895D751C",
+      "title": "IN RE: ARI ROBERT GERMAIN-MCFARLIN",
+      "result_index": 28,
+      "source_filing_date": "2024-05-08"
+    },
+    {
+      "case_num": "CPF24518555",
+      "link": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=CPF24518555&SessionID=B6F3C6D68F30525E80DDB2E2A0546E2F895D751C",
+      "title": "WELLS FARGO CLEARING SERVICES, LLC VS. SONA RIKHYE",
+      "result_index": 29,
+      "source_filing_date": "2024-05-08"
+    },
+    {
+      "case_num": "CSM24868354",
+      "link": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=CSM24868354&SessionID=B6F3C6D68F30525E80DDB2E2A0546E2F895D751C",
+      "title": "CALIXTO ROBLES VS. LAKESIDE INVESTMENT COMPANY LLC",
+      "result_index": 30,
+      "source_filing_date": "2024-05-08"
+    },
+    {
+      "case_num": "CSM24868355",
+      "link": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=CSM24868355&SessionID=B6F3C6D68F30525E80DDB2E2A0546E2F895D751C",
+      "title": "JOSE TORRES VS. CEDRIC BERMOND",
+      "result_index": 31,
+      "source_filing_date": "2024-05-08"
+    },
+    {
+      "case_num": "CSM24868356",
+      "link": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=CSM24868356&SessionID=B6F3C6D68F30525E80DDB2E2A0546E2F895D751C",
+      "title": "MURAT BAJRAMI VS. JESSICA ARMSTRONG",
+      "result_index": 32,
+      "source_filing_date": "2024-05-08"
+    },
+    {
+      "case_num": "CSM24868357",
+      "link": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=CSM24868357&SessionID=B6F3C6D68F30525E80DDB2E2A0546E2F895D751C",
+      "title": "SALEH ELHATTAB VS. DONALD JANS",
+      "result_index": 33,
+      "source_filing_date": "2024-05-08"
+    },
+    {
+      "case_num": "CSM24868358",
+      "link": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=CSM24868358&SessionID=B6F3C6D68F30525E80DDB2E2A0546E2F895D751C",
+      "title": "JAMES MCKAY VS. FOUR STAR AUTOMOTIVE, INC.",
+      "result_index": 34,
+      "source_filing_date": "2024-05-08"
+    },
+    {
+      "case_num": "CUD24674994",
+      "link": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=CUD24674994&SessionID=B6F3C6D68F30525E80DDB2E2A0546E2F895D751C",
+      "title": "SILVIA CHAVEZ VS. GABRIEL ROSALES ET AL",
+      "result_index": 35,
+      "source_filing_date": "2024-05-08"
+    },
+    {
+      "case_num": "CUD24674995",
+      "link": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=CUD24674995&SessionID=B6F3C6D68F30525E80DDB2E2A0546E2F895D751C",
+      "title": "TENDERLOIN NEIGHBORHOOD DEVELOPMENT CORPORATION VS. FELICIA WRIGHT ET AL",
+      "result_index": 36,
+      "source_filing_date": "2024-05-08"
+    },
+    {
+      "case_num": "CUD24674996",
+      "link": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=CUD24674996&SessionID=B6F3C6D68F30525E80DDB2E2A0546E2F895D751C",
+      "title": "THOMAS PAINE SQUARE LLC VS. LYNNIECEA BRADLEY ET AL",
+      "result_index": 37,
+      "source_filing_date": "2024-05-08"
+    },
+    {
+      "case_num": "CUD24674997",
+      "link": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=CUD24674997&SessionID=B6F3C6D68F30525E80DDB2E2A0546E2F895D751C",
+      "title": "BRIDGE HOUSING CORPORATION VS. MIOSHI T. BAKER ET AL",
+      "result_index": 38,
+      "source_filing_date": "2024-05-08"
+    },
+    {
+      "case_num": "CUD24674998",
+      "link": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=CUD24674998&SessionID=B6F3C6D68F30525E80DDB2E2A0546E2F895D751C",
+      "title": "ERP OPERATING, LP VS. ALIPATE MAITOGA ET AL",
+      "result_index": 39,
+      "source_filing_date": "2024-05-08"
+    },
+    {
+      "case_num": "CUD24674999",
+      "link": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=CUD24674999&SessionID=B6F3C6D68F30525E80DDB2E2A0546E2F895D751C",
+      "title": "ERP OPERATING, LP VS. JAJUAN JEFFRIES ET AL",
+      "result_index": 40,
+      "source_filing_date": "2024-05-08"
+    },
+    {
+      "case_num": "CUD24675000",
+      "link": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=CUD24675000&SessionID=B6F3C6D68F30525E80DDB2E2A0546E2F895D751C",
+      "title": "GOLDEN TIGER LLC VS. LINDA MANNING ET AL",
+      "result_index": 41,
+      "source_filing_date": "2024-05-08"
+    },
+    {
+      "case_num": "CUD24675001",
+      "link": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=CUD24675001&SessionID=B6F3C6D68F30525E80DDB2E2A0546E2F895D751C",
+      "title": "JOHN STEWART COMPANY VS. LOWANNA ADAMS ET AL",
+      "result_index": 42,
+      "source_filing_date": "2024-05-08"
+    },
+    {
+      "case_num": "FCS24356834",
+      "link": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=FCS24356834&SessionID=B6F3C6D68F30525E80DDB2E2A0546E2F895D751C",
+      "title": "ELENA ZORN VS. STEFAN ZORN",
+      "result_index": 43,
+      "source_filing_date": "2024-05-08"
+    },
+    {
+      "case_num": "FCS24356835",
+      "link": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=FCS24356835&SessionID=B6F3C6D68F30525E80DDB2E2A0546E2F895D751C",
+      "title": "COUNTY OF SAN FRANCISCO VS. RICHARD MABRY",
+      "result_index": 44,
+      "source_filing_date": "2024-05-08"
+    },
+    {
+      "case_num": "FCS24356836",
+      "link": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=FCS24356836&SessionID=B6F3C6D68F30525E80DDB2E2A0546E2F895D751C",
+      "title": "COUNTY OF SAN FRANCISCO VS. ZEBARIOUS NOA",
+      "result_index": 45,
+      "source_filing_date": "2024-05-08"
+    },
+    {
+      "case_num": "FCS24356837",
+      "link": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=FCS24356837&SessionID=B6F3C6D68F30525E80DDB2E2A0546E2F895D751C",
+      "title": "COUNTY OF SAN FRANCISCO VS. JOHN PATRICK GAFFNEY",
+      "result_index": 46,
+      "source_filing_date": "2024-05-08"
+    },
+    {
+      "case_num": "FCS24356838",
+      "link": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=FCS24356838&SessionID=B6F3C6D68F30525E80DDB2E2A0546E2F895D751C",
+      "title": "COUNTY OF SAN FRANCISCO VS. LUIS ALBERTO MISCACH",
+      "result_index": 47,
+      "source_filing_date": "2024-05-08"
+    },
+    {
+      "case_num": "FDI24799669",
+      "link": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=FDI24799669&SessionID=B6F3C6D68F30525E80DDB2E2A0546E2F895D751C",
+      "title": "OLGA FEDYUKOVA VS. DMITRY SHKIPIN",
+      "result_index": 48,
+      "source_filing_date": "2024-05-08"
+    },
+    {
+      "case_num": "FDI24799670",
+      "link": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=FDI24799670&SessionID=B6F3C6D68F30525E80DDB2E2A0546E2F895D751C",
+      "title": "SANDI WAN MING MA VS. KADIR FIRAT UYANIK",
+      "result_index": 49,
+      "source_filing_date": "2024-05-08"
+    },
+    {
+      "case_num": "FDI24799671",
+      "link": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=FDI24799671&SessionID=B6F3C6D68F30525E80DDB2E2A0546E2F895D751C",
+      "title": "JIMMY K CHAN VS. JOANNE CHAN",
+      "result_index": 50,
+      "source_filing_date": "2024-05-08"
+    },
+    {
+      "case_num": "FDI24799672",
+      "link": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=FDI24799672&SessionID=B6F3C6D68F30525E80DDB2E2A0546E2F895D751C",
+      "title": "CAROLINE ALEXANDRA JACOBINI VS. DANIEL WILLIAM NASH",
+      "result_index": 51,
+      "source_filing_date": "2024-05-08"
+    },
+    {
+      "case_num": "FDI24799673",
+      "link": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=FDI24799673&SessionID=B6F3C6D68F30525E80DDB2E2A0546E2F895D751C",
+      "title": "IRIS SINGH VS. ATIN RAJ SINGH",
+      "result_index": 52,
+      "source_filing_date": "2024-05-08"
+    },
+    {
+      "case_num": "FDI24799674",
+      "link": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=FDI24799674&SessionID=B6F3C6D68F30525E80DDB2E2A0546E2F895D751C",
+      "title": "YEE MAN CHAN VS. JIAHUAN YU",
+      "result_index": 53,
+      "source_filing_date": "2024-05-08"
+    },
+    {
+      "case_num": "FDI24799675",
+      "link": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=FDI24799675&SessionID=B6F3C6D68F30525E80DDB2E2A0546E2F895D751C",
+      "title": "YUE DA SITU VS. QIAN YI SITU",
+      "result_index": 54,
+      "source_filing_date": "2024-05-08"
+    },
+    {
+      "case_num": "FDI24799677",
+      "link": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=FDI24799677&SessionID=B6F3C6D68F30525E80DDB2E2A0546E2F895D751C",
+      "title": "ZENA ELENA GUILLORY VS. BRIAN JOSEPH GUILLORY",
+      "result_index": 55,
+      "source_filing_date": "2024-05-08"
+    },
+    {
+      "case_num": "FDI24799679",
+      "link": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=FDI24799679&SessionID=B6F3C6D68F30525E80DDB2E2A0546E2F895D751C",
+      "title": "NUHAMIN MESFIN TOLLOSSA VS. ELYSAM RIZALI RAIB",
+      "result_index": 56,
+      "source_filing_date": "2024-05-08"
+    },
+    {
+      "case_num": "FDV24817585",
+      "link": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=FDV24817585&SessionID=B6F3C6D68F30525E80DDB2E2A0546E2F895D751C",
+      "title": "DIANA DUENAS VS. KEVIN KEMONTE LINDSEY",
+      "result_index": 57,
+      "source_filing_date": "2024-05-08"
+    },
+    {
+      "case_num": "FLD24397176",
+      "link": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=FLD24397176&SessionID=B6F3C6D68F30525E80DDB2E2A0546E2F895D751C",
+      "title": "SABER ABUZAHRA VS. ENAS BIRAWI",
+      "result_index": 58,
+      "source_filing_date": "2024-05-08"
+    },
+    {
+      "case_num": "FLD24397177",
+      "link": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=FLD24397177&SessionID=B6F3C6D68F30525E80DDB2E2A0546E2F895D751C",
+      "title": "ROKESHA PINEDA RAYFORD VS. NORMAN BROOKS",
+      "result_index": 59,
+      "source_filing_date": "2024-05-08"
+    },
+    {
+      "case_num": "FLD24397178",
+      "link": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=FLD24397178&SessionID=B6F3C6D68F30525E80DDB2E2A0546E2F895D751C",
+      "title": "DEIDRE HILL VS. MARQUIS WILLIAMS",
+      "result_index": 60,
+      "source_filing_date": "2024-05-08"
+    },
+    {
+      "case_num": "FMS24387505",
+      "link": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=FMS24387505&SessionID=B6F3C6D68F30525E80DDB2E2A0546E2F895D751C",
+      "title": "HUIYA GONG VS. HUA SHUO HUANG",
+      "result_index": 61,
+      "source_filing_date": "2024-05-08"
+    },
+    {
+      "case_num": "FPT24378399",
+      "link": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=FPT24378399&SessionID=B6F3C6D68F30525E80DDB2E2A0546E2F895D751C",
+      "title": "TRASHAWN DAVIS VS. TANIYA SCOTT",
+      "result_index": 62,
+      "source_filing_date": "2024-05-08"
+    },
+    {
+      "case_num": "FPT24378400",
+      "link": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=FPT24378400&SessionID=B6F3C6D68F30525E80DDB2E2A0546E2F895D751C",
+      "title": "SARINA CORTEZ VS. RUBEN ROLDAN",
+      "result_index": 63,
+      "source_filing_date": "2024-05-08"
+    },
+    {
+      "case_num": "FPT24378401",
+      "link": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=FPT24378401&SessionID=B6F3C6D68F30525E80DDB2E2A0546E2F895D751C",
+      "title": "MARIE CHEALSE PUENTE VS. ELEUTERIO TORRES ESPINO",
+      "result_index": 64,
+      "source_filing_date": "2024-05-08"
+    },
+    {
+      "case_num": "FPT24378402",
+      "link": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=FPT24378402&SessionID=B6F3C6D68F30525E80DDB2E2A0546E2F895D751C",
+      "title": "BERNISHA GIVENS VS. EMERSON PORTILLO ***DISMISSED***",
+      "result_index": 65,
+      "source_filing_date": "2024-05-08"
+    },
+    {
+      "case_num": "FPT24378403",
+      "link": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=FPT24378403&SessionID=B6F3C6D68F30525E80DDB2E2A0546E2F895D751C",
+      "title": "DANIA YANETH OCHOA GOMEZ VS. ALEX EDUARDO PAZ HERNANDEZ",
+      "result_index": 66,
+      "source_filing_date": "2024-05-08"
+    },
+    {
+      "case_num": "FSD24367725",
+      "link": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=FSD24367725&SessionID=B6F3C6D68F30525E80DDB2E2A0546E2F895D751C",
+      "title": "JAVAN PEREIRA DA SILVA VS. OXANA KORZUN",
+      "result_index": 67,
+      "source_filing_date": "2024-05-08"
+    },
+    {
+      "case_num": "PDW24062545",
+      "link": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=PDW24062545&SessionID=B6F3C6D68F30525E80DDB2E2A0546E2F895D751C",
+      "title": "DEPOSITED WILL OF CHESTER CHWANG",
+      "result_index": 68,
+      "source_filing_date": "2024-05-08"
+    }
+  ]
+}

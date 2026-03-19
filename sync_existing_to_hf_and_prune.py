@@ -30,7 +30,7 @@ def is_hf_commit_conflict(exc: Exception):
         return False
     response = getattr(exc, "response", None)
     status_code = getattr(response, "status_code", None)
-    if status_code in {412, 429}:
+    if status_code in {412, 429, 500, 502, 503, 504}:
         return True
     text = str(exc).lower()
     return (
@@ -38,6 +38,11 @@ def is_hf_commit_conflict(exc: Exception):
         or "a commit has happened since" in text
         or "too many requests" in text
         or "rate limit" in text
+        or "internal server error" in text
+        or "gateway time-out" in text
+        or "gateway timeout" in text
+        or "bad gateway" in text
+        or "service unavailable" in text
     )
 
 
@@ -52,6 +57,8 @@ def run_hf_commit_with_retry(action, description: str, max_attempts: int = HF_CO
             status_code = getattr(response, "status_code", None)
             if status_code == 429:
                 delay = min(1800, 60 * attempt)
+            elif status_code in {500, 502, 503, 504}:
+                delay = min(300, 15 * attempt)
             else:
                 delay = min(30, 1.5 * (2 ** (attempt - 1)))
             print(

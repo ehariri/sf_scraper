@@ -1,3 +1,4 @@
+// GENERATED FILE: edit monitor/app.js, then run python sync_vercel_monitor.py
 const REFRESH_MS = 15000;
 let tabsBound = false;
 
@@ -291,11 +292,38 @@ function renderCalendar(calendar) {
     .join("");
 }
 
+function showStatusBanner(message, tone = "warn") {
+  const el = document.getElementById("status-banner");
+  if (!el) return;
+  if (!message) {
+    el.className = "status-banner hidden";
+    el.textContent = "";
+    return;
+  }
+  el.className = `status-banner ${tone}`;
+  el.textContent = message;
+}
+
 async function refresh() {
   const res = await fetch("/api/status");
   const payload = await res.json();
+  if (!res.ok || payload.error) {
+    const detail = payload.detail ? ` (${payload.detail})` : "";
+    showStatusBanner(`Monitor API error: ${payload.error || res.status}${detail}`, "error");
+    return;
+  }
 
-  document.getElementById("generated-at").textContent = fmtRelative(payload.generated_at);
+  if (payload.snapshot_mode) {
+    const reason =
+      payload.snapshot_reason === "upstream_unreachable"
+        ? "live upstream unreachable"
+        : "no live upstream configured";
+    showStatusBanner(`Showing cached snapshot because ${reason}.`, "warn");
+  } else {
+    showStatusBanner("");
+  }
+
+  document.getElementById("generated-at").textContent = `${fmtRelative(payload.generated_at)}${payload.snapshot_mode ? " (snapshot)" : ""}`;
   document.getElementById("scope-range").textContent = `${payload.scope.start} to ${payload.scope.end}`;
   document.getElementById("data-size").textContent = payload.storage.data_human;
 
@@ -353,5 +381,13 @@ async function refresh() {
   bindTabs();
 }
 
-refresh().catch(console.error);
-setInterval(() => refresh().catch(console.error), REFRESH_MS);
+refresh().catch((error) => {
+  console.error(error);
+  showStatusBanner(`Monitor refresh failed: ${error}`, "error");
+});
+setInterval(() => {
+  refresh().catch((error) => {
+    console.error(error);
+    showStatusBanner(`Monitor refresh failed: ${error}`, "error");
+  });
+}, REFRESH_MS);
