@@ -18,6 +18,7 @@ This project automates the scraping of civil case data from the San Francisco Su
 *   **`run_failed_cleanup_shard.py`**: Sharded failed-only cleanup runner for retry passes.
 *   **`sync_existing_to_hf_and_prune.py`**: Uploads local data to HF, verifies it remotely, and prunes local copies.
 *   **`upload_data_in_batches.py`**: Bulk uploader for draining large local backlogs to HF in sized batches.
+*   **`run_bulk_upload_with_restart.py`**: Wrapper that relaunches the bulk uploader after restartable HF `504` commit failures.
 *   **`monitor_app.py`**: A local monitoring web app for scrape coverage, sync progress, live process health, and recent log errors/stalls.
 
 ## Setup
