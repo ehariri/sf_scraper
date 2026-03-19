@@ -4,6 +4,7 @@ import subprocess
 import sys
 import time
 from datetime import datetime, timedelta
+import signal
 
 # --- Configuration ---
 # Defaults (can be overridden by CLI args)
@@ -187,7 +188,19 @@ def main():
 
     try:
         for p in processes:
-            p.wait()
+            rc = p.wait()
+            if rc == 0:
+                print(f"Worker PID {p.pid} finished successfully.")
+                continue
+
+            if rc < 0:
+                try:
+                    sig_name = signal.Signals(-rc).name
+                except Exception:
+                    sig_name = f"SIG{-rc}"
+                print(f"Worker PID {p.pid} exited due to signal {sig_name} ({rc}).")
+            else:
+                print(f"Worker PID {p.pid} exited with code {rc}.")
     except KeyboardInterrupt:
         print("\nStopping all workers...")
         for p in processes:
