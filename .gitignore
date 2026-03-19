@@ -10,3 +10,11 @@ vercel_monitor/.vercel/
 vercel_monitor/.vercel.team.bak/
 benchmarks/**/*.log
 benchmarks/**/summary.json
+benchmarks/request_vs_browser_local/
+benchmarks/validate_request_20240508/
+benchmarks/timeout_case_page/
+data_focus_benchmark/
+data_focus_test/
+data_request_bench_20240102/
+data_request_test/
+data_request_test3/
