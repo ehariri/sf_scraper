@@ -52,22 +52,27 @@ def main():
     while True:
         attempt += 1
         print(f"Starting bulk upload attempt {attempt}: {' '.join(cmd)}", flush=True)
-        proc = subprocess.run(
+        proc = subprocess.Popen(
             cmd,
             cwd=str(ROOT),
             text=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
         )
-        if proc.stdout:
-            sys.stdout.write(proc.stdout)
+        output_chunks = []
+        assert proc.stdout is not None
+        for line in proc.stdout:
+            output_chunks.append(line)
+            sys.stdout.write(line)
             sys.stdout.flush()
+        proc.wait()
+        combined_output = "".join(output_chunks)
 
         if proc.returncode == 0:
             print("Bulk upload completed successfully.", flush=True)
             return 0
 
-        if not should_restart(proc.stdout or "", proc.returncode):
+        if not should_restart(combined_output, proc.returncode):
             print(
                 f"Bulk upload exited with code {proc.returncode} and is not restartable.",
                 flush=True,
