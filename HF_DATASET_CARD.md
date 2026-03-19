@@ -3,17 +3,6 @@ pretty_name: SF Superior Court Docket and ROA Scrape
 language:
   - en
 license: other
-task_categories:
-  - text-classification
-  - token-classification
-  - text-retrieval
-tags:
-  - courts
-  - legal
-  - dockets
-  - register-of-actions
-  - california
-  - san-francisco
 ---
 
 # SF Superior Court Docket and ROA Scrape
