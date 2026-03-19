@@ -336,6 +336,11 @@ h1 {
   background: #c6d4ea;
 }
 
+.calendar-cell.attempted_error {
+  background: #c44e52;
+  box-shadow: inset 0 0 0 1px rgba(77, 19, 21, 0.25);
+}
+
 .calendar-cell.no_cases {
   background: #8d99ae;
 }

@@ -337,8 +337,8 @@ h1 {
   background: #c6d4ea;
 }
 
-.calendar-cell.hf_only {
-  background: #d9e3b0;
+.calendar-cell.attempted_error {
+  background: #d8b37a;
 }
 
 .calendar-cell.no_cases {

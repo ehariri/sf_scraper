@@ -256,9 +256,11 @@ function renderCalendar(calendar) {
           const tooltip = [
             day.date,
             day.status === "untouched"
-              ? "Untouched weekday"
+              ? "Untouched"
+              : day.status === "attempted_error"
+                ? "Attempted, unresolved"
               : day.status === "no_cases"
-                ? "Known zero-case weekday"
+                ? "Known zero-case"
                 : `${fmtInt(day.scraped_cases)} / ${fmtInt(day.total_cases)} scraped`,
             day.remaining_cases ? `${fmtInt(day.remaining_cases)} remaining` : null,
             day.source === "hf" ? "HF only" : null,

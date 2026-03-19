@@ -58,6 +58,12 @@ BATCH_FINISHED_RE = re.compile(
 UPLOADING_DAY_RE = re.compile(
     r"Uploading\s+(?P<day>\d{4}-\d{2}-\d{2})(?::\s+(?P<cases>\d+)\s+cases,\s+(?P<files>\d+)\s+files,\s+(?P<mb>[0-9.]+)\s+MB)?"
 )
+SEARCH_TIMEOUT_RE = re.compile(
+    r"Timed out waiting for search results for (?P<day>\d{4}-\d{2}-\d{2})\."
+)
+NO_CASES_RE = re.compile(
+    r"No cases found with filings on (?P<day>\d{4}-\d{2}-\d{2})\."
+)
 
 
 def utc_now():
@@ -177,6 +183,30 @@ def collect_logs(log_names, line_count=40):
         entry["name"] = name
         logs.append(entry)
     return logs
+
+
+def known_attempt_statuses():
+    def compute():
+        statuses = {}
+        for name in list_scrape_logs():
+            path = LOG_ROOT / name
+            if not path.exists():
+                continue
+            try:
+                for raw_line in path.read_text(errors="replace").splitlines():
+                    line = strip_ansi(raw_line)
+                    timeout_match = SEARCH_TIMEOUT_RE.search(line)
+                    if timeout_match:
+                        statuses[timeout_match.group("day")] = "attempted_error"
+                        continue
+                    no_cases_match = NO_CASES_RE.search(line)
+                    if no_cases_match:
+                        statuses.setdefault(no_cases_match.group("day"), "no_cases")
+            except OSError:
+                continue
+        return statuses
+
+    return cache_get_or_compute("known_attempt_statuses", 30, compute)
 
 
 def human_bytes(num_bytes):
@@ -528,10 +558,11 @@ def summarize_days(rows):
     }
 
 
-def build_calendar(rows, hf_days=None, hf_summaries=None):
+def build_calendar(rows, hf_days=None, hf_summaries=None, known_statuses=None):
     row_map = {row["date"]: row for row in rows}
     hf_day_set = set(hf_days or [])
     hf_summaries = hf_summaries or {}
+    known_statuses = known_statuses or {}
     years = defaultdict(list)
 
     for current in iter_scope_dates():
@@ -552,23 +583,25 @@ def build_calendar(rows, hf_days=None, hf_summaries=None):
                 shade = 0
             else:
                 completion_ratio = scraped_cases / total_cases if total_cases else 0.0
-                if scraped_cases == 0 or completion_ratio < 0.25:
-                    shade = 1
-                elif completion_ratio < 0.5:
-                    shade = 2
-                elif completion_ratio < 0.85:
-                    shade = 3
-                else:
+                if calendar_row["fully_completed"]:
+                    status = "complete"
                     shade = 4
-                status = "complete" if calendar_row["fully_completed"] else "touched"
+                else:
+                    status = "touched"
+                    if scraped_cases == 0 or completion_ratio < 0.25:
+                        shade = 1
+                    elif completion_ratio < 0.5:
+                        shade = 2
+                    else:
+                        shade = 3
             source = "local" if row else "hf"
         else:
             total_cases = 0
             scraped_cases = 0
             remaining_cases = 0
-            status = "untouched"
+            status = known_statuses.get(iso, "untouched")
             shade = 0
-            source = "none"
+            source = "log" if status != "untouched" else "none"
 
         years[current.year].append(
             {
@@ -619,12 +652,12 @@ def build_calendar(rows, hf_days=None, hf_summaries=None):
     return {
         "years": year_entries,
         "legend": [
-            {"status": "untouched", "label": "Untouched weekday"},
-            {"status": "no_cases", "label": "Known zero-case weekday"},
+            {"status": "untouched", "label": "Untouched"},
+            {"status": "attempted_error", "label": "Attempted, unresolved"},
             {"status": "shade1", "label": "Many cases left"},
             {"status": "shade2", "label": "Some progress"},
             {"status": "shade3", "label": "Mostly scraped"},
-            {"status": "shade4", "label": "Nearly done or complete"},
+            {"status": "shade4", "label": "Complete"},
         ],
     }
 
@@ -901,6 +934,7 @@ def build_status():
     remote_state = cached_remote_state()
     hf_days = cached_remote_hf_day_folders()
     hf_summaries = cached_remote_hf_day_summary_map()
+    known_statuses = known_attempt_statuses()
     rows = collect_day_rows()
     combined_rows = combine_day_rows(rows, hf_summaries)
     corpus = summarize_days(combined_rows)
@@ -946,7 +980,7 @@ def build_status():
         },
         "logs": {"scrape": scrape_logs, "sync": sync_logs + collect_logs(list_bulk_upload_logs(), line_count=35)},
         "prefixes": summarize_case_prefixes(),
-        "calendar": build_calendar(rows, hf_days, hf_summaries),
+        "calendar": build_calendar(rows, hf_days, hf_summaries, known_statuses),
     }
 
 
