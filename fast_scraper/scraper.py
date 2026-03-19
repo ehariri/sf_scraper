@@ -595,62 +595,74 @@ async def create_hf_commit(api, repo_id, operations, message):
             await asyncio.sleep(delay)
 
 
-async def upload_case_bundle_to_hf(api, repo_id, filing_date, case_num, output_data, pdf_blobs):
-    """Upload case JSON and PDFs to Hugging Face as a single case-level commit."""
-    operations = [
-        CommitOperationAdd(
-            path_in_repo=f"{repo_case_dir(filing_date, case_num)}/register_of_actions.json",
-            path_or_fileobj=json.dumps(output_data, indent=2).encode("utf-8"),
-        )
-    ]
+def build_day_bundle_operations(date_str):
+    """Collect a full filing-day bundle for a single HF commit."""
+    day_dir = LOCAL_DATA_ROOT / date_str
+    if not day_dir.exists():
+        return []
 
-    for filename, body in pdf_blobs.items():
+    operations = []
+    for path in sorted(day_dir.rglob("*")):
+        if not path.is_file():
+            continue
+        if path.name == "sync_metadata.json":
+            continue
+        rel_path = path.relative_to(day_dir).as_posix()
         operations.append(
             CommitOperationAdd(
-                path_in_repo=f"{repo_case_dir(filing_date, case_num)}/{filename}",
-                path_or_fileobj=body,
+                path_in_repo=f"data/{date_str}/{rel_path}",
+                path_or_fileobj=path,
             )
         )
+    return operations
 
+
+async def upload_day_bundle_to_hf(api, repo_id, date_str):
+    """Upload the full filing day as a single commit."""
+    operations = build_day_bundle_operations(date_str)
     async with HF_UPLOAD_SEMAPHORE:
         await create_hf_commit(
             api,
             repo_id,
             operations,
-            f"Add SF Superior Court case {case_num} ({filing_date})",
+            f"Update SF Superior Court filing day {date_str}",
         )
 
 
-async def upload_day_summary_to_hf(api, repo_id, date_str, summary):
-    """Mirror day summary JSON to the dataset repo."""
-    async with HF_UPLOAD_SEMAPHORE:
-        await create_hf_commit(
-            api,
-            repo_id,
-            [
-                CommitOperationAdd(
-                    path_in_repo=f"data/{date_str}/day_summary.json",
-                    path_or_fileobj=json.dumps(summary, indent=2).encode("utf-8"),
-                )
-            ],
-            f"Update SF Superior Court day summary {date_str}",
-        )
+def prune_day_local_pdfs_after_hf_upload(date_str):
+    """Delete local PDFs after a successful day-level HF upload."""
+    day_dir = LOCAL_DATA_ROOT / date_str
+    if not day_dir.exists():
+        return 0
+
+    removed = 0
+    for path in day_dir.rglob("*.pdf"):
+        path.unlink(missing_ok=True)
+        removed += 1
+    return removed
 
 
-async def upload_failed_cases_to_hf(api, repo_id, date_str, payload):
-    """Mirror failed_cases.json to the dataset repo."""
-    async with HF_UPLOAD_SEMAPHORE:
-        await create_hf_commit(
-            api,
-            repo_id,
-            [
-                CommitOperationAdd(
-                    path_in_repo=f"data/{date_str}/failed_cases.json",
-                    path_or_fileobj=json.dumps(payload, indent=2).encode("utf-8"),
-                )
-            ],
-            f"Update SF Superior Court failed cases {date_str}",
-        )
+def mark_day_cases_hf_uploaded(date_str):
+    """Update case JSON metadata after a successful day-level HF upload."""
+    day_dir = LOCAL_DATA_ROOT / date_str
+    if not day_dir.exists():
+        return
+
+    for json_path in sorted(day_dir.glob("*/register_of_actions.json")):
+        try:
+            data = json.loads(json_path.read_text())
+        except Exception:
+            continue
+        if not isinstance(data, dict):
+            continue
+        meta = data.setdefault("metadata", {})
+        if meta.get("status") == "restricted":
+            pass
+        else:
+            meta["storage"] = "huggingface"
+        timing = meta.setdefault("timing", {})
+        timing["hf_upload_finished_at"] = utc_now_iso()
+        json_path.write_text(json.dumps(data, indent=2))
 
 
 def persist_pdf_blobs_locally(case_dir, pdf_blobs):
@@ -659,15 +671,6 @@ def persist_pdf_blobs_locally(case_dir, pdf_blobs):
     for filename, body in pdf_blobs.items():
         with open(case_dir / filename, "wb") as f:
             f.write(body)
-
-
-def delete_local_case_pdfs(case_dir):
-    """Delete locally cached PDFs for a case while keeping JSON metadata."""
-    if not case_dir.exists():
-        return
-    for path in case_dir.iterdir():
-        if path.is_file() and path.suffix.lower() == ".pdf":
-            path.unlink(missing_ok=True)
 
 
 async def save_doc(context, url, folder, filename, keep_local_pdfs):
@@ -1160,7 +1163,8 @@ async def scrape_case(
     case_dir = LOCAL_DATA_ROOT / filing_date / case_num
     case_dir.mkdir(parents=True, exist_ok=True)
     json_path = case_dir / "register_of_actions.json"
-    persist_local_pdfs = keep_local_pdfs or not hf_repo_id
+    # Day-level HF uploads need the case bundle on disk until the filing day commits.
+    persist_local_pdfs = True
     scrape_started_at = utc_now_iso()
     scrape_started_perf = time.perf_counter()
 
@@ -1284,7 +1288,7 @@ async def scrape_case(
         else:
             scraped_links = len(pdf_blobs)
 
-        storage_mode = "local" if persist_local_pdfs else "huggingface"
+        storage_mode = "local"
         output_data = {
             "metadata": {
                 "case_number": case_num,
@@ -1318,49 +1322,6 @@ async def scrape_case(
             },
             "actions": actions,
         }
-
-        if hf_repo_id:
-            hf_upload_started_perf = time.perf_counter()
-            hf_upload_started_at = utc_now_iso()
-            try:
-                await upload_case_bundle_to_hf(
-                    api, hf_repo_id, filing_date, case_num, output_data, pdf_blobs
-                )
-                if hf_only:
-                    delete_local_case_pdfs(case_dir)
-                output_data["metadata"]["timing"]["hf_upload_started_at"] = (
-                    hf_upload_started_at
-                )
-                output_data["metadata"]["timing"]["hf_upload_finished_at"] = (
-                    utc_now_iso()
-                )
-                output_data["metadata"]["timing"]["hf_upload_elapsed_seconds"] = round(
-                    time.perf_counter() - hf_upload_started_perf, 3
-                )
-            except Exception as e:
-                if not hf_only:
-                    persist_pdf_blobs_locally(case_dir, pdf_blobs)
-                    output_data["metadata"]["storage"] = "local_fallback"
-                else:
-                    output_data["metadata"]["storage"] = "hf_only_pending"
-                output_data["metadata"]["hf_upload_error"] = str(e)
-                output_data["metadata"]["timing"]["hf_upload_started_at"] = (
-                    hf_upload_started_at
-                )
-                output_data["metadata"]["timing"]["hf_upload_finished_at"] = (
-                    utc_now_iso()
-                )
-                output_data["metadata"]["timing"]["hf_upload_elapsed_seconds"] = round(
-                    time.perf_counter() - hf_upload_started_perf, 3
-                )
-                if hf_only:
-                    tqdm.write(
-                        f"  HF upload failed for {case_num}; kept only JSON metadata locally"
-                    )
-                else:
-                    tqdm.write(
-                        f"  HF upload failed for {case_num}; kept PDFs locally for retry"
-                    )
 
         with open(json_path, "w") as f:
             json.dump(output_data, f, indent=2)
@@ -1841,7 +1802,20 @@ async def main():
                 },
             )
             if hf_repo_id:
-                await upload_day_summary_to_hf(hf_api, hf_repo_id, date_str, summary)
+                try:
+                    await upload_day_bundle_to_hf(hf_api, hf_repo_id, date_str)
+                    if args.hf_only:
+                        removed = prune_day_local_pdfs_after_hf_upload(date_str)
+                        mark_day_cases_hf_uploaded(date_str)
+                        summary = update_day_summary(date_str, total_cases=len(cases))
+                        if removed:
+                            tqdm.write(
+                                f"  HF day upload complete for {date_str}; pruned {removed} local PDFs"
+                            )
+                except Exception as exc:
+                    tqdm.write(
+                        f"  HF day upload failed for {date_str}; keeping local files for retry: {exc}"
+                    )
             print(
                 f"  Day {date_str} already complete on disk "
                 f"({summary['scraped_cases']}/{summary['total_cases']})."
@@ -1985,10 +1959,37 @@ async def main():
             },
         )
         if hf_repo_id:
-            await upload_failed_cases_to_hf(
-                hf_api, hf_repo_id, date_str, failed_payload
-            )
-            await upload_day_summary_to_hf(hf_api, hf_repo_id, date_str, summary)
+            try:
+                await upload_day_bundle_to_hf(hf_api, hf_repo_id, date_str)
+                if args.hf_only:
+                    removed = prune_day_local_pdfs_after_hf_upload(date_str)
+                    mark_day_cases_hf_uploaded(date_str)
+                    summary = update_day_summary(
+                        date_str,
+                        run_metadata={
+                            "mode": "failed_only" if args.failed_only else "full_day",
+                            "started_at": date_started_at,
+                            "finished_at": utc_now_iso(),
+                            "elapsed_seconds": round(
+                                time.perf_counter() - date_started_perf, 3
+                            ),
+                            "case_count": len(cases),
+                            "pending_case_count": len(pending_cases),
+                            "failed_case_count": len(failed_cases),
+                            "retry_rounds_run": retry_rounds_run,
+                            "max_concurrent_cases": args.max_concurrent_cases,
+                            "max_concurrent_downloads": args.max_concurrent_downloads,
+                            "case_launch_stagger_ms": args.case_launch_stagger_ms,
+                        },
+                    )
+                    if removed:
+                        tqdm.write(
+                            f"  HF day upload complete for {date_str}; pruned {removed} local PDFs"
+                        )
+            except Exception as exc:
+                tqdm.write(
+                    f"  HF day upload failed for {date_str}; keeping local files for retry: {exc}"
+                )
         print(
             f"  Date {date_str} done: "
             f"{summary['scraped_cases']}/{summary['total_cases']} cases"
