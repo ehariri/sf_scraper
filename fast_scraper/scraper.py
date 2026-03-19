@@ -412,10 +412,60 @@ async def get_session_page(context, session_id=None):
     return await context.new_page()
 
 
-async def refresh_session(page, port, max_wait_seconds=90):
-    """Re-enter the court site and wait for a fresh SessionID."""
+async def try_reuse_existing_session(page, session_id_hint=None):
+    """Try to recover the search page without forcing a fresh Cloudflare solve."""
+    context = page.context
+    session_id = current_session_id_from_context(context) or session_id_hint
+    if not session_id:
+        raise SessionExpiredError("No live SessionID available for reuse")
+
+    session_url = f"{TARGET_URL}?&SessionID={session_id}"
+    active_page = await get_session_page(context, session_id)
+    await active_page.goto(session_url, wait_until="domcontentloaded")
+    if await page_has_session_timeout(active_page):
+        raise SessionExpiredError("Session expired while reusing existing session")
+    await active_page.wait_for_selector(
+        "#ui-id-3", state="visible", timeout=SEARCH_RESULTS_TIMEOUT_MS
+    )
+    await click_new_filings_tab(active_page)
+    if await page_has_session_timeout(active_page):
+        raise SessionExpiredError("Session expired after reopening search page")
+    return session_id, active_page
+
+
+async def refresh_session(page, port, session_id_hint=None, max_wait_seconds=90):
+    """Recover the shared session, preferring cheap reuse before a full solve."""
+    global LAST_SHARED_REFRESH
     print("Session expired. Refreshing session...")
     context = page.context
+
+    now = time.monotonic()
+    if (
+        LAST_SHARED_REFRESH["session_id"]
+        and (now - LAST_SHARED_REFRESH["completed_at"]) <= SHARED_REFRESH_COOLDOWN_SECONDS
+    ):
+        try:
+            reused_session_id, reused_page = await try_reuse_existing_session(
+                page, LAST_SHARED_REFRESH["session_id"]
+            )
+            print("Reused recently refreshed shared session.")
+            return reused_session_id, reused_page
+        except Exception:
+            pass
+
+    try:
+        reused_session_id, reused_page = await try_reuse_existing_session(
+            page, session_id_hint
+        )
+        LAST_SHARED_REFRESH = {
+            "session_id": reused_session_id,
+            "completed_at": time.monotonic(),
+        }
+        print("Recovered shared session without full Cloudflare solve.")
+        return reused_session_id, reused_page
+    except Exception:
+        pass
+
     try:
         await page.goto(TARGET_URL, wait_until="domcontentloaded")
     except Exception:
@@ -435,6 +485,10 @@ async def refresh_session(page, port, max_wait_seconds=90):
                 "#ui-id-3", state="visible", timeout=SEARCH_RESULTS_TIMEOUT_MS
             )
             await click_new_filings_tab(active_page)
+            LAST_SHARED_REFRESH = {
+                "session_id": session_id,
+                "completed_at": time.monotonic(),
+            }
             return session_id, active_page
         except (PlaywrightTimeoutError, PlaywrightError, SessionExpiredError) as e:
             last_error = e
@@ -465,17 +519,23 @@ async def prepare_search_page(page, session_id, port):
         except SessionExpiredError:
             if attempt == 2:
                 raise
-            session_id, page = await refresh_session(page, port)
+            session_id, page = await refresh_session(
+                page, port, session_id_hint=session_id
+            )
         except (PlaywrightTimeoutError, PlaywrightError) as e:
             if await page_has_session_timeout(page):
                 if attempt == 2:
                     raise
-                session_id, page = await refresh_session(page, port)
+                session_id, page = await refresh_session(
+                    page, port, session_id_hint=session_id
+                )
                 continue
             if attempt == 2:
                 raise
             print(f"Search page not ready ({e}). Refreshing session...")
-            session_id, page = await refresh_session(page, port)
+            session_id, page = await refresh_session(
+                page, port, session_id_hint=session_id
+            )
 
     raise SessionExpiredError("Could not prepare search page")
 
@@ -543,6 +603,8 @@ DOWNLOAD_SEMAPHORE = None
 HF_UPLOAD_SEMAPHORE = None
 REQUEST_BOOTSTRAP_LOCK = None
 HF_COMMIT_MAX_ATTEMPTS = 8
+LAST_SHARED_REFRESH = {"session_id": None, "completed_at": 0.0}
+SHARED_REFRESH_COOLDOWN_SECONDS = 20
 DOC_ID_RE = re.compile(r"DocID%3D(\d+)", re.IGNORECASE)
 CASE_VAR_RE = {
     "casenum": re.compile(r"casenum\s*=\s*['\"]([^'\"]+)['\"]", re.IGNORECASE),
@@ -1737,7 +1799,9 @@ async def main():
         async def recover_shared_session():
             nonlocal session_id, page
             async with session_refresh_lock:
-                session_id, page = await refresh_session(page, args.port)
+                session_id, page = await refresh_session(
+                    page, args.port, session_id_hint=session_id
+                )
                 await close_stale_scraper_tabs(context, keep_pages=[page])
 
         # Reset page to clean state before each search
