@@ -541,6 +541,7 @@ async def fetch_case_list_via_browser(page, date_str):
 
 DOWNLOAD_SEMAPHORE = None
 HF_UPLOAD_SEMAPHORE = None
+REQUEST_BOOTSTRAP_LOCK = None
 HF_COMMIT_MAX_ATTEMPTS = 8
 DOC_ID_RE = re.compile(r"DocID%3D(\d+)", re.IGNORECASE)
 CASE_VAR_RE = {
@@ -885,74 +886,122 @@ def parse_case_request_vars(html, fallback_case_num):
 
 
 async def fetch_case_actions_via_request(context, link, case_num):
-    last_error = None
-    for attempt in range(1, 4):
-        helper_page = await context.new_page()
-        try:
-            live_session_id = current_session_id_from_context(context)
-            normalized_link = replace_case_session_id(link, live_session_id)
-            anchor_link = html.escape(normalized_link, quote=True)
-            await helper_page.set_content(
-                f'<html><body><a id="go" href="{anchor_link}" target="_self">go</a></body></html>'
-            )
-            async with helper_page.expect_navigation(
-                wait_until="domcontentloaded", timeout=SEARCH_RESULTS_TIMEOUT_MS
-            ):
-                await helper_page.click("#go")
-            case_page_html = await helper_page.content()
-
-            if all(marker in case_page_html for marker in SESSION_TIMEOUT_MARKERS):
-                raise SessionExpiredError(
-                    f"Session expired while bootstrapping request ROA for {case_num}"
-                )
-            if html_has_cloudflare_challenge(case_page_html):
-                raise RetryableCaseError(
-                    f"Cloudflare challenge page returned for request bootstrap {case_num}",
-                    failed_case_num=case_num,
-                )
-
-            request_case_num, request_sesh_id, access_code = parse_case_request_vars(
-                case_page_html, case_num
-            )
-            response_payload = await helper_page.evaluate(
-                """
-                async ({ caseNum, seshID, accessCode, timeoutMs }) => {
-                    const roaUrl =
-                        `/ci/CaseInfo.dll/datasnap/rest/TServerMethods1/GetROA/${caseNum}/${seshID}/${accessCode || ''}`;
-                    const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-                    let response;
-                    try {
-                        response = await fetch(roaUrl, {
-                            credentials: 'include',
-                            signal: controller.signal,
-                        });
-                    } catch (error) {
-                        if (error && error.name === 'AbortError') {
-                            return {
-                                timeout: true,
-                                error: `GetROA fetch timed out after ${timeoutMs}ms`,
-                            };
-                        }
-                        return {
-                            error: error ? String(error) : 'Unknown fetch error',
-                        };
-                    } finally {
-                        clearTimeout(timeoutId);
-                    }
+    async def fetch_case_html_via_page(page, url):
+        return await page.evaluate(
+            """
+            async ({ url, timeoutMs }) => {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+                try {
+                    const response = await fetch(url, {
+                        credentials: 'include',
+                        signal: controller.signal,
+                    });
                     return {
                         status: response.status,
                         text: await response.text(),
                     };
+                } catch (error) {
+                    if (error && error.name === 'AbortError') {
+                        return {
+                            timeout: true,
+                            error: `Case bootstrap fetch timed out after ${timeoutMs}ms`,
+                        };
+                    }
+                    return {
+                        error: error ? String(error) : 'Unknown fetch error',
+                    };
+                } finally {
+                    clearTimeout(timeoutId);
                 }
-                """,
-                {
-                    "caseNum": request_case_num,
-                    "seshID": request_sesh_id,
-                    "accessCode": access_code,
-                    "timeoutMs": SEARCH_RESULTS_TIMEOUT_MS,
-                },
-            )
+            }
+            """,
+            {"url": url, "timeoutMs": SEARCH_RESULTS_TIMEOUT_MS},
+        )
+
+    async def fetch_roa_via_page(page, request_case_num, request_sesh_id, access_code):
+        return await page.evaluate(
+            """
+            async ({ caseNum, seshID, accessCode, timeoutMs }) => {
+                const roaUrl =
+                    `/ci/CaseInfo.dll/datasnap/rest/TServerMethods1/GetROA/${caseNum}/${seshID}/${accessCode || ''}`;
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+                let response;
+                try {
+                    response = await fetch(roaUrl, {
+                        credentials: 'include',
+                        signal: controller.signal,
+                    });
+                } catch (error) {
+                    if (error && error.name === 'AbortError') {
+                        return {
+                            timeout: true,
+                            error: `GetROA fetch timed out after ${timeoutMs}ms`,
+                        };
+                    }
+                    return {
+                        error: error ? String(error) : 'Unknown fetch error',
+                    };
+                } finally {
+                    clearTimeout(timeoutId);
+                }
+                return {
+                    status: response.status,
+                    text: await response.text(),
+                };
+            }
+            """,
+            {
+                "caseNum": request_case_num,
+                "seshID": request_sesh_id,
+                "accessCode": access_code,
+                "timeoutMs": SEARCH_RESULTS_TIMEOUT_MS,
+            },
+        )
+
+    last_error = None
+    for attempt in range(1, 4):
+        try:
+            async with REQUEST_BOOTSTRAP_LOCK:
+                live_session_id = current_session_id_from_context(context)
+                normalized_link = replace_case_session_id(link, live_session_id)
+                session_page = await get_session_page(context, live_session_id)
+                case_page_response = await fetch_case_html_via_page(
+                    session_page, normalized_link
+                )
+
+                if case_page_response.get("timeout"):
+                    raise RetryableCaseError(
+                        f"Case bootstrap fetch timed out for {case_num}",
+                        failed_case_num=case_num,
+                    )
+                if case_page_response.get("error"):
+                    raise RequestPathUnavailableError(
+                        f"Case bootstrap fetch failed for {case_num}: {case_page_response['error']}"
+                    )
+                if case_page_response.get("status") != 200:
+                    raise RequestPathUnavailableError(
+                        f"Case bootstrap returned HTTP {case_page_response.get('status')} for {case_num}"
+                    )
+                case_page_html = case_page_response.get("text", "")
+
+                if all(marker in case_page_html for marker in SESSION_TIMEOUT_MARKERS):
+                    raise SessionExpiredError(
+                        f"Session expired while bootstrapping request ROA for {case_num}"
+                    )
+                if html_has_cloudflare_challenge(case_page_html):
+                    raise RetryableCaseError(
+                        f"Cloudflare challenge page returned for request bootstrap {case_num}",
+                        failed_case_num=case_num,
+                    )
+
+                request_case_num, request_sesh_id, access_code = parse_case_request_vars(
+                    case_page_html, case_num
+                )
+                response_payload = await fetch_roa_via_page(
+                    session_page, request_case_num, request_sesh_id, access_code
+                )
             if response_payload.get("timeout"):
                 raise RetryableCaseError(
                     f"GetROA fetch timed out for {case_num}",
@@ -1030,8 +1079,6 @@ async def fetch_case_actions_via_request(context, link, case_num):
             if attempt == 3:
                 break
             await asyncio.sleep(0.5 * attempt)
-        finally:
-            await helper_page.close()
 
     raise last_error
 
@@ -1557,7 +1604,7 @@ def get_dates(start_str, end_str):
 
 
 async def main():
-    global DOWNLOAD_SEMAPHORE, HF_UPLOAD_SEMAPHORE
+    global DOWNLOAD_SEMAPHORE, HF_UPLOAD_SEMAPHORE, REQUEST_BOOTSTRAP_LOCK
     global SEARCH_RESULTS_TIMEOUT_MS, TABLE_IDLE_TIMEOUT_MS, CASE_READY_POLL_ATTEMPTS
     global CASE_LAUNCH_STAGGER_MS
     global LOCAL_DATA_ROOT
@@ -1670,6 +1717,7 @@ async def main():
 
     DOWNLOAD_SEMAPHORE = asyncio.Semaphore(args.max_concurrent_downloads)
     HF_UPLOAD_SEMAPHORE = asyncio.Semaphore(args.max_concurrent_hf_uploads)
+    REQUEST_BOOTSTRAP_LOCK = asyncio.Lock()
     session_refresh_lock = asyncio.Lock()
     hf_repo_id = None if args.disable_hf_upload else args.hf_repo_id
     hf_api = HfApi() if hf_repo_id else None
@@ -1823,43 +1871,64 @@ async def main():
                             )
 
                     try:
-                        await scrape_case(
-                            context,
-                            case,
-                            date_str,
-                            hf_api,
-                            hf_repo_id,
-                            args.keep_local_pdfs,
-                            args.hf_only,
-                        )
-                    except SessionExpiredError:
-                        tqdm.write(
-                            f"  Session expired while scraping {case['case_num']}; queued for retry"
-                        )
-                        try:
-                            await recover_shared_session()
-                        except CloudflareSolveTimeoutError as e:
-                            tqdm.write(
-                                f"  Cloudflare solve timed out while refreshing session for {case['case_num']}: {e}"
-                            )
-                        failures.append(case)
-                    except (BrowserStuckError, RetryableCaseError) as e:
-                        if "Cloudflare challenge page returned for request bootstrap" in str(e):
-                            tqdm.write(
-                                f"  Cloudflare challenge hit during request bootstrap for {case['case_num']}; refreshing session"
-                            )
+                        needs_shared_retry = True
+                        while True:
                             try:
-                                await recover_shared_session()
-                            except CloudflareSolveTimeoutError as refresh_error:
-                                tqdm.write(
-                                    f"  Cloudflare solve timed out while refreshing session for {case['case_num']}: {refresh_error}"
+                                await scrape_case(
+                                    context,
+                                    case,
+                                    date_str,
+                                    hf_api,
+                                    hf_repo_id,
+                                    args.keep_local_pdfs,
+                                    args.hf_only,
                                 )
-                        tqdm.write(
-                            f"  Retrying later {case['case_num']}: {e}"
-                        )
-                        failures.append(case)
-                    except Exception as e:
-                        tqdm.write(f"  Error on {case['case_num']}: {e}")
+                                break
+                            except SessionExpiredError:
+                                if not needs_shared_retry:
+                                    tqdm.write(
+                                        f"  Session expired while scraping {case['case_num']}; queued for retry"
+                                    )
+                                    failures.append(case)
+                                    break
+                                tqdm.write(
+                                    f"  Session expired for {case['case_num']}; refreshing shared session and retrying once"
+                                )
+                                try:
+                                    await recover_shared_session()
+                                    needs_shared_retry = False
+                                    continue
+                                except CloudflareSolveTimeoutError as refresh_error:
+                                    tqdm.write(
+                                        f"  Cloudflare solve timed out while refreshing session for {case['case_num']}: {refresh_error}"
+                                    )
+                                    failures.append(case)
+                                    break
+                            except (BrowserStuckError, RetryableCaseError) as e:
+                                is_challenge = (
+                                    "Cloudflare challenge page returned for request bootstrap"
+                                    in str(e)
+                                )
+                                if is_challenge and needs_shared_retry:
+                                    tqdm.write(
+                                        f"  Cloudflare challenge hit during request bootstrap for {case['case_num']}; refreshing shared session and retrying once"
+                                    )
+                                    try:
+                                        await recover_shared_session()
+                                        needs_shared_retry = False
+                                        continue
+                                    except CloudflareSolveTimeoutError as refresh_error:
+                                        tqdm.write(
+                                            f"  Cloudflare solve timed out while refreshing session for {case['case_num']}: {refresh_error}"
+                                        )
+                                tqdm.write(
+                                    f"  Retrying later {case['case_num']}: {e}"
+                                )
+                                failures.append(case)
+                                break
+                            except Exception as e:
+                                tqdm.write(f"  Error on {case['case_num']}: {e}")
+                                break
                     finally:
                         pbar.update(1)
 
