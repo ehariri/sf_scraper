@@ -1,8 +1,7 @@
-import { readFile } from "node:fs/promises";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
+const { readFile } = require("node:fs/promises");
+const path = require("node:path");
 
-const MODULE_DIR = path.dirname(fileURLToPath(import.meta.url));
+const MODULE_DIR = __dirname;
 
 async function loadSnapshot() {
   const candidates = [
@@ -23,7 +22,7 @@ async function loadSnapshot() {
   throw lastError || new Error("status snapshot not found");
 }
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   const origin = (process.env.MONITOR_UPSTREAM_ORIGIN || "").trim();
 
   if (!origin) {
@@ -81,4 +80,4 @@ export default async function handler(req, res) {
       });
     }
   }
-}
+};
