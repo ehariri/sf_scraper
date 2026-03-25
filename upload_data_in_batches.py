@@ -150,11 +150,26 @@ def quarantine_failed_local_file(data_dir: Path, repo_path: str, reason: str):
     return quarantined_path
 
 
-def upload_batch(api, repo_id, data_dir: Path, batch_index, batch, batch_count):
-    message = (
-        f"Bulk sync SF Superior Court batch {batch_index}/{batch_count} "
-        f"({len(batch['days'])} days)"
+def batch_day_label(batch):
+    day_names = sorted(day_dir.name for day_dir, _, _ in batch["days"])
+    if not day_names:
+        return "empty"
+    if len(day_names) == 1:
+        return day_names[0]
+    return f"{day_names[0]}..{day_names[-1]}"
+
+
+def batch_commit_message(run_id: str, batch_index, batch, batch_count):
+    day_count = len(batch["days"])
+    day_word = "day" if day_count == 1 else "days"
+    return (
+        f"Bulk sync SF Superior Court {batch_day_label(batch)} "
+        f"run {run_id} batch {batch_index}/{batch_count} ({day_count} {day_word})"
     )
+
+
+def upload_batch(api, repo_id, data_dir: Path, batch_index, batch, batch_count, run_id: str):
+    message = batch_commit_message(run_id, batch_index, batch, batch_count)
     quarantined_repo_paths = set()
     while True:
         operations = build_operations(batch)
@@ -168,7 +183,7 @@ def upload_batch(api, repo_id, data_dir: Path, batch_index, batch, batch_count):
                     operations=operations,
                     commit_message=message,
                 ),
-                f"bulk batch upload {batch_index}/{batch_count}",
+                f"bulk batch upload {batch_day_label(batch)} run {run_id} batch {batch_index}/{batch_count}",
             )
             return
         except RuntimeError as exc:
@@ -229,6 +244,7 @@ def main():
     args = parser.parse_args()
 
     api = HfApi()
+    run_id = time.strftime("%Y%m%d-%H%M%S", time.gmtime())
     day_dirs = candidate_day_dirs(args.data_dir, completed_only=args.completed_only)
     if args.start_date:
         day_dirs = [day_dir for day_dir in day_dirs if day_dir.name >= args.start_date]
@@ -244,15 +260,16 @@ def main():
         f"Prepared {len(batches)} batches from {len(day_dirs)} day folders "
         f"for repo {args.repo_id}"
     )
+    print(f"Upload run id: {run_id}")
     for index, batch in enumerate(batches, start=1):
         print(
-            f"Batch {index}/{len(batches)}: {len(batch['days'])} days, "
+            f"Batch {index}/{len(batches)} [{batch_day_label(batch)}]: {len(batch['days'])} days, "
             f"{batch['files']} files, {batch['bytes'] / 1024 / 1024 / 1024:.2f} GB"
         )
 
     for index, batch in enumerate(batches, start=1):
         started = time.perf_counter()
-        upload_batch(api, args.repo_id, args.data_dir, index, batch, len(batches))
+        upload_batch(api, args.repo_id, args.data_dir, index, batch, len(batches), run_id)
         verify_batch(api, args.repo_id, batch)
         if not args.keep_local:
             prune_batch(batch)
