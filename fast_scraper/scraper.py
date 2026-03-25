@@ -1429,6 +1429,10 @@ def update_day_summary(date_str, total_cases=None, run_metadata=None):
 
     if total_cases is None:
         total_cases = current_summary.get("total_cases", 0)
+    no_cases_found = bool(
+        (run_metadata and run_metadata.get("no_cases_found"))
+        or current_summary.get("no_cases_found")
+    )
 
     scraped_cases = 0
     cases_with_timing = 0
@@ -1484,7 +1488,9 @@ def update_day_summary(date_str, total_cases=None, run_metadata=None):
                     pass
 
     scraped_cases = max(scraped_cases, current_summary.get("scraped_cases", 0))
-    fully_completed = (total_cases > 0) and (scraped_cases >= total_cases)
+    fully_completed = no_cases_found or (
+        (total_cases > 0) and (scraped_cases >= total_cases)
+    )
     if current_summary.get("fully_completed") and current_summary.get(
         "total_cases"
     ) == total_cases:
@@ -1495,6 +1501,7 @@ def update_day_summary(date_str, total_cases=None, run_metadata=None):
         "total_cases": total_cases,
         "scraped_cases": scraped_cases,
         "fully_completed": fully_completed,
+        "no_cases_found": no_cases_found,
         "updated_at": utc_now_iso(),
         "timing": {
             "cases_with_timing": cases_with_timing,
@@ -1835,6 +1842,35 @@ async def main():
                 print(f"  Skipping {date_str} after search failure: {e}")
                 continue
             if not cases:
+                write_failed_cases(date_str, [])
+                update_day_summary(
+                    date_str,
+                    total_cases=0,
+                    run_metadata={
+                        "mode": "failed_only" if args.failed_only else "full_day",
+                        "started_at": date_started_at,
+                        "finished_at": utc_now_iso(),
+                        "elapsed_seconds": round(
+                            time.perf_counter() - date_started_perf, 3
+                        ),
+                        "case_count": 0,
+                        "pending_case_count": 0,
+                        "failed_case_count": 0,
+                        "retry_rounds_run": 0,
+                        "max_concurrent_cases": args.max_concurrent_cases,
+                        "max_concurrent_downloads": args.max_concurrent_downloads,
+                        "case_launch_stagger_ms": args.case_launch_stagger_ms,
+                        "no_cases_found": True,
+                    },
+                )
+                if hf_repo_id:
+                    try:
+                        await upload_day_bundle_to_hf(hf_api, hf_repo_id, date_str)
+                    except Exception as exc:
+                        tqdm.write(
+                            f"  HF day upload failed for {date_str}; keeping local files for retry: {exc}"
+                        )
+                print(f"  No cases found for {date_str}; recorded zero-case day.")
                 continue
 
             (LOCAL_DATA_ROOT / date_str).mkdir(parents=True, exist_ok=True)
