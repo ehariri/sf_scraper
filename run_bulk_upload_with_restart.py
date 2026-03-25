@@ -16,6 +16,18 @@ def should_restart(output_text: str, exit_code: int) -> bool:
         return True
     if "commit/main" in lowered and "gateway time-out" in lowered:
         return True
+    restartable_markers = (
+        "sslerror",
+        "connectionerror",
+        "connection reset",
+        "connection aborted",
+        "remotedisconnected",
+        "read timed out",
+        "unexpected eof",
+        "transport endpoint",
+    )
+    if any(marker in lowered for marker in restartable_markers):
+        return True
     return exit_code != 0 and "hfhubhttperror" in lowered and "504" in lowered
 
 
@@ -80,7 +92,7 @@ def main():
             return proc.returncode
 
         print(
-            f"Detected restartable HF 504 failure. Waiting {args.restart_delay_seconds}s before restarting...",
+            f"Detected restartable HF upload failure. Waiting {args.restart_delay_seconds}s before restarting...",
             flush=True,
         )
         time.sleep(args.restart_delay_seconds)
