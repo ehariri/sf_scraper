@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 import argparse
+import fcntl
 import json
 import re
 import shutil
 import time
+from contextlib import contextmanager
 from pathlib import Path
 
 from huggingface_hub import CommitOperationAdd, HfApi
@@ -22,6 +24,31 @@ ROOT = Path(__file__).resolve().parent
 SKIPPED_UPLOADS_ROOT = ROOT / "skipped_uploads"
 SKIPPED_UPLOADS_LOG = ROOT / "logs" / "hf_skipped_uploads.json"
 FAILED_UPLOAD_PATH_RE = re.compile(r"Error while uploading '([^']+)' to the Hub\.")
+
+
+def repo_lock_path(repo_id: str):
+    safe_name = repo_id.replace("/", "__")
+    return ROOT / "logs" / f"hf_repo_lock_{safe_name}.lock"
+
+
+@contextmanager
+def acquire_repo_lock(repo_id: str):
+    lock_path = repo_lock_path(repo_id)
+    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(lock_path, "w") as lock_file:
+        try:
+            fcntl.flock(lock_file.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError as exc:
+            raise RuntimeError(
+                f"Another local HF writer is already active for {repo_id}. "
+                f"Lock: {lock_path}"
+            ) from exc
+        lock_file.write(f"{time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}\n")
+        lock_file.flush()
+        try:
+            yield
+        finally:
+            fcntl.flock(lock_file.fileno(), fcntl.LOCK_UN)
 
 
 def day_size_bytes(day_dir: Path):
@@ -241,41 +268,51 @@ def main():
         action="store_true",
         help="Only include day folders marked fully completed",
     )
+    parser.add_argument(
+        "--refresh-cache-every-batches",
+        type=int,
+        default=10,
+        help="Refresh the monitor HF cache every N completed batches instead of after every batch",
+    )
     args = parser.parse_args()
 
     api = HfApi()
     run_id = time.strftime("%Y%m%d-%H%M%S", time.gmtime())
-    day_dirs = candidate_day_dirs(args.data_dir, completed_only=args.completed_only)
-    if args.start_date:
-        day_dirs = [day_dir for day_dir in day_dirs if day_dir.name >= args.start_date]
-    if args.end_date:
-        day_dirs = [day_dir for day_dir in day_dirs if day_dir.name <= args.end_date]
-    batch_count = args.batch_count
-    if args.target_batch_gb is not None:
-        target_batch_bytes = int(args.target_batch_gb * (1024 ** 3))
-        batch_count = derive_batch_count(day_dirs, target_batch_bytes)
-    batches = partition_days(day_dirs, batch_count)
+    refresh_every = max(1, args.refresh_cache_every_batches)
 
-    print(
-        f"Prepared {len(batches)} batches from {len(day_dirs)} day folders "
-        f"for repo {args.repo_id}"
-    )
-    print(f"Upload run id: {run_id}")
-    for index, batch in enumerate(batches, start=1):
+    with acquire_repo_lock(args.repo_id):
+        day_dirs = candidate_day_dirs(args.data_dir, completed_only=args.completed_only)
+        if args.start_date:
+            day_dirs = [day_dir for day_dir in day_dirs if day_dir.name >= args.start_date]
+        if args.end_date:
+            day_dirs = [day_dir for day_dir in day_dirs if day_dir.name <= args.end_date]
+        batch_count = args.batch_count
+        if args.target_batch_gb is not None:
+            target_batch_bytes = int(args.target_batch_gb * (1024 ** 3))
+            batch_count = derive_batch_count(day_dirs, target_batch_bytes)
+        batches = partition_days(day_dirs, batch_count)
+
         print(
-            f"Batch {index}/{len(batches)} [{batch_day_label(batch)}]: {len(batch['days'])} days, "
-            f"{batch['files']} files, {batch['bytes'] / 1024 / 1024 / 1024:.2f} GB"
+            f"Prepared {len(batches)} batches from {len(day_dirs)} day folders "
+            f"for repo {args.repo_id}"
         )
+        print(f"Upload run id: {run_id}")
+        for index, batch in enumerate(batches, start=1):
+            print(
+                f"Batch {index}/{len(batches)} [{batch_day_label(batch)}]: {len(batch['days'])} days, "
+                f"{batch['files']} files, {batch['bytes'] / 1024 / 1024 / 1024:.2f} GB"
+            )
 
-    for index, batch in enumerate(batches, start=1):
-        started = time.perf_counter()
-        upload_batch(api, args.repo_id, args.data_dir, index, batch, len(batches), run_id)
-        verify_batch(api, args.repo_id, batch)
-        if not args.keep_local:
-            prune_batch(batch)
-        refresh_monitor_remote_cache(args.repo_id)
-        elapsed = time.perf_counter() - started
-        print(f"Batch {index}/{len(batches)} finished in {elapsed:.1f}s")
+        for index, batch in enumerate(batches, start=1):
+            started = time.perf_counter()
+            upload_batch(api, args.repo_id, args.data_dir, index, batch, len(batches), run_id)
+            verify_batch(api, args.repo_id, batch)
+            if not args.keep_local:
+                prune_batch(batch)
+            if index % refresh_every == 0 or index == len(batches):
+                refresh_monitor_remote_cache(args.repo_id)
+            elapsed = time.perf_counter() - started
+            print(f"Batch {index}/{len(batches)} finished in {elapsed:.1f}s")
 
 
 if __name__ == "__main__":
