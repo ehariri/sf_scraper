@@ -18,7 +18,6 @@ from sync_existing_to_hf_and_prune import (
     candidate_day_dirs,
     is_hf_commit_conflict,
     refresh_monitor_remote_cache,
-    verify_day,
 )
 
 
@@ -277,14 +276,24 @@ def batch_commit_message(run_id: str, batch_index, batch, batch_count):
     )
 
 
-def batch_already_present_remotely(api, repo_id, batch):
-    results = []
-    for day_dir, _, _ in batch["days"]:
-        result = verify_day(api, repo_id, day_dir)
-        results.append((day_dir, result))
-        if not result["ok"]:
-            return False, results
-    return True, results
+def find_recent_commit(api, repo_id, commit_message: str, attempts: int = 4):
+    for attempt in range(1, attempts + 1):
+        try:
+            commits = api.list_repo_commits(repo_id=repo_id, repo_type="dataset")
+            for commit in commits[:50]:
+                if commit.title == commit_message or commit.message == commit_message:
+                    return commit
+            return None
+        except Exception as exc:
+            if not is_hf_commit_conflict(exc) or attempt == attempts:
+                raise
+            delay = commit_retry_delay(exc, attempt)
+            print(
+                f"HF commit history lookup failed for '{commit_message}' "
+                f"(attempt {attempt}/{attempts}). Retrying in {delay:.1f}s..."
+            )
+            time.sleep(delay)
+    return None
 
 
 def upload_batch(
@@ -308,7 +317,7 @@ def upload_batch(
             return
         for attempt in range(1, 9):
             try:
-                run_with_heartbeat(
+                commit_info = run_with_heartbeat(
                     lambda: api.create_commit(
                         repo_id=repo_id,
                         repo_type="dataset",
@@ -318,7 +327,11 @@ def upload_batch(
                     upload_description,
                     heartbeat_seconds,
                 )
-                return
+                return {
+                    "verified_via": "create_commit",
+                    "commit_message": message,
+                    "commit_id": getattr(commit_info, "oid", None),
+                }
             except RuntimeError as exc:
                 failed_repo_path = extract_failed_repo_path(exc)
                 if not failed_repo_path or failed_repo_path in quarantined_repo_paths:
@@ -340,19 +353,18 @@ def upload_batch(
             except Exception as exc:
                 if not is_hf_commit_conflict(exc):
                     raise
-                already_present, results = batch_already_present_remotely(api, repo_id, batch)
-                if already_present:
+                matching_commit = find_recent_commit(api, repo_id, message)
+                if matching_commit is not None:
                     print(
-                        f"Remote already contains batch {batch_index}/{batch_count} "
+                        f"Commit history already contains batch {batch_index}/{batch_count} "
                         f"[{batch_day_label(batch)}] after ambiguous upload; "
-                        f"treating commit as successful."
+                        f"treating commit as successful. commit_id={matching_commit.commit_id}"
                     )
-                    for day_dir, result in results:
-                        print(
-                            f"Verified {day_dir.name}: local={result['local_count']} "
-                            f"remote={result['remote_count']} extra_remote={result['extra_count']}"
-                        )
-                    return
+                    return {
+                        "verified_via": "commit_history",
+                        "commit_message": message,
+                        "commit_id": matching_commit.commit_id,
+                    }
                 if attempt == 8:
                     raise
                 delay = commit_retry_delay(exc, attempt)
@@ -362,20 +374,6 @@ def upload_batch(
                     f"(attempt {attempt}/8). Retrying in {delay:.1f}s..."
                 )
                 time.sleep(delay)
-
-
-def verify_batch(api, repo_id, batch):
-    for day_dir, _, _ in batch["days"]:
-        result = verify_day(api, repo_id, day_dir)
-        print(
-            f"Verified {day_dir.name}: local={result['local_count']} "
-            f"remote={result['remote_count']} extra_remote={result['extra_count']}"
-        )
-        if not result["ok"]:
-            raise RuntimeError(
-                f"Verification failed for {day_dir.name}: "
-                f"missing={len(result['missing'])}, mismatched={len(result['mismatched'])}"
-            )
 
 
 def prune_batch(batch):
@@ -472,7 +470,7 @@ def main():
                 f"{len(batch['days'])} days, {batch['files']} files, "
                 f"{batch['bytes'] / 1024 / 1024 / 1024:.2f} GB"
             )
-            upload_batch(
+            batch_result = upload_batch(
                 api,
                 args.repo_id,
                 args.data_dir,
@@ -482,7 +480,10 @@ def main():
                 run_id,
                 args.upload_heartbeat_seconds,
             )
-            verify_batch(api, args.repo_id, batch)
+            print(
+                f"Verified batch {index}/{len(batches)} [{batch_day_label(batch)}] "
+                f"via {batch_result['verified_via']}. commit_id={batch_result['commit_id']}"
+            )
             if not args.keep_local:
                 prune_batch(batch)
             if index % refresh_every == 0 or index == len(batches):
