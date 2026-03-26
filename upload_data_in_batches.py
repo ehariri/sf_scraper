@@ -18,6 +18,7 @@ from sync_existing_to_hf_and_prune import (
     candidate_day_dirs,
     is_hf_commit_conflict,
     refresh_monitor_remote_cache,
+    verify_day,
 )
 
 
@@ -382,6 +383,20 @@ def prune_batch(batch):
         print(f"Deleted local {day_dir}")
 
 
+def verify_batch_exact(api, repo_id, batch):
+    for day_dir, _, _ in batch["days"]:
+        result = verify_day(api, repo_id, day_dir)
+        print(
+            f"Verified {day_dir.name}: local={result['local_count']} "
+            f"remote={result['remote_count']} extra_remote={result['extra_count']}"
+        )
+        if not result["ok"]:
+            raise RuntimeError(
+                f"Verification failed for {day_dir.name}: "
+                f"missing={len(result['missing'])}, mismatched={len(result['mismatched'])}"
+            )
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Upload the current local data tree to HF in a fixed number of bulk commits"
@@ -484,6 +499,8 @@ def main():
                 f"Verified batch {index}/{len(batches)} [{batch_day_label(batch)}] "
                 f"via {batch_result['verified_via']}. commit_id={batch_result['commit_id']}"
             )
+            if index == 1:
+                verify_batch_exact(api, args.repo_id, batch)
             if not args.keep_local:
                 prune_batch(batch)
             if index % refresh_every == 0 or index == len(batches):
