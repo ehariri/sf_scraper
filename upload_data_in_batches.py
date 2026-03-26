@@ -9,6 +9,7 @@ from contextlib import contextmanager
 from pathlib import Path
 
 from huggingface_hub import CommitOperationAdd, HfApi
+from huggingface_hub.utils import disable_progress_bars
 
 from sync_existing_to_hf_and_prune import (
     DEFAULT_DATA_DIR,
@@ -288,6 +289,7 @@ def main():
     )
     args = parser.parse_args()
 
+    disable_progress_bars()
     api = HfApi()
     run_id = time.strftime("%Y%m%d-%H%M%S", time.gmtime())
     refresh_every = max(1, args.refresh_cache_every_batches)
