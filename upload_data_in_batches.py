@@ -128,6 +128,16 @@ def run_hf_commit_with_retry(action, description: str, max_attempts: int = 8):
             time.sleep(delay)
 
 
+def commit_retry_delay(exc: Exception, attempt: int):
+    response = getattr(exc, "response", None)
+    status_code = getattr(response, "status_code", None)
+    if status_code == 429:
+        return min(1800, 60 * attempt)
+    if status_code in {500, 502, 503, 504}:
+        return min(300, 15 * attempt)
+    return min(30, 1.5 * (2 ** (attempt - 1)))
+
+
 def run_with_heartbeat(action, description: str, interval_seconds: float):
     if interval_seconds <= 0:
         return action()
@@ -224,6 +234,16 @@ def batch_commit_message(run_id: str, batch_index, batch, batch_count):
     )
 
 
+def batch_already_present_remotely(api, repo_id, batch):
+    results = []
+    for day_dir, _, _ in batch["days"]:
+        result = verify_day(api, repo_id, day_dir)
+        results.append((day_dir, result))
+        if not result["ok"]:
+            return False, results
+    return True, results
+
+
 def upload_batch(
     api,
     repo_id,
@@ -243,9 +263,9 @@ def upload_batch(
         operations = build_operations(batch)
         if not operations:
             return
-        try:
-            run_hf_commit_with_retry(
-                lambda: run_with_heartbeat(
+        for attempt in range(1, 9):
+            try:
+                run_with_heartbeat(
                     lambda: api.create_commit(
                         repo_id=repo_id,
                         repo_type="dataset",
@@ -254,18 +274,42 @@ def upload_batch(
                     ),
                     upload_description,
                     heartbeat_seconds,
-                ),
-                f"bulk batch upload {batch_day_label(batch)} run {run_id} batch {batch_index}/{batch_count}",
-            )
-            return
-        except RuntimeError as exc:
-            failed_repo_path = extract_failed_repo_path(exc)
-            if not failed_repo_path or failed_repo_path in quarantined_repo_paths:
-                raise
-            quarantined_path = quarantine_failed_local_file(data_dir, failed_repo_path, str(exc))
-            if not quarantined_path:
-                raise
-            quarantined_repo_paths.add(failed_repo_path)
+                )
+                return
+            except RuntimeError as exc:
+                failed_repo_path = extract_failed_repo_path(exc)
+                if not failed_repo_path or failed_repo_path in quarantined_repo_paths:
+                    raise
+                quarantined_path = quarantine_failed_local_file(data_dir, failed_repo_path, str(exc))
+                if not quarantined_path:
+                    raise
+                quarantined_repo_paths.add(failed_repo_path)
+                break
+            except Exception as exc:
+                if not is_hf_commit_conflict(exc):
+                    raise
+                already_present, results = batch_already_present_remotely(api, repo_id, batch)
+                if already_present:
+                    print(
+                        f"Remote already contains batch {batch_index}/{batch_count} "
+                        f"[{batch_day_label(batch)}] after ambiguous upload; "
+                        f"treating commit as successful."
+                    )
+                    for day_dir, result in results:
+                        print(
+                            f"Verified {day_dir.name}: local={result['local_count']} "
+                            f"remote={result['remote_count']} extra_remote={result['extra_count']}"
+                        )
+                    return
+                if attempt == 8:
+                    raise
+                delay = commit_retry_delay(exc, attempt)
+                print(
+                    f"HF commit conflict during bulk batch upload {batch_day_label(batch)} "
+                    f"run {run_id} batch {batch_index}/{batch_count} "
+                    f"(attempt {attempt}/8). Retrying in {delay:.1f}s..."
+                )
+                time.sleep(delay)
 
 
 def verify_batch(api, repo_id, batch):
