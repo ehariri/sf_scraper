@@ -182,7 +182,18 @@ def extract_failed_repo_path(exc: Exception):
     return match.group(1)
 
 
-def record_skipped_upload(repo_path: str, quarantined_path: Path, reason: str):
+def record_skipped_upload(
+    repo_path: str,
+    quarantined_path: Path,
+    reason: str,
+    *,
+    exception_type: str = None,
+    exception_message: str = None,
+    batch_label: str = None,
+    batch_index: int = None,
+    batch_count: int = None,
+    run_id: str = None,
+):
     SKIPPED_UPLOADS_LOG.parent.mkdir(parents=True, exist_ok=True)
     try:
         payload = json.loads(SKIPPED_UPLOADS_LOG.read_text())
@@ -195,13 +206,29 @@ def record_skipped_upload(repo_path: str, quarantined_path: Path, reason: str):
             "repo_path": repo_path,
             "quarantined_path": str(quarantined_path),
             "reason": reason,
+            "exception_type": exception_type,
+            "exception_message": exception_message,
+            "batch_label": batch_label,
+            "batch_index": batch_index,
+            "batch_count": batch_count,
+            "run_id": run_id,
             "recorded_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         }
     )
     SKIPPED_UPLOADS_LOG.write_text(json.dumps(payload, indent=2) + "\n")
 
 
-def quarantine_failed_local_file(data_dir: Path, repo_path: str, reason: str):
+def quarantine_failed_local_file(
+    data_dir: Path,
+    repo_path: str,
+    reason: str,
+    *,
+    exception: Exception = None,
+    batch_label: str = None,
+    batch_index: int = None,
+    batch_count: int = None,
+    run_id: str = None,
+):
     if not repo_path.startswith("data/"):
         return None
     relative_path = Path(repo_path[len("data/") :])
@@ -211,8 +238,24 @@ def quarantine_failed_local_file(data_dir: Path, repo_path: str, reason: str):
     quarantined_path = SKIPPED_UPLOADS_ROOT / relative_path
     quarantined_path.parent.mkdir(parents=True, exist_ok=True)
     shutil.move(str(local_path), str(quarantined_path))
-    record_skipped_upload(repo_path, quarantined_path, reason)
-    print(f"Skipped failing upload file {repo_path} -> {quarantined_path}")
+    exception_type = type(exception).__name__ if exception is not None else None
+    exception_message = str(exception) if exception is not None else None
+    record_skipped_upload(
+        repo_path,
+        quarantined_path,
+        reason,
+        exception_type=exception_type,
+        exception_message=exception_message,
+        batch_label=batch_label,
+        batch_index=batch_index,
+        batch_count=batch_count,
+        run_id=run_id,
+    )
+    print(
+        f"Skipped failing upload file {repo_path} -> {quarantined_path}. "
+        f"batch={batch_index}/{batch_count} [{batch_label}] run={run_id} "
+        f"exception_type={exception_type} exception_message={exception_message}"
+    )
     return quarantined_path
 
 
@@ -280,7 +323,16 @@ def upload_batch(
                 failed_repo_path = extract_failed_repo_path(exc)
                 if not failed_repo_path or failed_repo_path in quarantined_repo_paths:
                     raise
-                quarantined_path = quarantine_failed_local_file(data_dir, failed_repo_path, str(exc))
+                quarantined_path = quarantine_failed_local_file(
+                    data_dir,
+                    failed_repo_path,
+                    str(exc),
+                    exception=exc,
+                    batch_label=batch_day_label(batch),
+                    batch_index=batch_index,
+                    batch_count=batch_count,
+                    run_id=run_id,
+                )
                 if not quarantined_path:
                     raise
                 quarantined_repo_paths.add(failed_repo_path)
