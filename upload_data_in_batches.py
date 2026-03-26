@@ -4,6 +4,7 @@ import fcntl
 import json
 import re
 import shutil
+import threading
 import time
 from contextlib import contextmanager
 from pathlib import Path
@@ -127,6 +128,27 @@ def run_hf_commit_with_retry(action, description: str, max_attempts: int = 8):
             time.sleep(delay)
 
 
+def run_with_heartbeat(action, description: str, interval_seconds: float):
+    if interval_seconds <= 0:
+        return action()
+
+    started = time.perf_counter()
+    stop_event = threading.Event()
+
+    def heartbeat():
+        while not stop_event.wait(interval_seconds):
+            elapsed = time.perf_counter() - started
+            print(f"{description} still in progress after {elapsed:.1f}s...")
+
+    reporter = threading.Thread(target=heartbeat, daemon=True)
+    reporter.start()
+    try:
+        return action()
+    finally:
+        stop_event.set()
+        reporter.join(timeout=1)
+
+
 def build_operations(batch):
     operations = []
     for day_dir, _, _ in batch["days"]:
@@ -202,20 +224,36 @@ def batch_commit_message(run_id: str, batch_index, batch, batch_count):
     )
 
 
-def upload_batch(api, repo_id, data_dir: Path, batch_index, batch, batch_count, run_id: str):
+def upload_batch(
+    api,
+    repo_id,
+    data_dir: Path,
+    batch_index,
+    batch,
+    batch_count,
+    run_id: str,
+    heartbeat_seconds: float,
+):
     message = batch_commit_message(run_id, batch_index, batch, batch_count)
     quarantined_repo_paths = set()
+    upload_description = (
+        f"Uploading batch {batch_index}/{batch_count} [{batch_day_label(batch)}]"
+    )
     while True:
         operations = build_operations(batch)
         if not operations:
             return
         try:
             run_hf_commit_with_retry(
-                lambda: api.create_commit(
-                    repo_id=repo_id,
-                    repo_type="dataset",
-                    operations=operations,
-                    commit_message=message,
+                lambda: run_with_heartbeat(
+                    lambda: api.create_commit(
+                        repo_id=repo_id,
+                        repo_type="dataset",
+                        operations=operations,
+                        commit_message=message,
+                    ),
+                    upload_description,
+                    heartbeat_seconds,
                 ),
                 f"bulk batch upload {batch_day_label(batch)} run {run_id} batch {batch_index}/{batch_count}",
             )
@@ -287,6 +325,12 @@ def main():
         default=10,
         help="Refresh the monitor HF cache every N completed batches instead of after every batch",
     )
+    parser.add_argument(
+        "--upload-heartbeat-seconds",
+        type=float,
+        default=30.0,
+        help="Print a heartbeat while an HF batch commit is in progress",
+    )
     args = parser.parse_args()
 
     disable_progress_bars()
@@ -327,7 +371,21 @@ def main():
 
         for index, batch in enumerate(batches, start=1):
             started = time.perf_counter()
-            upload_batch(api, args.repo_id, args.data_dir, index, batch, len(batches), run_id)
+            print(
+                f"Starting batch {index}/{len(batches)} [{batch_day_label(batch)}]: "
+                f"{len(batch['days'])} days, {batch['files']} files, "
+                f"{batch['bytes'] / 1024 / 1024 / 1024:.2f} GB"
+            )
+            upload_batch(
+                api,
+                args.repo_id,
+                args.data_dir,
+                index,
+                batch,
+                len(batches),
+                run_id,
+                args.upload_heartbeat_seconds,
+            )
             verify_batch(api, args.repo_id, batch)
             if not args.keep_local:
                 prune_batch(batch)
