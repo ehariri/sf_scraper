@@ -96,6 +96,12 @@ def main():
         default=None,
         help="Preferred batch size in GB; overrides --batch-count when set",
     )
+    parser.add_argument(
+        "--target-batch-files",
+        type=int,
+        default=None,
+        help="Preferred batch size in file count; increases batch count when average files per batch would exceed this",
+    )
     parser.add_argument("--start-date", type=str, default=None)
     parser.add_argument("--end-date", type=str, default=None)
     parser.add_argument(
@@ -140,9 +146,17 @@ def main():
         if args.end_date:
             day_dirs = [day_dir for day_dir in day_dirs if day_dir.name <= args.end_date]
         batch_count = args.batch_count
-        if args.target_batch_gb is not None:
-            target_batch_bytes = int(args.target_batch_gb * (1024 ** 3))
-            batch_count = derive_batch_count(day_dirs, target_batch_bytes)
+        if args.target_batch_gb is not None or args.target_batch_files is not None:
+            target_batch_bytes = (
+                int(args.target_batch_gb * (1024 ** 3))
+                if args.target_batch_gb is not None
+                else None
+            )
+            batch_count = derive_batch_count(
+                day_dirs,
+                target_batch_bytes=target_batch_bytes,
+                target_batch_files=args.target_batch_files,
+            )
         batches = partition_days(day_dirs, batch_count)
 
         print(
