@@ -18,8 +18,10 @@ import shutil
 import signal
 import subprocess
 import time
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 from pathlib import Path
+from typing import Optional
 from urllib.parse import parse_qs, urlencode, urlparse
 
 from huggingface_hub import CommitOperationAdd, HfApi
@@ -38,6 +40,7 @@ TABLE_IDLE_TIMEOUT_MS = 30000
 CASE_READY_POLL_ATTEMPTS = 20
 CASE_LAUNCH_STAGGER_MS = 0
 USE_REQUEST_ROA = True
+PDF_FILTER_PROFILE = "all"
 SESSION_TIMEOUT_MARKERS = (
     "Your session has timed out",
     "Please refresh the page and start again",
@@ -50,6 +53,38 @@ RETRYABLE_ERROR_MARKERS = (
 )
 DEFAULT_HF_REPO_ID = "please-the-bot/sf_superior_court"
 LOCAL_DATA_ROOT = Path("data")
+HIGH_VALUE_BRIEF_RE = re.compile(
+    r"\b("
+    r"MOTION|OPPOSITION|REPLY|DEMURRER|MEMORANDUM OF POINTS|"
+    r"POINTS AND AUTHORITIES|TRIAL BRIEF|BRIEF|EX PARTE|OSC|"
+    r"ORDER TO SHOW CAUSE|REQUEST FOR ORDER|RFO|STIPULATION"
+    r")\b",
+    re.IGNORECASE,
+)
+HIGH_VALUE_DECLARATION_RE = re.compile(
+    r"\b(DECLARATION|AFFIDAVIT|RESPONSIVE DECLARATION)\b",
+    re.IGNORECASE,
+)
+HIGH_VALUE_PLEADING_RE = re.compile(
+    r"\b("
+    r"ANSWER TO COMPLAINT|GENERAL DENIAL|COMPLAINT|PETITION|"
+    r"CROSS-COMPLAINT|AMENDED COMPLAINT|AMENDED PETITION"
+    r")\b",
+    re.IGNORECASE,
+)
+LOW_VALUE_DOC_RE = re.compile(
+    r"\b("
+    r"PROOF OF SERVICE|SUMMONS|CASE MANAGEMENT|CMC|STATUS CONFERENCE|"
+    r"NOTICE OF CASE MANAGEMENT|NOTICE SENT BY COURT|OFF CALENDAR|"
+    r"REQUEST FOR DISMISSAL|DISMISSAL|REQUEST FOR ENTRY OF DEFAULT|"
+    r"DEFAULT ENTERED|CLERK'?S JUDGMENT|CIVIL CASE COVER SHEET|"
+    r"CASE COVER SHEET|COVERSHEET|JUDICIAL COUNCIL|"
+    r"STATEMENT OF LOCATION|NON-MILITARY STATUS|FEE WAIVER|"
+    r"COST BILL|NOTICE OF HEARING|MINUTE ORDER|ORDER AFTER HEARING|"
+    r"NOTICE OF RULING"
+    r")\b",
+    re.IGNORECASE,
+)
 
 
 def chrome_profile_for_port(port):
@@ -66,6 +101,65 @@ def absolute_case_url(url):
     if url.startswith("http"):
         return url
     return f"{BASE_URL}/{url.lstrip('/')}"
+
+
+def required_links_from_metadata(meta):
+    selected_links = meta.get("selected_links")
+    if selected_links is not None:
+        return selected_links
+    return meta.get("total_links", 0)
+
+
+def pdf_count_in_case_dir(case_dir):
+    return sum(
+        1
+        for path in case_dir.iterdir()
+        if path.is_file() and path.suffix.lower() == ".pdf"
+    )
+
+
+def case_metadata_is_complete(meta, case_dir=None):
+    if meta.get("status") == "restricted":
+        return True
+
+    if not meta.get("roa_source"):
+        return False
+
+    if meta.get("storage") in {"local_fallback", "hf_only_pending"}:
+        return False
+
+    if meta.get("roa_source") == "request" and meta.get("total_entries", 0) == 0:
+        return False
+
+    required_links = required_links_from_metadata(meta)
+    if meta.get("storage") == "local":
+        if case_dir is None or not case_dir.exists():
+            return False
+        return pdf_count_in_case_dir(case_dir) == required_links
+
+    return meta.get("scraped_links", 0) == required_links
+
+
+def classify_playwright_error(exc):
+    error_text = str(exc)
+    if "Execution context was destroyed" in error_text:
+        return "browser_stuck", error_text
+    if any(marker in error_text for marker in RETRYABLE_ERROR_MARKERS):
+        return "retryable", error_text
+    return None, error_text
+
+
+def validate_pdf_response(headers, body):
+    lowered_headers = {k.lower(): v for k, v in (headers or {}).items()}
+    content_type = lowered_headers.get("content-type", "").lower()
+    if body.startswith(b"%PDF-"):
+        return True, None
+    if "pdf" in content_type:
+        return True, None
+    sample = body[:256].decode("utf-8", errors="ignore").lower()
+    if "<html" in sample or "cloudflare" in sample or "your session has timed out" in sample:
+        return False, "received HTML/session challenge instead of PDF"
+    return False, f"unexpected PDF response content-type '{content_type or 'unknown'}'"
 
 
 def preferred_chrome_window_bounds():
@@ -210,19 +304,28 @@ class CloudflareSolveTimeoutError(Exception):
     """Raised when a manual Cloudflare solve does not happen in time."""
 
 
+@dataclass
+class SessionRefreshState:
+    session_id: Optional[str] = None
+    completed_at: float = 0.0
+
+
 async def open_sf_page(port):
     """Navigate to the court site, then disconnect to let Cloudflare verify."""
     cdp = f"http://localhost:{port}"
     try:
         async with async_playwright() as p:
             browser = await p.chromium.connect_over_cdp(cdp)
-            if browser.contexts:
-                context = browser.contexts[0]
-            else:
-                context = await browser.new_context()
-            page = await context.new_page()
-            await page.goto(TARGET_URL)
-            print("Navigated to court site. Disconnecting to let Cloudflare verify...")
+            try:
+                if browser.contexts:
+                    context = browser.contexts[0]
+                else:
+                    context = await browser.new_context()
+                page = await context.new_page()
+                await page.goto(TARGET_URL)
+                print("Navigated to court site. Disconnecting to let Cloudflare verify...")
+            finally:
+                await browser.close()
     except Exception as e:
         print(f"Navigation error: {e}")
 
@@ -230,7 +333,7 @@ async def open_sf_page(port):
 async def wait_for_session(port, max_wait_seconds=None):
     """
     Poll Chrome via brief CDP connections until Cloudflare is solved.
-    Returns (session_id, cookies).
+    Returns the live SessionID.
     """
     cdp = f"http://localhost:{port}"
 
@@ -258,15 +361,10 @@ async def wait_for_session(port, max_wait_seconds=None):
                             query = parse_qs(url_parts.query)
                             session_id = query.get("SessionID", [None])[0]
                             if session_id:
-                                context = browser.contexts[0]
-                                raw_cookies = await context.cookies()
-                                cookies = {
-                                    c["name"]: c["value"] for c in raw_cookies
-                                }
                                 print(
                                     f"\nCloudflare passed! SessionID: {session_id}"
                                 )
-                                return session_id, cookies
+                                return session_id
         except Exception as e:
             print(f"Waiting for browser... ({e})")
 
@@ -280,14 +378,21 @@ async def get_browser_page(port):
     """
     cdp = f"http://localhost:{port}"
     p = await async_playwright().start()
-    browser = await p.chromium.connect_over_cdp(cdp)
+    browser = None
+    try:
+        browser = await p.chromium.connect_over_cdp(cdp)
 
-    for ctx in browser.contexts:
-        for pg in ctx.pages:
-            if "SessionID=" in pg.url:
-                return p, browser, pg
+        for ctx in browser.contexts:
+            for pg in ctx.pages:
+                if "SessionID=" in pg.url:
+                    return p, browser, pg
 
-    raise RuntimeError("No page with SessionID found")
+        raise RuntimeError("No page with SessionID found")
+    except Exception:
+        if browser is not None:
+            await browser.close()
+        await p.stop()
+        raise
 
 
 # --- Case List (browser-based, same as original) ---
@@ -441,12 +546,12 @@ async def refresh_session(page, port, session_id_hint=None, max_wait_seconds=90)
 
     now = time.monotonic()
     if (
-        LAST_SHARED_REFRESH["session_id"]
-        and (now - LAST_SHARED_REFRESH["completed_at"]) <= SHARED_REFRESH_COOLDOWN_SECONDS
+        LAST_SHARED_REFRESH.session_id
+        and (now - LAST_SHARED_REFRESH.completed_at) <= SHARED_REFRESH_COOLDOWN_SECONDS
     ):
         try:
             reused_session_id, reused_page = await try_reuse_existing_session(
-                page, LAST_SHARED_REFRESH["session_id"]
+                page, LAST_SHARED_REFRESH.session_id
             )
             print("Reused recently refreshed shared session.")
             return reused_session_id, reused_page
@@ -457,10 +562,8 @@ async def refresh_session(page, port, session_id_hint=None, max_wait_seconds=90)
         reused_session_id, reused_page = await try_reuse_existing_session(
             page, session_id_hint
         )
-        LAST_SHARED_REFRESH = {
-            "session_id": reused_session_id,
-            "completed_at": time.monotonic(),
-        }
+        LAST_SHARED_REFRESH.session_id = reused_session_id
+        LAST_SHARED_REFRESH.completed_at = time.monotonic()
         print("Recovered shared session without full Cloudflare solve.")
         return reused_session_id, reused_page
     except Exception:
@@ -471,7 +574,7 @@ async def refresh_session(page, port, session_id_hint=None, max_wait_seconds=90)
     except Exception:
         pass
 
-    session_id, _ = await wait_for_session(port, max_wait_seconds=max_wait_seconds)
+    session_id = await wait_for_session(port, max_wait_seconds=max_wait_seconds)
     session_url = f"{TARGET_URL}?&SessionID={session_id}"
     active_page = await get_session_page(context, session_id)
 
@@ -485,10 +588,8 @@ async def refresh_session(page, port, session_id_hint=None, max_wait_seconds=90)
                 "#ui-id-3", state="visible", timeout=SEARCH_RESULTS_TIMEOUT_MS
             )
             await click_new_filings_tab(active_page)
-            LAST_SHARED_REFRESH = {
-                "session_id": session_id,
-                "completed_at": time.monotonic(),
-            }
+            LAST_SHARED_REFRESH.session_id = session_id
+            LAST_SHARED_REFRESH.completed_at = time.monotonic()
             return session_id, active_page
         except (PlaywrightTimeoutError, PlaywrightError, SessionExpiredError) as e:
             last_error = e
@@ -603,7 +704,7 @@ DOWNLOAD_SEMAPHORE = None
 HF_UPLOAD_SEMAPHORE = None
 REQUEST_BOOTSTRAP_LOCK = None
 HF_COMMIT_MAX_ATTEMPTS = 8
-LAST_SHARED_REFRESH = {"session_id": None, "completed_at": 0.0}
+LAST_SHARED_REFRESH = SessionRefreshState()
 SHARED_REFRESH_COOLDOWN_SECONDS = 20
 DOC_ID_RE = re.compile(r"DocID%3D(\d+)", re.IGNORECASE)
 CASE_VAR_RE = {
@@ -735,13 +836,13 @@ def persist_pdf_blobs_locally(case_dir, pdf_blobs):
             f.write(body)
 
 
-async def save_doc(context, url, folder, filename, keep_local_pdfs):
+async def save_doc(context, url, folder, filename, write_pdf_to_disk):
     """Download a document via browser HTTP API (handles session cookies)."""
     async with DOWNLOAD_SEMAPHORE:
         folder.mkdir(parents=True, exist_ok=True)
         file_path = folder / filename
 
-        if keep_local_pdfs and file_path.exists():
+        if write_pdf_to_disk and file_path.exists():
             body = file_path.read_bytes()
             return {
                 "body": body,
@@ -758,17 +859,32 @@ async def save_doc(context, url, folder, filename, keep_local_pdfs):
                     url, timeout=SEARCH_RESULTS_TIMEOUT_MS
                 )
                 if response.status == 200:
+                    headers = await response.all_headers()
                     body = await response.body()
-                    if keep_local_pdfs:
+                    is_valid_pdf, validation_error = validate_pdf_response(headers, body)
+                    if not is_valid_pdf:
+                        print(
+                            f"    Download rejected {filename}: {validation_error} "
+                            f"(attempt {attempt+1}/3)"
+                        )
+                    elif write_pdf_to_disk:
                         with open(file_path, "wb") as f:
                             f.write(body)
-                    return {
-                        "body": body,
-                        "elapsed_seconds": round(time.perf_counter() - started, 3),
-                        "bytes": len(body),
-                        "source": "network",
-                        "attempts": attempt + 1,
-                    }
+                        return {
+                            "body": body,
+                            "elapsed_seconds": round(time.perf_counter() - started, 3),
+                            "bytes": len(body),
+                            "source": "network",
+                            "attempts": attempt + 1,
+                        }
+                    elif is_valid_pdf:
+                        return {
+                            "body": body,
+                            "elapsed_seconds": round(time.perf_counter() - started, 3),
+                            "bytes": len(body),
+                            "source": "network",
+                            "attempts": attempt + 1,
+                        }
                 else:
                     print(
                         f"    Download failed {filename}: HTTP {response.status} "
@@ -934,6 +1050,39 @@ def action_from_roa_row(row):
     }
 
 
+def classify_pdf_selection(action):
+    proceedings = (action.get("proceedings") or "").strip()
+    if not action.get("doc_url"):
+        return False, "no_document"
+
+    if PDF_FILTER_PROFILE == "all":
+        return True, "all_documents"
+
+    if HIGH_VALUE_DECLARATION_RE.search(proceedings):
+        return True, "declaration"
+    if HIGH_VALUE_BRIEF_RE.search(proceedings):
+        return True, "brief_motion"
+    if HIGH_VALUE_PLEADING_RE.search(proceedings):
+        return True, "pleading"
+    if LOW_VALUE_DOC_RE.search(proceedings):
+        return False, "low_value_admin"
+    return False, "metadata_not_selected"
+
+
+def annotate_actions_for_download(actions):
+    total_links = 0
+    selected_links = 0
+    for action in actions:
+        selected, category = classify_pdf_selection(action)
+        if action.get("doc_url"):
+            total_links += 1
+            if selected:
+                selected_links += 1
+        action["download_selected"] = bool(selected)
+        action["download_filter_category"] = category
+    return total_links, selected_links
+
+
 def parse_case_request_vars(html, fallback_case_num):
     values = {}
     for key, pattern in CASE_VAR_RE.items():
@@ -1028,6 +1177,8 @@ async def fetch_case_actions_via_request(context, link, case_num):
     last_error = None
     for attempt in range(1, 4):
         try:
+            # Bootstrap is serialized because it reuses a shared authenticated page
+            # to derive request vars; concurrent reuse caused session churn.
             async with REQUEST_BOOTSTRAP_LOCK:
                 live_session_id = current_session_id_from_context(context)
                 normalized_link = replace_case_session_id(link, live_session_id)
@@ -1209,9 +1360,7 @@ async def scrape_case_actions_via_browser(context, link, case_num):
         await page.close()
 
 
-async def scrape_case(
-    context, case, filing_date, api, hf_repo_id, keep_local_pdfs, hf_only
-):
+async def scrape_case(context, case, filing_date):
     """
     Scrape a single case in its own browser tab.
     Same logic as original but runs concurrently with other cases.
@@ -1225,8 +1374,9 @@ async def scrape_case(
     case_dir = LOCAL_DATA_ROOT / filing_date / case_num
     case_dir.mkdir(parents=True, exist_ok=True)
     json_path = case_dir / "register_of_actions.json"
-    # Day-level HF uploads need the case bundle on disk until the filing day commits.
-    persist_local_pdfs = True
+    # Day-level uploads and restartability both rely on writing selected PDFs locally
+    # during the scrape. Later retention/pruning is handled after day-level upload.
+    write_pdfs_to_disk_for_run = True
     scrape_started_at = utc_now_iso()
     scrape_started_perf = time.perf_counter()
 
@@ -1237,14 +1387,7 @@ async def scrape_case(
                 data = json.load(f)
                 if isinstance(data, dict) and "metadata" in data:
                     meta = data["metadata"]
-                    if meta.get("status") == "restricted":
-                        return
-                    storage = meta.get("storage")
-                    if (
-                        meta.get("scraped_links", 0) == meta.get("total_links", 0)
-                        and meta.get("total_links", 0) > 0
-                        and storage not in {"local_fallback", "hf_only_pending"}
-                    ):
+                    if case_metadata_is_complete(meta, case_dir):
                         return
         except Exception:
             pass
@@ -1306,12 +1449,12 @@ async def scrape_case(
                 json.dump(output_data, f, indent=2)
             return
 
+        total_links, selected_links = annotate_actions_for_download(actions)
+        skipped_links = total_links - selected_links
         download_tasks = []
-        total_links = 0
         pdf_filenames = []
         for action in actions:
-            if action["doc_url"]:
-                total_links += 1
+            if action.get("doc_url") and action.get("download_selected"):
                 pdf_filenames.append(action["doc_filename"])
                 download_tasks.append(
                     save_doc(
@@ -1319,7 +1462,7 @@ async def scrape_case(
                         action["doc_url"],
                         case_dir,
                         action["doc_filename"],
-                        persist_local_pdfs,
+                        write_pdfs_to_disk_for_run,
                     )
                 )
         # Download documents in parallel
@@ -1341,11 +1484,13 @@ async def scrape_case(
                     cached_docs += 1
 
         # Count successful downloads
-        if persist_local_pdfs:
+        if write_pdfs_to_disk_for_run:
             scraped_links = sum(
                 1
                 for a in actions
-                if a["doc_filename"] and (case_dir / a["doc_filename"]).exists()
+                if a.get("download_selected")
+                and a["doc_filename"]
+                and (case_dir / a["doc_filename"]).exists()
             )
         else:
             scraped_links = len(pdf_blobs)
@@ -1365,8 +1510,11 @@ async def scrape_case(
                 },
                 "case_header": header_metadata,
                 "roa_source": roa_source,
+                "download_profile": PDF_FILTER_PROFILE,
                 "total_entries": len(actions),
                 "total_links": total_links,
+                "selected_links": selected_links,
+                "skipped_links": skipped_links,
                 "scraped_links": scraped_links,
                 "storage": storage_mode,
                 "timing": {
@@ -1388,7 +1536,10 @@ async def scrape_case(
         with open(json_path, "w") as f:
             json.dump(output_data, f, indent=2)
 
-        tqdm.write(f"  Case {case_num}: {scraped_links}/{total_links} docs")
+        tqdm.write(
+            f"  Case {case_num}: {scraped_links}/{selected_links} selected docs "
+            f"({total_links} total links)"
+        )
 
     except SessionExpiredError:
         raise
@@ -1397,13 +1548,13 @@ async def scrape_case(
     except RetryableCaseError:
         raise
     except Exception as e:
-        error_text = str(e)
-        if "Execution context was destroyed" in error_text:
+        error_kind, error_text = classify_playwright_error(e)
+        if error_kind == "browser_stuck":
             raise BrowserStuckError(
                 "Execution context destroyed during case scrape",
                 failed_case_num=case_num,
             )
-        if any(marker in error_text for marker in RETRYABLE_ERROR_MARKERS):
+        if error_kind == "retryable":
             raise RetryableCaseError(error_text, failed_case_num=case_num)
         tqdm.write(f"  Error scraping case {case_num}: {e}")
 
@@ -1450,25 +1601,7 @@ def update_day_summary(date_str, total_cases=None, run_metadata=None):
                         if isinstance(data, dict) and "metadata" in data:
                             meta = data["metadata"]
                             timing = meta.get("timing", {})
-                            if meta.get("status") == "restricted":
-                                scraped_cases += 1
-                            elif not meta.get("roa_source"):
-                                continue
-                            elif meta.get("storage") == "local":
-                                pdf_count = sum(
-                                    1
-                                    for path in cd.iterdir()
-                                    if path.is_file()
-                                    and path.suffix.lower() == ".pdf"
-                                )
-                                if pdf_count == meta.get("total_links", 0):
-                                    scraped_cases += 1
-                            elif meta.get("storage") not in {
-                                "local_fallback",
-                                "hf_only_pending",
-                            } and meta.get("scraped_links", 0) == meta.get(
-                                "total_links", 0
-                            ):
+                            if case_metadata_is_complete(meta, cd):
                                 scraped_cases += 1
                             if timing:
                                 cases_with_timing += 1
@@ -1543,24 +1676,7 @@ def case_is_complete(date_str, case_num):
         return False
 
     meta = data["metadata"]
-    if meta.get("status") == "restricted":
-        return True
-
-    if not meta.get("roa_source"):
-        return False
-
-    if meta.get("storage") in {"local_fallback", "hf_only_pending"}:
-        return False
-
-    if meta.get("roa_source") == "request" and meta.get("total_entries", 0) == 0:
-        return False
-
-    if meta.get("storage") == "local" and meta.get("total_links", 0) > 0:
-        case_dir = json_path.parent
-        pdf_count = sum(1 for path in case_dir.iterdir() if path.suffix.lower() == ".pdf")
-        return pdf_count == meta.get("total_links", 0)
-
-    return meta.get("scraped_links", 0) == meta.get("total_links", 0)
+    return case_metadata_is_complete(meta, json_path.parent)
 
 
 def write_failed_cases(date_str, failed_cases):
@@ -1639,6 +1755,7 @@ async def main():
     global CASE_LAUNCH_STAGGER_MS
     global LOCAL_DATA_ROOT
     global USE_REQUEST_ROA
+    global PDF_FILTER_PROFILE
 
     parser = argparse.ArgumentParser(
         description="Fast SF Court Scraper (concurrent tabs)"
@@ -1736,6 +1853,12 @@ async def main():
         action="store_true",
         help="Force the legacy browser-tab case scrape path instead of using direct GetROA requests.",
     )
+    parser.add_argument(
+        "--pdf-filter-profile",
+        choices=("all", "high_value"),
+        default=PDF_FILTER_PROFILE,
+        help="Download all linked PDFs or only a metadata-selected high-value subset.",
+    )
     args = parser.parse_args()
 
     SEARCH_RESULTS_TIMEOUT_MS = args.search_timeout_ms
@@ -1744,6 +1867,7 @@ async def main():
     CASE_LAUNCH_STAGGER_MS = args.case_launch_stagger_ms
     LOCAL_DATA_ROOT = args.data_root
     USE_REQUEST_ROA = not args.disable_request_roa
+    PDF_FILTER_PROFILE = args.pdf_filter_profile
 
     DOWNLOAD_SEMAPHORE = asyncio.Semaphore(args.max_concurrent_downloads)
     HF_UPLOAD_SEMAPHORE = asyncio.Semaphore(args.max_concurrent_hf_uploads)
@@ -1762,7 +1886,9 @@ async def main():
     print(f"Dates to scrape: {len(dates)} (weekdays only)")
     if hf_repo_id:
         print(f"Uploading case outputs to HF dataset: {hf_repo_id}")
-    print(f"Keeping local PDFs: {args.keep_local_pdfs}")
+    print("Writing selected PDFs to disk during scrape: True")
+    print(f"Retaining local PDFs after successful HF upload: {args.keep_local_pdfs}")
+    print(f"PDF download profile: {PDF_FILTER_PROFILE}")
     print(f"HF-only mode: {args.hf_only}")
     print(f"Request-based ROA: {USE_REQUEST_ROA}")
 
@@ -1773,79 +1899,124 @@ async def main():
                 shutil.rmtree(date_dir)
                 print(f"Cleared data for {date_str}")
 
-    # Step 1: Launch Chrome and wait for Cloudflare
-    launch_chrome(args.port, manage_windows=args.manage_chrome_windows)
-    session_id, cookies = await wait_for_session(args.port)
+    p = None
+    browser = None
+    page = None
+    chrome_started = False
+    try:
+        # Step 1: Launch Chrome and wait for Cloudflare
+        launch_chrome(args.port, manage_windows=args.manage_chrome_windows)
+        chrome_started = True
+        session_id = await wait_for_session(args.port)
 
-    # Step 2: Connect Playwright (persistent connection for the session)
-    p, browser, page = await get_browser_page(args.port)
-    context = page.context
-    await close_stale_scraper_tabs(context, keep_pages=[page])
+        # Step 2: Connect Playwright (persistent connection for the session)
+        p, browser, page = await get_browser_page(args.port)
+        context = page.context
+        await close_stale_scraper_tabs(context, keep_pages=[page])
 
-    # Step 3: Leave Chrome alone by default so unrelated apps/windows are not affected.
-    if args.minimize_chrome_after_session:
-        minimize_chrome()
-        print("Chrome minimized. Tabs will run in background.")
-    else:
-        print("Chrome window management disabled. Leaving Chrome windows unchanged.")
-
-    # Step 4: Process each date
-    for date_str in dates:
-        print(f"\nProcessing date: {date_str}")
-        date_started_at = utc_now_iso()
-        date_started_perf = time.perf_counter()
-
-        summary = update_day_summary(date_str)
-        if summary.get("fully_completed"):
-            print(
-                f"  Day {date_str} fully scraped "
-                f"({summary['scraped_cases']}/{summary['total_cases']}). Skipping."
-            )
-            continue
-
-        async def recover_shared_session():
-            nonlocal session_id, page
-            async with session_refresh_lock:
-                session_id, page = await refresh_session(
-                    page, args.port, session_id_hint=session_id
-                )
-                await close_stale_scraper_tabs(context, keep_pages=[page])
-
-        # Reset page to clean state before each search
-        try:
-            session_id, page = await prepare_search_page(page, session_id, args.port)
-            await close_stale_scraper_tabs(context, keep_pages=[page])
-        except Exception as e:
-            print(f"  Skipping {date_str} after search-page failure: {e}")
-            continue
-
-        # Browser: search and get case list unless retrying failed-only manifests.
-        if args.failed_only:
-            cases = load_failed_cases(date_str, session_id)
-            if not cases:
-                print(f"  No failed_cases.json entries for {date_str}. Skipping.")
-                continue
-            print(f"  Loaded {len(cases)} failed cases from manifest.")
-            (LOCAL_DATA_ROOT / date_str).mkdir(parents=True, exist_ok=True)
-            update_day_summary(date_str)
+        # Step 3: Leave Chrome alone by default so unrelated apps/windows are not affected.
+        if args.minimize_chrome_after_session:
+            minimize_chrome()
+            print("Chrome minimized. Tabs will run in background.")
         else:
-            try:
-                cases = await fetch_case_list_via_browser(page, date_str)
-            except SessionExpiredError:
-                try:
-                    await recover_shared_session()
-                except CloudflareSolveTimeoutError as e:
-                    print(f"  Skipping {date_str} after session refresh timeout: {e}")
-                    continue
-                cases = await fetch_case_list_via_browser(page, date_str)
-            except (PlaywrightTimeoutError, PlaywrightError) as e:
-                print(f"  Skipping {date_str} after search failure: {e}")
+            print("Chrome window management disabled. Leaving Chrome windows unchanged.")
+
+        # Step 4: Process each date
+        for date_str in dates:
+            print(f"\nProcessing date: {date_str}")
+            date_started_at = utc_now_iso()
+            date_started_perf = time.perf_counter()
+
+            summary = update_day_summary(date_str)
+            if summary.get("fully_completed"):
+                print(
+                    f"  Day {date_str} fully scraped "
+                    f"({summary['scraped_cases']}/{summary['total_cases']}). Skipping."
+                )
                 continue
-            if not cases:
-                write_failed_cases(date_str, [])
-                update_day_summary(
+
+            async def recover_shared_session():
+                nonlocal session_id, page
+                async with session_refresh_lock:
+                    session_id, page = await refresh_session(
+                        page, args.port, session_id_hint=session_id
+                    )
+                    await close_stale_scraper_tabs(context, keep_pages=[page])
+
+            # Reset page to clean state before each search
+            try:
+                session_id, page = await prepare_search_page(page, session_id, args.port)
+                await close_stale_scraper_tabs(context, keep_pages=[page])
+            except Exception as e:
+                print(f"  Skipping {date_str} after search-page failure: {e}")
+                continue
+
+            # Browser: search and get case list unless retrying failed-only manifests.
+            if args.failed_only:
+                cases = load_failed_cases(date_str, session_id)
+                if not cases:
+                    print(f"  No failed_cases.json entries for {date_str}. Skipping.")
+                    continue
+                print(f"  Loaded {len(cases)} failed cases from manifest.")
+                (LOCAL_DATA_ROOT / date_str).mkdir(parents=True, exist_ok=True)
+                update_day_summary(date_str)
+            else:
+                try:
+                    cases = await fetch_case_list_via_browser(page, date_str)
+                except SessionExpiredError:
+                    try:
+                        await recover_shared_session()
+                    except CloudflareSolveTimeoutError as e:
+                        print(f"  Skipping {date_str} after session refresh timeout: {e}")
+                        continue
+                    cases = await fetch_case_list_via_browser(page, date_str)
+                except (PlaywrightTimeoutError, PlaywrightError) as e:
+                    print(f"  Skipping {date_str} after search failure: {e}")
+                    continue
+                if not cases:
+                    write_failed_cases(date_str, [])
+                    update_day_summary(
+                        date_str,
+                        total_cases=0,
+                        run_metadata={
+                            "mode": "failed_only" if args.failed_only else "full_day",
+                            "started_at": date_started_at,
+                            "finished_at": utc_now_iso(),
+                            "elapsed_seconds": round(
+                                time.perf_counter() - date_started_perf, 3
+                            ),
+                            "case_count": 0,
+                            "pending_case_count": 0,
+                            "failed_case_count": 0,
+                            "retry_rounds_run": 0,
+                            "max_concurrent_cases": args.max_concurrent_cases,
+                            "max_concurrent_downloads": args.max_concurrent_downloads,
+                            "case_launch_stagger_ms": args.case_launch_stagger_ms,
+                            "no_cases_found": True,
+                        },
+                    )
+                    if hf_repo_id:
+                        try:
+                            await upload_day_bundle_to_hf(hf_api, hf_repo_id, date_str)
+                        except Exception as exc:
+                            tqdm.write(
+                                f"  HF day upload failed for {date_str}; keeping local files for retry: {exc}"
+                            )
+                    print(f"  No cases found for {date_str}; recorded zero-case day.")
+                    continue
+
+                (LOCAL_DATA_ROOT / date_str).mkdir(parents=True, exist_ok=True)
+                for case in cases:
+                    case["source_filing_date"] = date_str
+                update_day_summary(date_str, total_cases=len(cases))
+
+            pending_cases = [
+                case for case in cases if not case_is_complete(date_str, case["case_num"])
+            ]
+            retry_rounds_run = 0
+            if not pending_cases:
+                summary = update_day_summary(
                     date_str,
-                    total_cases=0,
                     run_metadata={
                         "mode": "failed_only" if args.failed_only else "full_day",
                         "started_at": date_started_at,
@@ -1853,48 +2024,164 @@ async def main():
                         "elapsed_seconds": round(
                             time.perf_counter() - date_started_perf, 3
                         ),
-                        "case_count": 0,
+                        "case_count": len(cases),
                         "pending_case_count": 0,
                         "failed_case_count": 0,
-                        "retry_rounds_run": 0,
+                        "retry_rounds_run": retry_rounds_run,
                         "max_concurrent_cases": args.max_concurrent_cases,
                         "max_concurrent_downloads": args.max_concurrent_downloads,
                         "case_launch_stagger_ms": args.case_launch_stagger_ms,
-                        "no_cases_found": True,
                     },
                 )
                 if hf_repo_id:
                     try:
                         await upload_day_bundle_to_hf(hf_api, hf_repo_id, date_str)
+                        if args.hf_only:
+                            removed = prune_day_local_pdfs_after_hf_upload(date_str)
+                            mark_day_cases_hf_uploaded(date_str)
+                            summary = update_day_summary(date_str, total_cases=len(cases))
+                            if removed:
+                                tqdm.write(
+                                    f"  HF day upload complete for {date_str}; pruned {removed} local PDFs"
+                                )
                     except Exception as exc:
                         tqdm.write(
                             f"  HF day upload failed for {date_str}; keeping local files for retry: {exc}"
                         )
-                print(f"  No cases found for {date_str}; recorded zero-case day.")
+                print(
+                    f"  Day {date_str} already complete on disk "
+                    f"({summary['scraped_cases']}/{summary['total_cases']})."
+                )
                 continue
 
-            (LOCAL_DATA_ROOT / date_str).mkdir(parents=True, exist_ok=True)
-            for case in cases:
-                case["source_filing_date"] = date_str
-            update_day_summary(date_str, total_cases=len(cases))
+            retry_concurrency = args.retry_concurrency or max(
+                1, args.max_concurrent_cases // 2
+            )
 
-        pending_cases = [
-            case for case in cases if not case_is_complete(date_str, case["case_num"])
-        ]
-        retry_rounds_run = 0
-        if not pending_cases:
+            async def run_case_batch(batch_cases, concurrency, label):
+                failures = []
+                batch_sem = asyncio.Semaphore(concurrency)
+                pbar = tqdm(total=len(batch_cases), desc=label, unit="case")
+
+                async def scrape_once(case, case_index):
+                    async with batch_sem:
+                        if not case["link"] or case_is_complete(date_str, case["case_num"]):
+                            pbar.update(1)
+                            return
+
+                        if CASE_LAUNCH_STAGGER_MS and case_index:
+                            slot_offset = case_index % max(1, concurrency)
+                            if slot_offset:
+                                await asyncio.sleep(
+                                    (CASE_LAUNCH_STAGGER_MS * slot_offset) / 1000.0
+                                )
+
+                        try:
+                            needs_shared_retry = True
+                            while True:
+                                try:
+                                    await scrape_case(
+                                        context,
+                                        case,
+                                        date_str,
+                                    )
+                                    break
+                                except SessionExpiredError:
+                                    if not needs_shared_retry:
+                                        tqdm.write(
+                                            f"  Session expired while scraping {case['case_num']}; queued for retry"
+                                        )
+                                        failures.append(case)
+                                        break
+                                    tqdm.write(
+                                        f"  Session expired for {case['case_num']}; refreshing shared session and retrying once"
+                                    )
+                                    try:
+                                        await recover_shared_session()
+                                        needs_shared_retry = False
+                                        continue
+                                    except CloudflareSolveTimeoutError as refresh_error:
+                                        tqdm.write(
+                                            f"  Cloudflare solve timed out while refreshing session for {case['case_num']}: {refresh_error}"
+                                        )
+                                        failures.append(case)
+                                        break
+                                except (BrowserStuckError, RetryableCaseError) as e:
+                                    is_challenge = (
+                                        "Cloudflare challenge page returned for request bootstrap"
+                                        in str(e)
+                                    )
+                                    if is_challenge and needs_shared_retry:
+                                        tqdm.write(
+                                            f"  Cloudflare challenge hit during request bootstrap for {case['case_num']}; refreshing shared session and retrying once"
+                                        )
+                                        try:
+                                            await recover_shared_session()
+                                            needs_shared_retry = False
+                                            continue
+                                        except CloudflareSolveTimeoutError as refresh_error:
+                                            tqdm.write(
+                                                f"  Cloudflare solve timed out while refreshing session for {case['case_num']}: {refresh_error}"
+                                            )
+                                    tqdm.write(
+                                        f"  Retrying later {case['case_num']}: {e}"
+                                    )
+                                    failures.append(case)
+                                    break
+                                except Exception as e:
+                                    tqdm.write(f"  Error on {case['case_num']}: {e}")
+                                    break
+                        finally:
+                            pbar.update(1)
+
+                await asyncio.gather(
+                    *(scrape_once(case, idx) for idx, case in enumerate(batch_cases))
+                )
+                pbar.close()
+                return [
+                    case
+                    for case in failures
+                    if not case_is_complete(date_str, case["case_num"])
+                ]
+
+            failed_cases = await run_case_batch(
+                pending_cases, args.max_concurrent_cases, f"  {date_str}"
+            )
+
+            for retry_round in range(1, args.retry_passes + 1):
+                if not failed_cases:
+                    break
+                retry_rounds_run = retry_round
+
+                tqdm.write(
+                    f"  Retry pass {retry_round} for {date_str}: "
+                    f"{len(failed_cases)} cases at concurrency {retry_concurrency}"
+                )
+                try:
+                    await recover_shared_session()
+                except CloudflareSolveTimeoutError as e:
+                    tqdm.write(
+                        f"  Stopping retry pass {retry_round} for {date_str} after session refresh timeout: {e}"
+                    )
+                    break
+                failed_cases = await run_case_batch(
+                    failed_cases,
+                    retry_concurrency,
+                    f"  {date_str} retry {retry_round}",
+                )
+
+            write_failed_cases(date_str, failed_cases)
+
             summary = update_day_summary(
                 date_str,
                 run_metadata={
                     "mode": "failed_only" if args.failed_only else "full_day",
                     "started_at": date_started_at,
                     "finished_at": utc_now_iso(),
-                    "elapsed_seconds": round(
-                        time.perf_counter() - date_started_perf, 3
-                    ),
+                    "elapsed_seconds": round(time.perf_counter() - date_started_perf, 3),
                     "case_count": len(cases),
-                    "pending_case_count": 0,
-                    "failed_case_count": 0,
+                    "pending_case_count": len(pending_cases),
+                    "failed_case_count": len(failed_cases),
                     "retry_rounds_run": retry_rounds_run,
                     "max_concurrent_cases": args.max_concurrent_cases,
                     "max_concurrent_downloads": args.max_concurrent_downloads,
@@ -1907,7 +2194,24 @@ async def main():
                     if args.hf_only:
                         removed = prune_day_local_pdfs_after_hf_upload(date_str)
                         mark_day_cases_hf_uploaded(date_str)
-                        summary = update_day_summary(date_str, total_cases=len(cases))
+                        summary = update_day_summary(
+                            date_str,
+                            run_metadata={
+                                "mode": "failed_only" if args.failed_only else "full_day",
+                                "started_at": date_started_at,
+                                "finished_at": utc_now_iso(),
+                                "elapsed_seconds": round(
+                                    time.perf_counter() - date_started_perf, 3
+                                ),
+                                "case_count": len(cases),
+                                "pending_case_count": len(pending_cases),
+                                "failed_case_count": len(failed_cases),
+                                "retry_rounds_run": retry_rounds_run,
+                                "max_concurrent_cases": args.max_concurrent_cases,
+                                "max_concurrent_downloads": args.max_concurrent_downloads,
+                                "case_launch_stagger_ms": args.case_launch_stagger_ms,
+                            },
+                        )
                         if removed:
                             tqdm.write(
                                 f"  HF day upload complete for {date_str}; pruned {removed} local PDFs"
@@ -1917,189 +2221,18 @@ async def main():
                         f"  HF day upload failed for {date_str}; keeping local files for retry: {exc}"
                     )
             print(
-                f"  Day {date_str} already complete on disk "
-                f"({summary['scraped_cases']}/{summary['total_cases']})."
-            )
-            continue
-
-        retry_concurrency = args.retry_concurrency or max(
-            1, args.max_concurrent_cases // 2
-        )
-
-        async def run_case_batch(batch_cases, concurrency, label):
-            failures = []
-            batch_sem = asyncio.Semaphore(concurrency)
-            pbar = tqdm(total=len(batch_cases), desc=label, unit="case")
-
-            async def scrape_once(case, case_index):
-                async with batch_sem:
-                    if not case["link"] or case_is_complete(date_str, case["case_num"]):
-                        pbar.update(1)
-                        return
-
-                    if CASE_LAUNCH_STAGGER_MS and case_index:
-                        slot_offset = case_index % max(1, concurrency)
-                        if slot_offset:
-                            await asyncio.sleep(
-                                (CASE_LAUNCH_STAGGER_MS * slot_offset) / 1000.0
-                            )
-
-                    try:
-                        needs_shared_retry = True
-                        while True:
-                            try:
-                                await scrape_case(
-                                    context,
-                                    case,
-                                    date_str,
-                                    hf_api,
-                                    hf_repo_id,
-                                    args.keep_local_pdfs,
-                                    args.hf_only,
-                                )
-                                break
-                            except SessionExpiredError:
-                                if not needs_shared_retry:
-                                    tqdm.write(
-                                        f"  Session expired while scraping {case['case_num']}; queued for retry"
-                                    )
-                                    failures.append(case)
-                                    break
-                                tqdm.write(
-                                    f"  Session expired for {case['case_num']}; refreshing shared session and retrying once"
-                                )
-                                try:
-                                    await recover_shared_session()
-                                    needs_shared_retry = False
-                                    continue
-                                except CloudflareSolveTimeoutError as refresh_error:
-                                    tqdm.write(
-                                        f"  Cloudflare solve timed out while refreshing session for {case['case_num']}: {refresh_error}"
-                                    )
-                                    failures.append(case)
-                                    break
-                            except (BrowserStuckError, RetryableCaseError) as e:
-                                is_challenge = (
-                                    "Cloudflare challenge page returned for request bootstrap"
-                                    in str(e)
-                                )
-                                if is_challenge and needs_shared_retry:
-                                    tqdm.write(
-                                        f"  Cloudflare challenge hit during request bootstrap for {case['case_num']}; refreshing shared session and retrying once"
-                                    )
-                                    try:
-                                        await recover_shared_session()
-                                        needs_shared_retry = False
-                                        continue
-                                    except CloudflareSolveTimeoutError as refresh_error:
-                                        tqdm.write(
-                                            f"  Cloudflare solve timed out while refreshing session for {case['case_num']}: {refresh_error}"
-                                        )
-                                tqdm.write(
-                                    f"  Retrying later {case['case_num']}: {e}"
-                                )
-                                failures.append(case)
-                                break
-                            except Exception as e:
-                                tqdm.write(f"  Error on {case['case_num']}: {e}")
-                                break
-                    finally:
-                        pbar.update(1)
-
-            await asyncio.gather(
-                *(scrape_once(case, idx) for idx, case in enumerate(batch_cases))
-            )
-            pbar.close()
-            return [
-                case for case in failures if not case_is_complete(date_str, case["case_num"])
-            ]
-
-        failed_cases = await run_case_batch(
-            pending_cases, args.max_concurrent_cases, f"  {date_str}"
-        )
-
-        for retry_round in range(1, args.retry_passes + 1):
-            if not failed_cases:
-                break
-            retry_rounds_run = retry_round
-
-            tqdm.write(
-                f"  Retry pass {retry_round} for {date_str}: "
-                f"{len(failed_cases)} cases at concurrency {retry_concurrency}"
-            )
-            try:
-                await recover_shared_session()
-            except CloudflareSolveTimeoutError as e:
-                tqdm.write(
-                    f"  Stopping retry pass {retry_round} for {date_str} after session refresh timeout: {e}"
-                )
-                break
-            failed_cases = await run_case_batch(
-                failed_cases,
-                retry_concurrency,
-                f"  {date_str} retry {retry_round}",
+                f"  Date {date_str} done: "
+                f"{summary['scraped_cases']}/{summary['total_cases']} cases"
             )
 
-        failed_payload = write_failed_cases(date_str, failed_cases)
-
-        summary = update_day_summary(
-            date_str,
-            run_metadata={
-                "mode": "failed_only" if args.failed_only else "full_day",
-                "started_at": date_started_at,
-                "finished_at": utc_now_iso(),
-                "elapsed_seconds": round(time.perf_counter() - date_started_perf, 3),
-                "case_count": len(cases),
-                "pending_case_count": len(pending_cases),
-                "failed_case_count": len(failed_cases),
-                "retry_rounds_run": retry_rounds_run,
-                "max_concurrent_cases": args.max_concurrent_cases,
-                "max_concurrent_downloads": args.max_concurrent_downloads,
-                "case_launch_stagger_ms": args.case_launch_stagger_ms,
-            },
-        )
-        if hf_repo_id:
-            try:
-                await upload_day_bundle_to_hf(hf_api, hf_repo_id, date_str)
-                if args.hf_only:
-                    removed = prune_day_local_pdfs_after_hf_upload(date_str)
-                    mark_day_cases_hf_uploaded(date_str)
-                    summary = update_day_summary(
-                        date_str,
-                        run_metadata={
-                            "mode": "failed_only" if args.failed_only else "full_day",
-                            "started_at": date_started_at,
-                            "finished_at": utc_now_iso(),
-                            "elapsed_seconds": round(
-                                time.perf_counter() - date_started_perf, 3
-                            ),
-                            "case_count": len(cases),
-                            "pending_case_count": len(pending_cases),
-                            "failed_case_count": len(failed_cases),
-                            "retry_rounds_run": retry_rounds_run,
-                            "max_concurrent_cases": args.max_concurrent_cases,
-                            "max_concurrent_downloads": args.max_concurrent_downloads,
-                            "case_launch_stagger_ms": args.case_launch_stagger_ms,
-                        },
-                    )
-                    if removed:
-                        tqdm.write(
-                            f"  HF day upload complete for {date_str}; pruned {removed} local PDFs"
-                        )
-            except Exception as exc:
-                tqdm.write(
-                    f"  HF day upload failed for {date_str}; keeping local files for retry: {exc}"
-                )
-        print(
-            f"  Date {date_str} done: "
-            f"{summary['scraped_cases']}/{summary['total_cases']} cases"
-        )
-
-    # Cleanup
-    await browser.close()
-    await p.stop()
-    kill_chrome(args.port)
-    print("\nAll dates processed!")
+        print("\nAll dates processed!")
+    finally:
+        if browser is not None:
+            await browser.close()
+        if p is not None:
+            await p.stop()
+        if chrome_started:
+            kill_chrome(args.port)
 
 
 if __name__ == "__main__":
