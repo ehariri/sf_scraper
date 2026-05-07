@@ -24,8 +24,6 @@ from pathlib import Path
 from typing import Optional
 from urllib.parse import parse_qs, urlencode, urlparse
 
-from huggingface_hub import CommitOperationAdd, HfApi
-from huggingface_hub.errors import HfHubHTTPError
 from playwright.async_api import Error as PlaywrightError
 from playwright.async_api import TimeoutError as PlaywrightTimeoutError
 from playwright.async_api import async_playwright
@@ -51,13 +49,12 @@ RETRYABLE_ERROR_MARKERS = (
     "net::ERR_",
     "Target page, context or browser has been closed",
 )
-DEFAULT_HF_REPO_ID = "please-the-bot/sf_superior_court"
 LOCAL_DATA_ROOT = Path("data")
 HIGH_VALUE_BRIEF_RE = re.compile(
     r"\b("
     r"MOTION|OPPOSITION|REPLY|DEMURRER|MEMORANDUM OF POINTS|"
-    r"POINTS AND AUTHORITIES|TRIAL BRIEF|BRIEF|EX PARTE|OSC|"
-    r"ORDER TO SHOW CAUSE|REQUEST FOR ORDER|RFO|STIPULATION"
+    r"POINTS AND AUTHORITIES|TRIAL BRIEF|BRIEF|EX PARTE|"
+    r"REQUEST FOR ORDER|RFO|STIPULATION"
     r")\b",
     re.IGNORECASE,
 )
@@ -67,7 +64,7 @@ HIGH_VALUE_DECLARATION_RE = re.compile(
 )
 HIGH_VALUE_PLEADING_RE = re.compile(
     r"\b("
-    r"ANSWER TO COMPLAINT|GENERAL DENIAL|COMPLAINT|PETITION|"
+    r"ANSWER TO COMPLAINT|COMPLAINT|PETITION|"
     r"CROSS-COMPLAINT|AMENDED COMPLAINT|AMENDED PETITION"
     r")\b",
     re.IGNORECASE,
@@ -125,7 +122,7 @@ def case_metadata_is_complete(meta, case_dir=None):
     if not meta.get("roa_source"):
         return False
 
-    if meta.get("storage") in {"local_fallback", "hf_only_pending"}:
+    if meta.get("storage") == "local_fallback":
         return False
 
     if meta.get("roa_source") == "request" and meta.get("total_entries", 0) == 0:
@@ -160,6 +157,12 @@ def validate_pdf_response(headers, body):
     if "<html" in sample or "cloudflare" in sample or "your session has timed out" in sample:
         return False, "received HTML/session challenge instead of PDF"
     return False, f"unexpected PDF response content-type '{content_type or 'unknown'}'"
+
+
+async def get_response_headers(response):
+    if hasattr(response, "all_headers"):
+        return await response.all_headers()
+    return dict(response.headers or {})
 
 
 def preferred_chrome_window_bounds():
@@ -247,17 +250,38 @@ def launch_chrome(port, manage_windows=False):
 
 
 def kill_chrome(port):
-    """Kills the Chrome process running on the debugging port."""
+    """Kill all Chrome processes bound to the debugging port.
+
+    `lsof -i :<port> -t` can return multiple PIDs separated by newlines
+    when Chrome has multiple listeners; handle that by iterating.
+    """
     try:
-        pid = (
+        raw = (
             subprocess.check_output(f"lsof -i :{port} -t", shell=True)
             .decode()
             .strip()
         )
-        if pid:
-            os.kill(int(pid), signal.SIGTERM)
-            print(f"Killed Chrome PID: {pid}")
+        if not raw:
+            return
+        killed_any = False
+        for pid_str in raw.split():
+            try:
+                pid = int(pid_str)
+            except ValueError:
+                continue
+            try:
+                os.kill(pid, signal.SIGTERM)
+                print(f"Killed Chrome PID: {pid}")
+                killed_any = True
+            except ProcessLookupError:
+                continue
+            except Exception as e:
+                print(f"Failed to kill Chrome PID {pid}: {e}")
+        if killed_any:
             time.sleep(2)
+    except subprocess.CalledProcessError:
+        # lsof returns non-zero when nothing matches; treat as no-op.
+        return
     except Exception as e:
         print(f"Error killing Chrome: {e}")
 
@@ -311,7 +335,11 @@ class SessionRefreshState:
 
 
 async def open_sf_page(port):
-    """Navigate to the court site, then disconnect to let Cloudflare verify."""
+    """Navigate to the court site, then disconnect to let Cloudflare verify.
+
+    Reuses an existing about:blank or court-site tab if one is present, so
+    repeated CF re-challenges during a run don't stack up fresh tabs.
+    """
     cdp = f"http://localhost:{port}"
     try:
         async with async_playwright() as p:
@@ -321,7 +349,15 @@ async def open_sf_page(port):
                     context = browser.contexts[0]
                 else:
                     context = await browser.new_context()
-                page = await context.new_page()
+
+                reusable = None
+                for pg in context.pages:
+                    pg_url = pg.url or ""
+                    if pg_url == "about:blank" or "webapps.sftc.org" in pg_url:
+                        reusable = pg
+                        break
+                page = reusable if reusable is not None else await context.new_page()
+
                 await page.goto(TARGET_URL)
                 print("Navigated to court site. Disconnecting to let Cloudflare verify...")
             finally:
@@ -594,11 +630,22 @@ async def refresh_session(page, port, session_id_hint=None, max_wait_seconds=90)
         except (PlaywrightTimeoutError, PlaywrightError, SessionExpiredError) as e:
             last_error = e
             if attempt == 2:
-                raise
+                raise CloudflareSolveTimeoutError(
+                    f"Session refresh failed after 3 attempts: {e}"
+                ) from e
+            # Close the failed page before asking for a new one; otherwise
+            # get_session_page() will spawn a fresh about:blank tab on
+            # every retry and we leak tabs across CF events.
+            try:
+                await active_page.close()
+            except Exception:
+                pass
             await asyncio.sleep(2 * (attempt + 1))
             active_page = await get_session_page(context, session_id)
 
-    raise last_error
+    raise CloudflareSolveTimeoutError(
+        f"Session refresh failed after 3 attempts: {last_error}"
+    ) from last_error
 
 
 async def prepare_search_page(page, session_id, port):
@@ -701,9 +748,8 @@ async def fetch_case_list_via_browser(page, date_str):
 
 
 DOWNLOAD_SEMAPHORE = None
-HF_UPLOAD_SEMAPHORE = None
 REQUEST_BOOTSTRAP_LOCK = None
-HF_COMMIT_MAX_ATTEMPTS = 8
+SESSION_REFRESH_LOCK = None
 LAST_SHARED_REFRESH = SessionRefreshState()
 SHARED_REFRESH_COOLDOWN_SECONDS = 20
 DOC_ID_RE = re.compile(r"DocID%3D(\d+)", re.IGNORECASE)
@@ -714,130 +760,17 @@ CASE_VAR_RE = {
 }
 
 
-def repo_case_dir(filing_date, case_num):
-    return f"data/{filing_date}/{case_num}"
-
-
-def is_hf_commit_conflict(exc: Exception):
-    if not isinstance(exc, HfHubHTTPError):
-        return False
-    response = getattr(exc, "response", None)
-    status_code = getattr(response, "status_code", None)
-    if status_code == 412:
-        return True
-    text = str(exc).lower()
-    return "precondition failed" in text or "a commit has happened since" in text
-
-
-async def create_hf_commit(api, repo_id, operations, message):
-    """Create a dataset commit without blocking the event loop."""
-    if not operations:
-        return
-
-    loop = asyncio.get_running_loop()
-    for attempt in range(1, HF_COMMIT_MAX_ATTEMPTS + 1):
-        try:
-            await loop.run_in_executor(
-                None,
-                lambda: api.create_commit(
-                    repo_id=repo_id,
-                    repo_type="dataset",
-                    operations=operations,
-                    commit_message=message,
-                ),
-            )
-            return
-        except Exception as exc:
-            if not is_hf_commit_conflict(exc) or attempt == HF_COMMIT_MAX_ATTEMPTS:
-                raise
-            delay = min(30, 1.5 * (2 ** (attempt - 1)))
-            print(
-                f"HF commit conflict during '{message}' "
-                f"(attempt {attempt}/{HF_COMMIT_MAX_ATTEMPTS}). Retrying in {delay:.1f}s..."
-            )
-            await asyncio.sleep(delay)
-
-
-def build_day_bundle_operations(date_str):
-    """Collect a full filing-day bundle for a single HF commit."""
-    day_dir = LOCAL_DATA_ROOT / date_str
-    if not day_dir.exists():
-        return []
-
-    operations = []
-    for path in sorted(day_dir.rglob("*")):
-        if not path.is_file():
-            continue
-        if path.name == "sync_metadata.json":
-            continue
-        rel_path = path.relative_to(day_dir).as_posix()
-        operations.append(
-            CommitOperationAdd(
-                path_in_repo=f"data/{date_str}/{rel_path}",
-                path_or_fileobj=path,
-            )
-        )
-    return operations
-
-
-async def upload_day_bundle_to_hf(api, repo_id, date_str):
-    """Upload the full filing day as a single commit."""
-    operations = build_day_bundle_operations(date_str)
-    async with HF_UPLOAD_SEMAPHORE:
-        await create_hf_commit(
-            api,
-            repo_id,
-            operations,
-            f"Update SF Superior Court filing day {date_str}",
-        )
-
-
-def prune_day_local_pdfs_after_hf_upload(date_str):
-    """Delete local PDFs after a successful day-level HF upload."""
-    day_dir = LOCAL_DATA_ROOT / date_str
-    if not day_dir.exists():
-        return 0
-
-    removed = 0
-    for path in day_dir.rglob("*.pdf"):
-        path.unlink(missing_ok=True)
-        removed += 1
-    return removed
-
-
-def mark_day_cases_hf_uploaded(date_str):
-    """Update case JSON metadata after a successful day-level HF upload."""
-    day_dir = LOCAL_DATA_ROOT / date_str
-    if not day_dir.exists():
-        return
-
-    for json_path in sorted(day_dir.glob("*/register_of_actions.json")):
-        try:
-            data = json.loads(json_path.read_text())
-        except Exception:
-            continue
-        if not isinstance(data, dict):
-            continue
-        meta = data.setdefault("metadata", {})
-        if meta.get("status") == "restricted":
-            pass
-        else:
-            meta["storage"] = "huggingface"
-        timing = meta.setdefault("timing", {})
-        timing["hf_upload_finished_at"] = utc_now_iso()
-        json_path.write_text(json.dumps(data, indent=2))
-
-
-def persist_pdf_blobs_locally(case_dir, pdf_blobs):
-    """Persist in-memory PDFs to the case directory as a fallback."""
-    case_dir.mkdir(parents=True, exist_ok=True)
-    for filename, body in pdf_blobs.items():
-        with open(case_dir / filename, "wb") as f:
-            f.write(body)
-
-
 async def save_doc(context, url, folder, filename, write_pdf_to_disk):
-    """Download a document via browser HTTP API (handles session cookies)."""
+    """Download a document via browser HTTP API (handles session cookies).
+
+    The URL has a SessionID query param baked in at ROA-scrape time. If the
+    shared session is refreshed before this download runs, the old SessionID
+    is dead on the server and the endpoint returns an HTML challenge page.
+    Before every attempt we (a) wait on SESSION_REFRESH_LOCK so we never
+    dispatch during a refresh, (b) resolve the current live SessionID from
+    the browser context (falling back to LAST_SHARED_REFRESH.session_id
+    when the context is mid-cleanup), and (c) re-stamp the URL with it.
+    """
     async with DOWNLOAD_SEMAPHORE:
         folder.mkdir(parents=True, exist_ok=True)
         file_path = folder / filename
@@ -853,23 +786,36 @@ async def save_doc(context, url, folder, filename, write_pdf_to_disk):
             }
 
         for attempt in range(3):
+            # Block while any session refresh is in progress so we never
+            # dispatch against a dying session. Acquire-then-release is a
+            # no-op when idle.
+            if SESSION_REFRESH_LOCK is not None:
+                async with SESSION_REFRESH_LOCK:
+                    pass
+
             started = time.perf_counter()
+            # Prefer the live SID from open pages. During the tab-cleanup
+            # window of a refresh, the context may transiently have no
+            # session page open; fall back to the last refresh's SID,
+            # which is kept up to date by refresh_session().
+            live_sid = (
+                current_session_id_from_context(context)
+                or LAST_SHARED_REFRESH.session_id
+            )
+            request_url = replace_case_session_id(url, live_sid) if live_sid else url
+
             try:
                 response = await context.request.get(
-                    url, timeout=SEARCH_RESULTS_TIMEOUT_MS
+                    request_url, timeout=SEARCH_RESULTS_TIMEOUT_MS
                 )
                 if response.status == 200:
-                    headers = await response.all_headers()
+                    headers = await get_response_headers(response)
                     body = await response.body()
                     is_valid_pdf, validation_error = validate_pdf_response(headers, body)
-                    if not is_valid_pdf:
-                        print(
-                            f"    Download rejected {filename}: {validation_error} "
-                            f"(attempt {attempt+1}/3)"
-                        )
-                    elif write_pdf_to_disk:
-                        with open(file_path, "wb") as f:
-                            f.write(body)
+                    if is_valid_pdf:
+                        if write_pdf_to_disk:
+                            with open(file_path, "wb") as f:
+                                f.write(body)
                         return {
                             "body": body,
                             "elapsed_seconds": round(time.perf_counter() - started, 3),
@@ -877,23 +823,27 @@ async def save_doc(context, url, folder, filename, write_pdf_to_disk):
                             "source": "network",
                             "attempts": attempt + 1,
                         }
-                    elif is_valid_pdf:
-                        return {
-                            "body": body,
-                            "elapsed_seconds": round(time.perf_counter() - started, 3),
-                            "bytes": len(body),
-                            "source": "network",
-                            "attempts": attempt + 1,
-                        }
+
+                    sid_tag = (live_sid[:8] + "…") if live_sid else "none"
+                    print(
+                        f"    Download rejected {filename}: {validation_error} "
+                        f"(attempt {attempt+1}/3, sid={sid_tag})"
+                    )
                 else:
                     print(
                         f"    Download failed {filename}: HTTP {response.status} "
                         f"(attempt {attempt+1}/3)"
                     )
             except Exception as e:
+                err_text = str(e)
                 print(
-                    f"    Download error {filename}: {e} (attempt {attempt+1}/3)"
+                    f"    Download error {filename}: {err_text} (attempt {attempt+1}/3)"
                 )
+                # If the browser context has been torn down (e.g. during a
+                # Cloudflare re-solve), the request cannot be retried from
+                # here. Bail out and let the outer retry pass pick it up.
+                if "Target page, context or browser has been closed" in err_text:
+                    return None
 
             await asyncio.sleep(2 * (attempt + 1))
 
@@ -1374,8 +1324,6 @@ async def scrape_case(context, case, filing_date):
     case_dir = LOCAL_DATA_ROOT / filing_date / case_num
     case_dir.mkdir(parents=True, exist_ok=True)
     json_path = case_dir / "register_of_actions.json"
-    # Day-level uploads and restartability both rely on writing selected PDFs locally
-    # during the scrape. Later retention/pruning is handled after day-level upload.
     write_pdfs_to_disk_for_run = True
     scrape_started_at = utc_now_iso()
     scrape_started_perf = time.perf_counter()
@@ -1750,7 +1698,7 @@ def get_dates(start_str, end_str):
 
 
 async def main():
-    global DOWNLOAD_SEMAPHORE, HF_UPLOAD_SEMAPHORE, REQUEST_BOOTSTRAP_LOCK
+    global DOWNLOAD_SEMAPHORE, REQUEST_BOOTSTRAP_LOCK, SESSION_REFRESH_LOCK
     global SEARCH_RESULTS_TIMEOUT_MS, TABLE_IDLE_TIMEOUT_MS, CASE_READY_POLL_ATTEMPTS
     global CASE_LAUNCH_STAGGER_MS
     global LOCAL_DATA_ROOT
@@ -1783,27 +1731,6 @@ async def main():
     parser.add_argument(
         "--clear", action="store_true",
         help="Clear existing data before scraping",
-    )
-    parser.add_argument(
-        "--hf-repo-id", type=str, default=DEFAULT_HF_REPO_ID,
-        help="HF dataset repo to upload case outputs into",
-    )
-    parser.add_argument(
-        "--disable-hf-upload", action="store_true",
-        help="Do not upload outputs to Hugging Face",
-    )
-    parser.add_argument(
-        "--keep-local-pdfs", action="store_true",
-        help="Keep downloaded PDFs on local disk after upload",
-    )
-    parser.add_argument(
-        "--hf-only",
-        action="store_true",
-        help="HF-first mode: discard PDF fallback on upload failures and keep only lightweight local metadata",
-    )
-    parser.add_argument(
-        "--max-concurrent-hf-uploads", type=int, default=1,
-        help="Max concurrent HF case/day-summary commits per worker",
     )
     parser.add_argument(
         "--retry-passes", type=int, default=0,
@@ -1870,26 +1797,13 @@ async def main():
     PDF_FILTER_PROFILE = args.pdf_filter_profile
 
     DOWNLOAD_SEMAPHORE = asyncio.Semaphore(args.max_concurrent_downloads)
-    HF_UPLOAD_SEMAPHORE = asyncio.Semaphore(args.max_concurrent_hf_uploads)
     REQUEST_BOOTSTRAP_LOCK = asyncio.Lock()
-    session_refresh_lock = asyncio.Lock()
-    hf_repo_id = None if args.disable_hf_upload else args.hf_repo_id
-    hf_api = HfApi() if hf_repo_id else None
-
-    if args.hf_only:
-        if not hf_repo_id:
-            raise SystemExit("--hf-only requires HF uploads to be enabled")
-        if args.keep_local_pdfs:
-            raise SystemExit("--hf-only cannot be combined with --keep-local-pdfs")
+    SESSION_REFRESH_LOCK = asyncio.Lock()
 
     dates = get_dates(args.start_date, args.end_date)
     print(f"Dates to scrape: {len(dates)} (weekdays only)")
-    if hf_repo_id:
-        print(f"Uploading case outputs to HF dataset: {hf_repo_id}")
-    print("Writing selected PDFs to disk during scrape: True")
-    print(f"Retaining local PDFs after successful HF upload: {args.keep_local_pdfs}")
+    print("Writing PDFs to disk during scrape: True")
     print(f"PDF download profile: {PDF_FILTER_PROFILE}")
-    print(f"HF-only mode: {args.hf_only}")
     print(f"Request-based ROA: {USE_REQUEST_ROA}")
 
     if args.clear:
@@ -1937,7 +1851,7 @@ async def main():
 
             async def recover_shared_session():
                 nonlocal session_id, page
-                async with session_refresh_lock:
+                async with SESSION_REFRESH_LOCK:
                     session_id, page = await refresh_session(
                         page, args.port, session_id_hint=session_id
                     )
@@ -1995,13 +1909,6 @@ async def main():
                             "no_cases_found": True,
                         },
                     )
-                    if hf_repo_id:
-                        try:
-                            await upload_day_bundle_to_hf(hf_api, hf_repo_id, date_str)
-                        except Exception as exc:
-                            tqdm.write(
-                                f"  HF day upload failed for {date_str}; keeping local files for retry: {exc}"
-                            )
                     print(f"  No cases found for {date_str}; recorded zero-case day.")
                     continue
 
@@ -2033,21 +1940,6 @@ async def main():
                         "case_launch_stagger_ms": args.case_launch_stagger_ms,
                     },
                 )
-                if hf_repo_id:
-                    try:
-                        await upload_day_bundle_to_hf(hf_api, hf_repo_id, date_str)
-                        if args.hf_only:
-                            removed = prune_day_local_pdfs_after_hf_upload(date_str)
-                            mark_day_cases_hf_uploaded(date_str)
-                            summary = update_day_summary(date_str, total_cases=len(cases))
-                            if removed:
-                                tqdm.write(
-                                    f"  HF day upload complete for {date_str}; pruned {removed} local PDFs"
-                                )
-                    except Exception as exc:
-                        tqdm.write(
-                            f"  HF day upload failed for {date_str}; keeping local files for retry: {exc}"
-                        )
                 print(
                     f"  Day {date_str} already complete on disk "
                     f"({summary['scraped_cases']}/{summary['total_cases']})."
@@ -2068,6 +1960,15 @@ async def main():
                         if not case["link"] or case_is_complete(date_str, case["case_num"]):
                             pbar.update(1)
                             return
+
+                        # Don't dispatch a new case tab while a session
+                        # refresh is in progress. Acquire-then-release is a
+                        # no-op when idle; when a refresh is running, this
+                        # blocks new cases from being started against a
+                        # dying session.
+                        if SESSION_REFRESH_LOCK is not None:
+                            async with SESSION_REFRESH_LOCK:
+                                pass
 
                         if CASE_LAUNCH_STAGGER_MS and case_index:
                             slot_offset = case_index % max(1, concurrency)
@@ -2188,38 +2089,6 @@ async def main():
                     "case_launch_stagger_ms": args.case_launch_stagger_ms,
                 },
             )
-            if hf_repo_id:
-                try:
-                    await upload_day_bundle_to_hf(hf_api, hf_repo_id, date_str)
-                    if args.hf_only:
-                        removed = prune_day_local_pdfs_after_hf_upload(date_str)
-                        mark_day_cases_hf_uploaded(date_str)
-                        summary = update_day_summary(
-                            date_str,
-                            run_metadata={
-                                "mode": "failed_only" if args.failed_only else "full_day",
-                                "started_at": date_started_at,
-                                "finished_at": utc_now_iso(),
-                                "elapsed_seconds": round(
-                                    time.perf_counter() - date_started_perf, 3
-                                ),
-                                "case_count": len(cases),
-                                "pending_case_count": len(pending_cases),
-                                "failed_case_count": len(failed_cases),
-                                "retry_rounds_run": retry_rounds_run,
-                                "max_concurrent_cases": args.max_concurrent_cases,
-                                "max_concurrent_downloads": args.max_concurrent_downloads,
-                                "case_launch_stagger_ms": args.case_launch_stagger_ms,
-                            },
-                        )
-                        if removed:
-                            tqdm.write(
-                                f"  HF day upload complete for {date_str}; pruned {removed} local PDFs"
-                            )
-                except Exception as exc:
-                    tqdm.write(
-                        f"  HF day upload failed for {date_str}; keeping local files for retry: {exc}"
-                    )
             print(
                 f"  Date {date_str} done: "
                 f"{summary['scraped_cases']}/{summary['total_cases']} cases"
