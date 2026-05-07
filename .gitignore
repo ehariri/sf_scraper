@@ -1,11 +1,15 @@
 data/
 data_*/
 venv/
+.venv/
 .DS_Store
 __pycache__/
 *.pyc
 logs/
 .playwright-browsers/
+.hf_xet_cache/
+tmp_xet_trial/
+cache/
 vercel_monitor/.vercel/
 vercel_monitor/.vercel.team.bak/
 benchmarks/**/*.log

@@ -10,7 +10,7 @@ from pathlib import Path
 POSITIVE_RULES = [
     ("brief_motion", 7, re.compile(r"\b(OPPOSITION|REPLY|DEMURRER|MOTION TO|MOTION FOR|MEMORANDUM OF POINTS AND AUTHORITIES|TRIAL BRIEF)\b", re.I)),
     ("declaration", 4, re.compile(r"\b(DECLARATION|AFFIDAVIT)\b", re.I)),
-    ("answer", 4, re.compile(r"\bANSWER TO COMPLAINT\b|\bGENERAL DENIAL\b", re.I)),
+    ("answer", 4, re.compile(r"\bANSWER TO COMPLAINT\b", re.I)),
     ("complaint_petition", 3, re.compile(r"\bPETITION\b|\bCOMPLAINT\b", re.I)),
 ]
 

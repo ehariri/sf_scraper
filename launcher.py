@@ -15,8 +15,6 @@ BASE_PORT = 9222
 DATA_ROOT = Path(__file__).parent / "data"
 MAX_CONCURRENT_CASES = 5
 MAX_CONCURRENT_DOWNLOADS = 10
-HF_REPO_ID = "please-the-bot/sf_superior_court"
-MAX_CONCURRENT_HF_UPLOADS = 1
 
 
 def get_date_range(start_str, end_str):
@@ -37,7 +35,7 @@ def split_dates(dates, n):
 
 def main():
     global START_DATE, END_DATE, NUM_WORKERS, MAX_CONCURRENT_CASES, MAX_CONCURRENT_DOWNLOADS
-    global HF_REPO_ID, MAX_CONCURRENT_HF_UPLOADS, BASE_PORT, DATA_ROOT
+    global BASE_PORT, DATA_ROOT
 
     parser = argparse.ArgumentParser(description="SF Scraper Launcher")
     parser.add_argument(
@@ -81,33 +79,6 @@ def main():
         action="store_true",
         help="Clear existing data before scraping",
     )
-    parser.add_argument(
-        "--hf-repo-id",
-        type=str,
-        default=HF_REPO_ID,
-        help="HF dataset repo to upload case outputs into",
-    )
-    parser.add_argument(
-        "--disable-hf-upload",
-        action="store_true",
-        help="Do not upload outputs to Hugging Face",
-    )
-    parser.add_argument(
-        "--keep-local-pdfs",
-        action="store_true",
-        help="Keep downloaded PDFs on local disk after upload",
-    )
-    parser.add_argument(
-        "--hf-only",
-        action="store_true",
-        help="HF-first mode: discard PDF fallback and keep only lightweight local metadata",
-    )
-    parser.add_argument(
-        "--max-concurrent-hf-uploads",
-        type=int,
-        default=MAX_CONCURRENT_HF_UPLOADS,
-        help="Max concurrent HF case/day-summary commits per worker",
-    )
     args = parser.parse_args()
 
     START_DATE = args.start_date
@@ -117,8 +88,6 @@ def main():
     DATA_ROOT = args.data_root
     MAX_CONCURRENT_CASES = args.max_concurrent_cases
     MAX_CONCURRENT_DOWNLOADS = args.max_concurrent_downloads
-    HF_REPO_ID = args.hf_repo_id
-    MAX_CONCURRENT_HF_UPLOADS = args.max_concurrent_hf_uploads
 
     all_dates = get_date_range(START_DATE, END_DATE)
     print(f"Total dates to scrape: {len(all_dates)}")
@@ -160,20 +129,10 @@ def main():
             str(MAX_CONCURRENT_CASES),
             "--max-concurrent-downloads",
             str(MAX_CONCURRENT_DOWNLOADS),
-            "--max-concurrent-hf-uploads",
-            str(MAX_CONCURRENT_HF_UPLOADS),
         ]
 
         if args.clear:
             cmd.append("--clear")
-        if args.disable_hf_upload:
-            cmd.append("--disable-hf-upload")
-        else:
-            cmd.extend(["--hf-repo-id", HF_REPO_ID])
-        if args.keep_local_pdfs:
-            cmd.append("--keep-local-pdfs")
-        if args.hf_only:
-            cmd.append("--hf-only")
 
         # Launch process
         p = subprocess.Popen(cmd)
