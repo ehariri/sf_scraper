@@ -770,6 +770,517 @@ CASE_VAR_RE = {
     "seshID": re.compile(r"seshID\s*=\s*['\"]([^'\"]+)['\"]", re.IGNORECASE),
     "accessCode": re.compile(r"accessCode\s*=\s*['\"]([^'\"]*)['\"]", re.IGNORECASE),
 }
+BAR_NUMBER_RE = re.compile(
+    r"(?:bar(?:\s*(?:no\.?|number|#))?|sbn)\s*[:#]?\s*(\d+)",
+    re.IGNORECASE,
+)
+TRANSACTION_ID_RE = re.compile(r"\(TRANSACTION ID #\s*([0-9]+)\)", re.IGNORECASE)
+HTML_BREAK_RE = re.compile(r"<br\s*/?>", re.IGNORECASE)
+HTML_TAG_RE = re.compile(r"<[^>]+>")
+PARTY_ROLE_PATTERNS = (
+    ("Cross-Complainant", re.compile(r"\bCROSS[- ]COMPLAINANT\b", re.IGNORECASE)),
+    ("Cross-Defendant", re.compile(r"\bCROSS[- ]DEFENDANT\b", re.IGNORECASE)),
+    ("Petitioner", re.compile(r"\bPETITIONER\b", re.IGNORECASE)),
+    ("Respondent", re.compile(r"\bRESPONDENT\b", re.IGNORECASE)),
+    ("Appellant", re.compile(r"\bAPPELLANT\b", re.IGNORECASE)),
+    ("Appellee", re.compile(r"\bAPPELLEE\b", re.IGNORECASE)),
+    ("Plaintiff", re.compile(r"\bPLAINTIFFS?\b", re.IGNORECASE)),
+    ("Defendant", re.compile(r"\bDEFENDANTS?\b", re.IGNORECASE)),
+)
+
+
+def normalize_metadata_text(value):
+    return re.sub(r"\s+", " ", (value or "")).strip()
+
+
+def canonical_party_role(value):
+    normalized = normalize_metadata_text(value)
+    if not normalized:
+        return ""
+    for role, pattern in PARTY_ROLE_PATTERNS:
+        if pattern.search(normalized):
+            return role
+    return normalized
+
+
+def detected_party_role(value):
+    normalized = normalize_metadata_text(value)
+    if not normalized:
+        return ""
+    for role, pattern in PARTY_ROLE_PATTERNS:
+        if pattern.search(normalized):
+            return role
+    return ""
+
+
+def parse_bar_number(value):
+    match = BAR_NUMBER_RE.search(value or "")
+    return match.group(1) if match else None
+
+
+def clean_attorney_name(value):
+    name = normalize_metadata_text(value)
+    if not name:
+        return ""
+    name = re.sub(
+        r"\s*\(?\b(?:bar(?:\s*(?:no\.?|number|#))?|sbn)\s*[:#]?\s*\d+\)?",
+        "",
+        name,
+        flags=re.IGNORECASE,
+    )
+    return normalize_metadata_text(name.rstrip(" ,;:-()"))
+
+
+def action_transaction_id(action):
+    proceedings = action.get("proceedings") or ""
+    match = TRANSACTION_ID_RE.search(proceedings)
+    return match.group(1) if match else None
+
+
+def htmlish_lines(value):
+    if not value:
+        return []
+    text = HTML_BREAK_RE.sub("\n", value)
+    text = HTML_TAG_RE.sub(" ", text)
+    text = html.unescape(text)
+    return [line for line in (normalize_metadata_text(part) for part in text.splitlines()) if line]
+
+
+def empty_participant_metadata():
+    return {
+        "parties": [],
+        "attorneys": [],
+        "attorney_party_link": [],
+        "plaintiff_has_counsel": False,
+        "defendant_has_counsel": False,
+    }
+
+
+def parse_datasnap_result_rows(response_text, endpoint_name):
+    try:
+        payload = json.loads(response_text)
+    except json.JSONDecodeError as exc:
+        raise RequestPathUnavailableError(
+            f"{endpoint_name} returned non-JSON payload: {exc}"
+        ) from exc
+
+    result = payload.get("result")
+    if not isinstance(result, list) or len(result) < 2:
+        raise RequestPathUnavailableError(
+            f"{endpoint_name} payload missing result rows"
+        )
+    if result[0] == -1:
+        raise RequestPathUnavailableError(
+            f"{endpoint_name} returned session-invalid sentinel"
+        )
+
+    serialized_rows = result[1]
+    try:
+        if isinstance(serialized_rows, str):
+            stripped_rows = serialized_rows.strip()
+            rows = json.loads(stripped_rows) if stripped_rows else []
+        elif isinstance(serialized_rows, list):
+            rows = serialized_rows
+        elif serialized_rows in (None, ""):
+            rows = []
+        else:
+            raise TypeError(f"Unexpected row payload type: {type(serialized_rows)}")
+    except Exception as exc:
+        raise RequestPathUnavailableError(
+            f"{endpoint_name} row payload parse failed: {exc}"
+        ) from exc
+
+    if not isinstance(rows, list):
+        raise RequestPathUnavailableError(
+            f"{endpoint_name} row payload is not a list"
+        )
+    return rows
+
+
+def parse_parties_from_endpoint_rows(rows):
+    parties = []
+    seen = set()
+    for row in rows:
+        name = normalize_metadata_text(" ".join(htmlish_lines(row.get("PARTY"))))
+        role = canonical_party_role(row.get("PARTYTYPE"))
+        attorney_lines = htmlish_lines(row.get("ATTORNEY"))
+        filing_lines = htmlish_lines(row.get("FILING"))
+        if not name:
+            continue
+        dedupe_key = (name.upper(), role.upper())
+        if dedupe_key in seen:
+            continue
+        seen.add(dedupe_key)
+        raw_parts = [name, role] + attorney_lines + filing_lines
+        parties.append(
+            {
+                "name": name,
+                "role": role,
+                "raw_text": " | ".join(part for part in raw_parts if part),
+            }
+        )
+    return parties
+
+
+def parse_attorneys_from_endpoint_rows(rows, parties):
+    attorneys = []
+    links = []
+    seen_attorneys = set()
+    seen_links = set()
+    party_lookup = {party["name"].upper(): party for party in parties}
+
+    for row in rows:
+        name = clean_attorney_name(" ".join(htmlish_lines(row.get("NAME"))))
+        if not name:
+            continue
+
+        bar_number = normalize_metadata_text(" ".join(htmlish_lines(row.get("BARNUM")))) or None
+        address_lines = htmlish_lines(row.get("ADDRESS"))
+        represented_lines = htmlish_lines(row.get("PARTY"))
+
+        represented_parties = []
+        represented_roles = []
+        for represented_line in represented_lines:
+            match = re.match(r"^(.*?)\s*\(([^()]+)\)\s*$", represented_line)
+            if match:
+                represented_name = normalize_metadata_text(match.group(1))
+                represented_role = canonical_party_role(match.group(2))
+            else:
+                represented_name = normalize_metadata_text(represented_line)
+                represented_role = detected_party_role(represented_line)
+
+            if represented_name:
+                matched_party = party_lookup.get(represented_name.upper())
+                if matched_party:
+                    represented_parties.append(matched_party["name"])
+                    link_key = (
+                        name.upper(),
+                        matched_party["name"].upper(),
+                        canonical_party_role(matched_party.get("role")).upper(),
+                    )
+                    if link_key not in seen_links:
+                        seen_links.add(link_key)
+                        links.append(
+                            {
+                                "attorney_name": name,
+                                "party_name": matched_party["name"],
+                                "party_role": matched_party.get("role", ""),
+                                "raw_text": represented_line,
+                            }
+                        )
+                    continue
+
+            if represented_role:
+                represented_roles.append(represented_role)
+                matching_parties = [
+                    party["name"]
+                    for party in parties
+                    if canonical_party_role(party.get("role")) == represented_role
+                ]
+                if len(matching_parties) == 1:
+                    party_name = matching_parties[0]
+                    represented_parties.append(party_name)
+                    link_key = (name.upper(), party_name.upper(), represented_role.upper())
+                else:
+                    party_name = ""
+                    link_key = (name.upper(), "", represented_role.upper())
+                if link_key not in seen_links:
+                    seen_links.add(link_key)
+                    links.append(
+                        {
+                            "attorney_name": name,
+                            "party_name": party_name,
+                            "party_role": represented_role,
+                            "raw_text": represented_line,
+                        }
+                    )
+
+        represented_parties = list(dict.fromkeys(represented_parties))
+        represented_role = represented_roles[0] if represented_roles else ""
+        raw_parts = [name]
+        if bar_number:
+            raw_parts.append(bar_number)
+        raw_parts.extend(address_lines)
+        raw_parts.extend(represented_lines)
+        attorney_entry = {
+            "name": name,
+            "bar_number": bar_number or parse_bar_number(" | ".join(raw_parts)),
+            "represented_parties": represented_parties,
+            "represented_role": represented_role,
+            "raw_text": " | ".join(part for part in raw_parts if part),
+        }
+        dedupe_key = (
+            attorney_entry["name"].upper(),
+            attorney_entry["bar_number"] or "",
+            tuple(attorney_entry["represented_parties"]),
+            attorney_entry["represented_role"],
+        )
+        if dedupe_key in seen_attorneys:
+            continue
+        seen_attorneys.add(dedupe_key)
+        attorneys.append(attorney_entry)
+
+    return attorneys, links
+
+
+def parse_parties_from_tab_payload(tab_payload):
+    parties = []
+    seen = set()
+    for tab in tab_payload.get("tabs", []):
+        label = (tab.get("label") or "").lower()
+        if "part" not in label:
+            continue
+        for table in tab.get("tables", []):
+            headers = [normalize_metadata_text(h).lower() for h in table.get("headers", [])]
+            rows = table.get("rows", [])
+            name_idx = next(
+                (idx for idx, header in enumerate(headers) if "party" in header or header == "name"),
+                None,
+            )
+            role_idx = next(
+                (
+                    idx
+                    for idx, header in enumerate(headers)
+                    if "role" in header or "type" in header or "capacity" in header
+                ),
+                None,
+            )
+            for row in rows:
+                cells = [normalize_metadata_text(cell) for cell in row]
+                cells = [cell for cell in cells if cell]
+                if not cells:
+                    continue
+                joined = " | ".join(cells)
+                name = ""
+                role = ""
+                if name_idx is not None and name_idx < len(cells):
+                    name = cells[name_idx]
+                if role_idx is not None and role_idx < len(cells):
+                    role = cells[role_idx]
+                if not name and len(cells) >= 2:
+                    first_role = canonical_party_role(cells[0])
+                    second_role = canonical_party_role(cells[1])
+                    if first_role and first_role != cells[0] and not second_role:
+                        role = cells[0]
+                        name = cells[1]
+                    else:
+                        name = cells[0]
+                        role = cells[1]
+                if not name and len(cells) == 1:
+                    solo = cells[0]
+                    colon_match = re.match(r"([^:]{1,50}):\s*(.+)$", solo)
+                    if colon_match:
+                        left_role = canonical_party_role(colon_match.group(1))
+                        if left_role and left_role != colon_match.group(1):
+                            role = colon_match.group(1)
+                            name = colon_match.group(2)
+                    if not name:
+                        parts = [part.strip(" -") for part in re.split(r"\s+-\s+", solo, maxsplit=1)]
+                        if len(parts) == 2:
+                            right_role = canonical_party_role(parts[1])
+                            if right_role and right_role != parts[1]:
+                                name, role = parts[0], parts[1]
+                    if not name:
+                        name = solo
+                name = normalize_metadata_text(name)
+                role = canonical_party_role(role)
+                if not name:
+                    continue
+                dedupe_key = (name.upper(), role.upper())
+                if dedupe_key in seen:
+                    continue
+                seen.add(dedupe_key)
+                parties.append(
+                    {
+                        "name": name,
+                        "role": role,
+                        "raw_text": joined,
+                    }
+                )
+    return parties
+
+
+def parse_attorneys_from_tab_payload(tab_payload, parties):
+    attorneys = []
+    links = []
+    seen_attorneys = set()
+    seen_links = set()
+    party_lookup = {party["name"].upper(): party for party in parties}
+    for tab in tab_payload.get("tabs", []):
+        label = (tab.get("label") or "").lower()
+        if "attor" not in label and "counsel" not in label:
+            continue
+        for table in tab.get("tables", []):
+            headers = [normalize_metadata_text(h).lower() for h in table.get("headers", [])]
+            rows = table.get("rows", [])
+            name_idx = next(
+                (
+                    idx
+                    for idx, header in enumerate(headers)
+                    if (
+                        ("attorney" in header or "counsel" in header or header == "name")
+                        and "represented" not in header
+                        and "party" not in header
+                    )
+                ),
+                None,
+            )
+            represented_idx = next(
+                (
+                    idx
+                    for idx, header in enumerate(headers)
+                    if (
+                        "represented" in header
+                        or "client" in header
+                        or "party" in header
+                        or header == "for"
+                        or header.startswith("for ")
+                    )
+                ),
+                None,
+            )
+            for row in rows:
+                cells = [normalize_metadata_text(cell) for cell in row]
+                cells = [cell for cell in cells if cell]
+                if not cells:
+                    continue
+                joined = " | ".join(cells)
+                name = ""
+                represented_text = ""
+                if name_idx is not None and name_idx < len(cells):
+                    name = cells[name_idx]
+                if represented_idx is not None and represented_idx < len(cells):
+                    represented_text = cells[represented_idx]
+                if not name:
+                    name = cells[0]
+                if len(cells) > 1 and not represented_text:
+                    represented_text = cells[-1]
+                name = clean_attorney_name(name)
+                if not name:
+                    continue
+                represented_role = detected_party_role(represented_text) or detected_party_role(joined)
+                represented_parties = []
+                haystacks = [represented_text, joined]
+                for party in parties:
+                    upper_name = party["name"].upper()
+                    if any(upper_name and upper_name in haystack.upper() for haystack in haystacks if haystack):
+                        represented_parties.append(party["name"])
+                represented_parties = list(dict.fromkeys(represented_parties))
+                if not represented_parties and represented_role:
+                    matching_parties = [
+                        party["name"]
+                        for party in parties
+                        if canonical_party_role(party.get("role")) == represented_role
+                    ]
+                    if len(matching_parties) == 1:
+                        represented_parties = matching_parties
+                attorney_entry = {
+                    "name": name,
+                    "bar_number": parse_bar_number(joined),
+                    "represented_parties": represented_parties,
+                    "represented_role": represented_role,
+                    "raw_text": joined,
+                }
+                dedupe_key = (
+                    attorney_entry["name"].upper(),
+                    attorney_entry["bar_number"] or "",
+                    tuple(attorney_entry["represented_parties"]),
+                    attorney_entry["represented_role"],
+                )
+                if dedupe_key not in seen_attorneys:
+                    seen_attorneys.add(dedupe_key)
+                    attorneys.append(attorney_entry)
+
+                if represented_parties:
+                    for party_name in represented_parties:
+                        link_key = (name.upper(), party_name.upper(), "")
+                        if link_key in seen_links:
+                            continue
+                        seen_links.add(link_key)
+                        links.append(
+                            {
+                                "attorney_name": name,
+                                "party_name": party_name,
+                                "party_role": party_lookup.get(party_name.upper(), {}).get("role", ""),
+                                "raw_text": represented_text or joined,
+                            }
+                        )
+                elif attorney_entry["represented_role"]:
+                    link_key = (name.upper(), "", attorney_entry["represented_role"].upper())
+                    if link_key in seen_links:
+                        continue
+                    seen_links.add(link_key)
+                    links.append(
+                        {
+                            "attorney_name": name,
+                            "party_name": "",
+                            "party_role": attorney_entry["represented_role"],
+                            "raw_text": represented_text or joined,
+                        }
+                    )
+    return attorneys, links
+
+
+def derive_counsel_flags(parties, attorney_party_link):
+    represented_names = {
+        link["party_name"].upper()
+        for link in attorney_party_link
+        if normalize_metadata_text(link.get("party_name"))
+    }
+    represented_roles = {
+        canonical_party_role(link.get("party_role"))
+        for link in attorney_party_link
+        if normalize_metadata_text(link.get("party_role"))
+    }
+    plaintiff_has_counsel = any(
+        canonical_party_role(party.get("role")) == "Plaintiff"
+        and (
+            party["name"].upper() in represented_names
+            or "Plaintiff" in represented_roles
+        )
+        for party in parties
+    )
+    defendant_has_counsel = any(
+        canonical_party_role(party.get("role")) == "Defendant"
+        and (
+            party["name"].upper() in represented_names
+            or "Defendant" in represented_roles
+        )
+        for party in parties
+    )
+    return plaintiff_has_counsel, defendant_has_counsel
+
+
+def parse_case_participant_metadata(tab_payload):
+    parties = parse_parties_from_tab_payload(tab_payload)
+    attorneys, attorney_party_link = parse_attorneys_from_tab_payload(tab_payload, parties)
+    plaintiff_has_counsel, defendant_has_counsel = derive_counsel_flags(
+        parties, attorney_party_link
+    )
+    return {
+        "parties": parties,
+        "attorneys": attorneys,
+        "attorney_party_link": attorney_party_link,
+        "plaintiff_has_counsel": plaintiff_has_counsel,
+        "defendant_has_counsel": defendant_has_counsel,
+    }
+
+
+def parse_case_participant_metadata_from_rows(party_rows, attorney_rows):
+    parties = parse_parties_from_endpoint_rows(party_rows)
+    attorneys, attorney_party_link = parse_attorneys_from_endpoint_rows(
+        attorney_rows, parties
+    )
+    plaintiff_has_counsel, defendant_has_counsel = derive_counsel_flags(
+        parties, attorney_party_link
+    )
+    return {
+        "parties": parties,
+        "attorneys": attorneys,
+        "attorney_party_link": attorney_party_link,
+        "plaintiff_has_counsel": plaintiff_has_counsel,
+        "defendant_has_counsel": defendant_has_counsel,
+    }
 
 
 async def save_doc(context, url, folder, filename, write_pdf_to_disk):
@@ -906,6 +1417,20 @@ async def extract_case_header_metadata(page):
                     if (Object.keys(headerFields).length >= 20) break;
                 }
 
+                const rawBodyText = document.body ? (document.body.innerText || '') : '';
+                const bodyLines = rawBodyText
+                    .split(/\\n+/)
+                    .map((line) => clean(line))
+                    .filter(Boolean);
+                for (const line of bodyLines) {
+                    const match = line.match(/^(Case Number|Title|Cause of Action|Generated):\\s*(.+)$/i);
+                    if (!match) continue;
+                    const label = match[1].replace(/:$/, '');
+                    if (!headerFields[label]) {
+                        headerFields[label] = match[2];
+                    }
+                }
+
                 return {
                     page_title: pageTitle,
                     header_text: headerText,
@@ -928,6 +1453,167 @@ def empty_case_header_metadata():
         "header_text": [],
         "header_fields": {},
     }
+
+
+async def extract_case_participant_tab_payload(page):
+    """Capture the raw tables rendered under the parties/attorneys tabs."""
+    try:
+        return await page.evaluate(
+            """
+            async () => {
+                const clean = (value) => (value || '').replace(/\\s+/g, ' ').trim();
+                const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+                const candidateAnchors = Array.from(document.querySelectorAll('a')).filter((anchor) => {
+                    const text = clean(anchor.textContent);
+                    return /\\b(part(?:y|ies)|attorneys?|counsel)\\b/i.test(text);
+                });
+
+                const seen = new Set();
+                const tabs = [];
+
+                const tablePayload = (table) => {
+                    const headerRow = table.querySelector('thead tr') || table.querySelector('tr');
+                    const headers = headerRow
+                        ? Array.from(headerRow.querySelectorAll('th, td')).map((cell) => clean(cell.innerText || cell.textContent))
+                        : [];
+                    const rows = [];
+                    for (const row of table.querySelectorAll('tr')) {
+                        const cells = Array.from(row.querySelectorAll('td, th'))
+                            .map((cell) => clean(cell.innerText || cell.textContent));
+                        if (!cells.some(Boolean)) continue;
+                        const sameAsHeaders =
+                            headers.length === cells.length &&
+                            headers.every((header, idx) => header === cells[idx]);
+                        if (sameAsHeaders) continue;
+                        rows.push(cells);
+                    }
+                    return { headers, rows };
+                };
+
+                for (const anchor of candidateAnchors) {
+                    const label = clean(anchor.textContent);
+                    const href = anchor.getAttribute('href') || '';
+                    const panelId = anchor.getAttribute('aria-controls') || (href.startsWith('#') ? href.slice(1) : '');
+                    const tabKey = `${label}|${panelId}`;
+                    if (seen.has(tabKey)) continue;
+                    seen.add(tabKey);
+
+                    try {
+                        anchor.click();
+                        await sleep(150);
+                    } catch (error) {
+                        // Fall through and try to inspect the panel anyway.
+                    }
+
+                    let panel = null;
+                    if (panelId) {
+                        panel = document.getElementById(panelId);
+                    }
+                    if (!panel) {
+                        const controls = anchor.getAttribute('aria-controls');
+                        if (controls) {
+                            panel = document.getElementById(controls);
+                        }
+                    }
+                    if (!panel) {
+                        panel = anchor.closest('[role="tablist"]')?.parentElement || null;
+                    }
+
+                    const tables = Array.from((panel || document).querySelectorAll('table'))
+                        .map((table) => tablePayload(table))
+                        .filter((table) => table.rows.length > 0 || table.headers.length > 0);
+
+                    tabs.push({
+                        label,
+                        panel_id: panelId,
+                        text: clean(panel ? panel.innerText : ''),
+                        tables,
+                    });
+                }
+
+                return { tabs };
+            }
+            """
+        )
+    except Exception:
+        return {"tabs": []}
+
+
+async def extract_case_participant_metadata(page):
+    tab_payload = await extract_case_participant_tab_payload(page)
+    return parse_case_participant_metadata(tab_payload)
+
+
+async def fetch_case_participant_metadata_via_request(context, case_num):
+    async def fetch_participant_rows(endpoint_name):
+        async def run_fetch():
+            live_session_id = current_session_id_from_context(context)
+            if not live_session_id:
+                raise RequestPathUnavailableError(
+                    f"No live session available for {endpoint_name} {case_num}"
+                )
+            session_page = await get_session_page(context, live_session_id)
+            response_payload = await session_page.evaluate(
+                """
+                async ({ url, timeoutMs }) => {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+                    try {
+                        const response = await fetch(url, {
+                            credentials: 'include',
+                            signal: controller.signal,
+                        });
+                        return {
+                            status: response.status,
+                            text: await response.text(),
+                        };
+                    } catch (error) {
+                        if (error && error.name === 'AbortError') {
+                            return {
+                                timeout: true,
+                                error: `${url} timed out after ${timeoutMs}ms`,
+                            };
+                        }
+                        return {
+                            error: error ? String(error) : 'Unknown fetch error',
+                        };
+                    } finally {
+                        clearTimeout(timeoutId);
+                    }
+                }
+                """,
+                {
+                    "url": f"/ci/CaseInfo.dll/datasnap/rest/TServerMethods1/{endpoint_name}/{case_num}/{live_session_id}/",
+                    "timeoutMs": SEARCH_RESULTS_TIMEOUT_MS,
+                },
+            )
+            return response_payload
+        if REQUEST_BOOTSTRAP_LOCK is not None:
+            async with REQUEST_BOOTSTRAP_LOCK:
+                response_payload = await run_fetch()
+        else:
+            response_payload = await run_fetch()
+
+        if response_payload.get("timeout"):
+            raise RetryableCaseError(
+                f"{endpoint_name} fetch timed out for {case_num}",
+                failed_case_num=case_num,
+            )
+        if response_payload.get("error"):
+            raise RequestPathUnavailableError(
+                f"{endpoint_name} fetch failed for {case_num}: {response_payload['error']}"
+            )
+        if response_payload.get("status") != 200:
+            raise RequestPathUnavailableError(
+                f"{endpoint_name} returned HTTP {response_payload.get('status')} for {case_num}"
+            )
+        return parse_datasnap_result_rows(
+            response_payload.get("text", ""), endpoint_name
+        )
+
+    party_rows = await fetch_participant_rows("GetParties")
+    attorney_rows = await fetch_participant_rows("GetAttorneys")
+    return parse_case_participant_metadata_from_rows(party_rows, attorney_rows)
 
 
 def parse_case_identifiers(link):
@@ -1000,12 +1686,14 @@ def action_from_roa_row(row):
     doc_id_match = DOC_ID_RE.search(doc_url or "")
     doc_id = doc_id_match.group(1) if doc_id_match else None
     action_date = (row.get("FILEDATE") or "").strip()
+    proceedings = (row.get("RTEXT") or "").strip()
     return {
         "date": action_date,
-        "proceedings": (row.get("RTEXT") or "").strip(),
+        "proceedings": proceedings,
         "fee": (row.get("FEE") or "").strip(),
         "doc_url": absolute_case_url(doc_url),
         "doc_id": doc_id,
+        "transaction_id": action_transaction_id({"proceedings": proceedings}),
         "doc_filename": (
             f"{action_date}_{doc_id or 'Unknown'}.pdf" if doc_url else None
         ),
@@ -1139,9 +1827,7 @@ async def fetch_case_actions_via_request(context, link, case_num):
     last_error = None
     for attempt in range(1, 4):
         try:
-            # Bootstrap is serialized because it reuses a shared authenticated page
-            # to derive request vars; concurrent reuse caused session churn.
-            async with REQUEST_BOOTSTRAP_LOCK:
+            async def run_request_fetch():
                 live_session_id = current_session_id_from_context(context)
                 normalized_link = replace_case_session_id(link, live_session_id)
                 session_page = await get_session_page(context, live_session_id)
@@ -1177,9 +1863,16 @@ async def fetch_case_actions_via_request(context, link, case_num):
                 request_case_num, request_sesh_id, access_code = parse_case_request_vars(
                     case_page_html, case_num
                 )
-                response_payload = await fetch_roa_via_page(
+                return await fetch_roa_via_page(
                     session_page, request_case_num, request_sesh_id, access_code
                 )
+            # Bootstrap is serialized because it reuses a shared authenticated page
+            # to derive request vars; concurrent reuse caused session churn.
+            if REQUEST_BOOTSTRAP_LOCK is not None:
+                async with REQUEST_BOOTSTRAP_LOCK:
+                    response_payload = await run_request_fetch()
+            else:
+                response_payload = await run_request_fetch()
             if response_payload.get("timeout"):
                 raise RetryableCaseError(
                     f"GetROA fetch timed out for {case_num}",
@@ -1271,8 +1964,14 @@ async def scrape_case_actions_via_browser(context, link, case_num):
 
         state = await wait_for_case_page_state(page)
         header_metadata = await extract_case_header_metadata(page)
+        try:
+            participant_metadata = await fetch_case_participant_metadata_via_request(
+                context, case_num
+            )
+        except RequestPathUnavailableError:
+            participant_metadata = await extract_case_participant_metadata(page)
         if state == "restricted":
-            return [], header_metadata, True
+            return [], header_metadata, participant_metadata, True
 
         try:
             await page.select_option(
@@ -1298,6 +1997,11 @@ async def scrape_case_actions_via_browser(context, link, case_num):
                     fee: cells[3] ? cells[3].innerText.trim() : '',
                     doc_url: docUrl,
                     doc_id: docId,
+                    transaction_id: (() => {
+                        const proceedings = cells[1] ? cells[1].innerText.trim() : '';
+                        const match = proceedings.match(/\\(TRANSACTION ID #\\s*([0-9]+)\\)/i);
+                        return match ? match[1] : null;
+                    })(),
                     doc_filename: docUrl ? `${actionDate}_${docId || 'Unknown'}.pdf` : null,
                 };
             })
@@ -1313,11 +2017,33 @@ async def scrape_case_actions_via_browser(context, link, case_num):
                     "fee": action["fee"],
                     "doc_url": absolute_case_url(action["doc_url"]),
                     "doc_id": action["doc_id"],
+                    "transaction_id": action["transaction_id"],
                     "doc_filename": action["doc_filename"],
                 }
             )
 
-        return actions, header_metadata, False
+        return actions, header_metadata, participant_metadata, False
+    finally:
+        await page.close()
+
+
+async def fetch_case_metadata_via_browser(context, link, case_num):
+    page = await context.new_page()
+    try:
+        await page.goto(link, wait_until="domcontentloaded")
+
+        if await page_has_session_timeout(page):
+            raise SessionExpiredError(f"Session expired while opening case {case_num}")
+
+        state = await wait_for_case_page_state(page)
+        header_metadata = await extract_case_header_metadata(page)
+        try:
+            participant_metadata = await fetch_case_participant_metadata_via_request(
+                context, case_num
+            )
+        except RequestPathUnavailableError:
+            participant_metadata = await extract_case_participant_metadata(page)
+        return header_metadata, participant_metadata, state == "restricted"
     finally:
         await page.close()
 
@@ -1355,22 +2081,30 @@ async def scrape_case(context, case, filing_date):
     try:
         restricted = False
         roa_source = "browser_only"
+        header_metadata = empty_case_header_metadata()
+        participant_metadata = empty_participant_metadata()
         if USE_REQUEST_ROA:
-            roa_source = "request"
-            try:
-                actions, header_metadata = await fetch_case_actions_via_request(
-                    context, link, case_num
-                )
-            except RequestPathUnavailableError as request_error:
-                tqdm.write(
-                    f"  Request ROA unavailable for {case_num}; falling back to browser: {request_error}"
-                )
-                actions, header_metadata, restricted = await scrape_case_actions_via_browser(
-                    context, link, case_num
-                )
-                roa_source = "browser_fallback"
+            header_metadata, participant_metadata, restricted = await fetch_case_metadata_via_browser(
+                context, link, case_num
+            )
+            if restricted:
+                actions = []
+            else:
+                roa_source = "request"
+                try:
+                    actions, _ = await fetch_case_actions_via_request(
+                        context, link, case_num
+                    )
+                except RequestPathUnavailableError as request_error:
+                    tqdm.write(
+                        f"  Request ROA unavailable for {case_num}; falling back to browser: {request_error}"
+                    )
+                    actions, header_metadata, participant_metadata, restricted = await scrape_case_actions_via_browser(
+                        context, link, case_num
+                    )
+                    roa_source = "browser_fallback"
         else:
-            actions, header_metadata, restricted = await scrape_case_actions_via_browser(
+            actions, header_metadata, participant_metadata, restricted = await scrape_case_actions_via_browser(
                 context, link, case_num
             )
 
@@ -1388,6 +2122,11 @@ async def scrape_case(context, case, filing_date):
                         "source_filing_date": filing_date,
                     },
                     "case_header": header_metadata,
+                    "parties": participant_metadata["parties"],
+                    "attorneys": participant_metadata["attorneys"],
+                    "attorney_party_link": participant_metadata["attorney_party_link"],
+                    "plaintiff_has_counsel": participant_metadata["plaintiff_has_counsel"],
+                    "defendant_has_counsel": participant_metadata["defendant_has_counsel"],
                     "roa_source": roa_source,
                     "status": "restricted",
                     "reason": "CCP 1161.2",
@@ -1469,6 +2208,11 @@ async def scrape_case(context, case, filing_date):
                     "source_filing_date": filing_date,
                 },
                 "case_header": header_metadata,
+                "parties": participant_metadata["parties"],
+                "attorneys": participant_metadata["attorneys"],
+                "attorney_party_link": participant_metadata["attorney_party_link"],
+                "plaintiff_has_counsel": participant_metadata["plaintiff_has_counsel"],
+                "defendant_has_counsel": participant_metadata["defendant_has_counsel"],
                 "roa_source": roa_source,
                 "download_profile": PDF_FILTER_PROFILE,
                 "total_entries": len(actions),
