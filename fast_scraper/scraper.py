@@ -214,20 +214,40 @@ def move_chrome_windows(bounds):
 # --- Chrome Management ---
 
 
-def launch_chrome(port, manage_windows=False):
+def debug_port_pids(port):
+    """Return PIDs listening on the scraper's Chrome debug port."""
+    try:
+        result = subprocess.run(
+            ["lsof", "-nP", "-i", f":{port}", "-t"],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if result.returncode != 0:
+            return []
+        return [int(pid) for pid in result.stdout.split() if pid.strip().isdigit()]
+    except Exception:
+        return []
+
+
+def launch_chrome(port, manage_windows=False, reuse_existing=False):
     """Launch a real Chrome instance with remote debugging enabled."""
     profile = chrome_profile_for_port(port)
     profile.mkdir(exist_ok=True)
     window_x, window_y, window_width, window_height = preferred_chrome_window_bounds()
 
-    try:
-        subprocess.check_output(f"lsof -i :{port}", shell=True)
-        print(f"Chrome is already running on port {port}.")
-        if manage_windows:
-            move_chrome_windows((window_x, window_y, window_width, window_height))
-        return
-    except subprocess.CalledProcessError:
-        pass
+    existing_pids = debug_port_pids(port)
+    if existing_pids:
+        if reuse_existing:
+            print(f"Chrome is already running on port {port}. Reusing existing debug browser.")
+            if manage_windows:
+                move_chrome_windows((window_x, window_y, window_width, window_height))
+            return
+        print(
+            f"Chrome is already running on port {port}. "
+            "Killing existing debug browser before relaunch."
+        )
+        kill_chrome(port)
 
     cmd = [
         "open",
@@ -256,19 +276,11 @@ def kill_chrome(port):
     when Chrome has multiple listeners; handle that by iterating.
     """
     try:
-        raw = (
-            subprocess.check_output(f"lsof -i :{port} -t", shell=True)
-            .decode()
-            .strip()
-        )
-        if not raw:
+        pids = debug_port_pids(port)
+        if not pids:
             return
         killed_any = False
-        for pid_str in raw.split():
-            try:
-                pid = int(pid_str)
-            except ValueError:
-                continue
+        for pid in pids:
             try:
                 os.kill(pid, signal.SIGTERM)
                 print(f"Killed Chrome PID: {pid}")
@@ -1721,6 +1733,14 @@ async def main():
         help="Chrome remote debugging port",
     )
     parser.add_argument(
+        "--reuse-existing-browser",
+        action="store_true",
+        help=(
+            "Reuse a Chrome instance already listening on --port instead of "
+            "killing it and launching a fresh debug browser."
+        ),
+    )
+    parser.add_argument(
         "--max-concurrent-cases", type=int, default=2,
         help="Max case tabs open at once",
     )
@@ -1819,7 +1839,11 @@ async def main():
     chrome_started = False
     try:
         # Step 1: Launch Chrome and wait for Cloudflare
-        launch_chrome(args.port, manage_windows=args.manage_chrome_windows)
+        launch_chrome(
+            args.port,
+            manage_windows=args.manage_chrome_windows,
+            reuse_existing=args.reuse_existing_browser,
+        )
         chrome_started = True
         session_id = await wait_for_session(args.port)
 
