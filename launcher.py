@@ -129,6 +129,8 @@ def main():
             str(MAX_CONCURRENT_CASES),
             "--max-concurrent-downloads",
             str(MAX_CONCURRENT_DOWNLOADS),
+            "--worker-id",
+            str(i),
         ]
 
         if args.clear:

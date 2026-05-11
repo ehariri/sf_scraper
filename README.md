@@ -21,7 +21,7 @@ data, and downloads linked docket PDFs to disk.
 *   **`timed_scrape_runner.py`**: Bounded wrapper around the worker with a hard timeout.
 *   **`repair_local_metadata.py`**: Repairs broken `day_summary.json` / `register_of_actions.json` artifacts in the local corpus.
 *   **`filter_high_value_pdfs.py`**: Offline document-type classifier and text-richness scorer.
-*   **`monitor_app.py`**: Local monitoring web app (being rebuilt — see "Monitoring" below).
+*   **Monitoring**: now lives in the shared `monitor/` package at the repo root (see "Monitoring" below).
 
 ## Setup
 
@@ -106,26 +106,18 @@ benchmark logs and JSON outputs are intentionally not tracked.
 
 ## Monitoring
 
-A minimal local dashboard ships in `monitor_app.py` + `monitor/`. It reads
-the local data root, builds a year-by-year calendar colored by filing-day
-status, and reports a scraping rate based on `register_of_actions.json`
-mtimes.
+The cross-scraper dashboard at `<repo>/monitor/` aggregates SF, OK, and SC
+into one page. Launch it from the repo root:
 
 ```bash
-python monitor_app.py --port 8787 --data-root data
+detection_pilot/.venv/bin/python monitor/server.py
+# default: http://127.0.0.1:8791
 ```
 
-Then open `http://127.0.0.1:8787` in a browser. The page refreshes every
-15 seconds.
-
-Status legend:
-
-*   **complete**: `scraped == total` and no `failed_cases.json`
-*   **in progress**: scraped some but not all cases
-*   **has failures**: `failed_cases.json` has at least one entry
-*   **pending**: day folder exists but no cases scraped yet
-*   **zero cases**: day had no discoverable cases
-*   **untouched**: no day folder on disk
+SF runs write a heartbeat under each worker's data root
+(`_heartbeat_worker_<N>.json`) so the live-runs panel in the monitor shows
+which days each worker is currently on. See `monitor/README.md` for the
+status legend and config format.
 
 ## Notes
 

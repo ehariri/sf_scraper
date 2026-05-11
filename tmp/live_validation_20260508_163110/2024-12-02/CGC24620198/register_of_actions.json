@@ -1,0 +1,181 @@
+{
+  "metadata": {
+    "case_number": "CGC24620198",
+    "case_title": "ZIAO WANG VS. TESLA, INC ET AL",
+    "filing_date": "2024-12-02",
+    "case_url": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=CGC24620198&SessionID=9960E85FBB154B2E095FEFA0EE8A766254716B41",
+    "result_index": 22,
+    "source": {
+      "search_result_title": "ZIAO WANG VS. TESLA, INC ET AL",
+      "search_result_link": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=CGC24620198&SessionID=9960E85FBB154B2E095FEFA0EE8A766254716B41",
+      "source_filing_date": "2024-12-02"
+    },
+    "case_header": {
+      "page_title": "Case Information",
+      "header_text": [],
+      "header_fields": {
+        "Case Number": "CGC24620198",
+        "Title": "ZIAO WANG VS. TESLA, INC ET AL",
+        "Cause of Action": "CONTRACT/WARRANTY",
+        "Generated": "2026-05-08 4:32 pm"
+      }
+    },
+    "parties": [
+      {
+        "name": "DOES 1 THROUGH 30, INCLUSIVE",
+        "role": "Defendant",
+        "raw_text": "DOES 1 THROUGH 30, INCLUSIVE | Defendant | DEC-02-2024 COMPLAINT"
+      },
+      {
+        "name": "TESLA, INC",
+        "role": "Defendant",
+        "raw_text": "TESLA, INC | Defendant | DEC-02-2024 COMPLAINT | DEC-06-2024 PROOF OF SERVICE OF SUMMONS AND COMPLAINT"
+      },
+      {
+        "name": "WANG, ZIAO",
+        "role": "Plaintiff",
+        "raw_text": "WANG, ZIAO | Plaintiff | CONN, ELLIOT JASON | DEC-02-2024 COMPLAINT | DEC-02-2024 CIVIL CASE COVERSHEET FILED | DEC-03-2024 SUMMONS ISSUED | DEC-06-2024 PROOF OF SERVICE OF SUMMONS AND COMPLAINT | JUL-28-2025 NOTICE OF ENTRY OF DISMISSAL AND PROOF OF SERVICE"
+      }
+    ],
+    "attorneys": [
+      {
+        "name": "CONN, ELLIOT JASON",
+        "bar_number": "279920",
+        "represented_parties": [
+          "WANG, ZIAO"
+        ],
+        "represented_role": "",
+        "raw_text": "CONN, ELLIOT JASON | 279920 | CONN LAW, PC | 100 BUSH STREET, SUITE 1580 | SAN FRANCISCO, CA 94104 | 415-417-2780 | elliot@connlawpc.com | WANG, ZIAO (PLAINTIFF)"
+      }
+    ],
+    "attorney_party_link": [
+      {
+        "attorney_name": "CONN, ELLIOT JASON",
+        "party_name": "WANG, ZIAO",
+        "party_role": "Plaintiff",
+        "raw_text": "WANG, ZIAO (PLAINTIFF)"
+      }
+    ],
+    "plaintiff_has_counsel": true,
+    "defendant_has_counsel": false,
+    "roa_source": "request",
+    "download_profile": "high_value",
+    "total_entries": 9,
+    "total_links": 9,
+    "selected_links": 2,
+    "skipped_links": 7,
+    "scraped_links": 2,
+    "storage": "local",
+    "timing": {
+      "scrape_started_at": "2026-05-08T23:31:59Z",
+      "scrape_finished_at": "2026-05-08T23:32:14Z",
+      "scrape_elapsed_seconds": 15.181,
+      "download_elapsed_seconds": 1.322,
+      "downloaded_bytes": 941581,
+      "downloaded_docs": 2,
+      "cached_docs": 0,
+      "download_attempts": 2
+    }
+  },
+  "actions": [
+    {
+      "date": "2024-12-02 15:20:04",
+      "proceedings": "NOTICE TO PLAINTIFF",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=9960E85FBB154B2E095FEFA0EE8A766254716B41&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09349377%26Timestamp%3D20260508163213%26Digest%3D1a8f7dcd5a7ba869d4ea54cdda51cfb47c3bdd4b",
+      "doc_id": "09349377",
+      "transaction_id": null,
+      "doc_filename": "2024-12-02 15:20:04_09349377.pdf",
+      "download_selected": false,
+      "download_filter_category": "metadata_not_selected"
+    },
+    {
+      "date": "2025-05-28 16:54:59",
+      "proceedings": "DISMISSAL OF ENTIRE ACTION OF ALL PARTIES AND ALL CAUSES OF ACTION WITH PREJUDICE (TRANSACTION ID # 76356740)",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=9960E85FBB154B2E095FEFA0EE8A766254716B41&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09634399%26Timestamp%3D20260508163213%26Digest%3D20e5495baa8dc797b5fae3c87ef15cc0ff2ca831",
+      "doc_id": "09634399",
+      "transaction_id": "76356740",
+      "doc_filename": "2025-05-28 16:54:59_09634399.pdf",
+      "download_selected": false,
+      "download_filter_category": "low_value_admin"
+    },
+    {
+      "date": "2025-05-30 14:00:06",
+      "proceedings": "CASE MANAGEMENT CONFERENCE OF JUN-18-2025 IS OFF CALENDAR. DISMISSAL ON FILE. NOTICE SENT BY COURT.",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=9960E85FBB154B2E095FEFA0EE8A766254716B41&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09638898%26Timestamp%3D20260508163213%26Digest%3Dfd6f8892f533b7416b65791fbcefbc5684c6b3ee",
+      "doc_id": "09638898",
+      "transaction_id": null,
+      "doc_filename": "2025-05-30 14:00:06_09638898.pdf",
+      "download_selected": false,
+      "download_filter_category": "low_value_admin"
+    },
+    {
+      "date": "2025-07-28 16:38:09",
+      "proceedings": "NOTICE OF ENTRY OF DISMISSAL AND PROOF OF SERVICE (TRANSACTION ID # 76743824) FILED BY PLAINTIFF WANG, ZIAO",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=9960E85FBB154B2E095FEFA0EE8A766254716B41&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09733599%26Timestamp%3D20260508163213%26Digest%3D94809307e8c32d4ba282a7e4f57cd59b973d1bc6",
+      "doc_id": "09733599",
+      "transaction_id": "76743824",
+      "doc_filename": "2025-07-28 16:38:09_09733599.pdf",
+      "download_selected": false,
+      "download_filter_category": "low_value_admin"
+    },
+    {
+      "date": "2024-12-03 08:17:58",
+      "proceedings": "SUMMONS ISSUED (TRANSACTION ID # 75121456) TO PLAINTIFF WANG, ZIAO",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=9960E85FBB154B2E095FEFA0EE8A766254716B41&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09349178%26Timestamp%3D20260508163213%26Digest%3D7a606c0c21544ee0d37922a96d38d3e7f550a007",
+      "doc_id": "09349178",
+      "transaction_id": "75121456",
+      "doc_filename": "2024-12-03 08:17:58_09349178.pdf",
+      "download_selected": false,
+      "download_filter_category": "low_value_admin"
+    },
+    {
+      "date": "2025-04-24 08:10:38",
+      "proceedings": "CASE MANAGEMENT CONFERENCE OF MAY-07-2025 CONTINUED TO JUN-18-2025 AT 10:30 AM IN DEPARTMENT 610 TO OBTAIN AN ANSWER(S) FROM, OR ENTER DEFAULT(S) AGAINST, DEFENDANT(S). NOTICE SENT BY COURT.",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=9960E85FBB154B2E095FEFA0EE8A766254716B41&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09577884%26Timestamp%3D20260508163213%26Digest%3D82f5bb4071e148fcea6976f68fb31f7f495d387a",
+      "doc_id": "09577884",
+      "transaction_id": null,
+      "doc_filename": "2025-04-24 08:10:38_09577884.pdf",
+      "download_selected": false,
+      "download_filter_category": "low_value_admin"
+    },
+    {
+      "date": "2024-12-02 15:19:04",
+      "proceedings": "CONTRACT/WARRANTY, COMPLAINT (TRANSACTION ID # 75121456) FILED BY PLAINTIFF WANG, ZIAO AS TO DEFENDANT TESLA, INC DOES 1 THROUGH 30, INCLUSIVE NO SUMMONS ISSUED, JUDICIAL COUNCIL CIVIL CASE COVER SHEET NOT FILED CASE MANAGEMENT CONFERENCE SCHEDULED FOR MAY-07-2025 PROOF OF SERVICE DUE ON                  JAN-31-2025 CASE MANAGEMENT STATEMENT DUE ON         APR-14-2025",
+      "fee": "$435.00",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=9960E85FBB154B2E095FEFA0EE8A766254716B41&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09349176%26Timestamp%3D20260508163213%26Digest%3D0be336f6e0908ae1eb924e42f1264571198af800",
+      "doc_id": "09349176",
+      "transaction_id": "75121456",
+      "doc_filename": "2024-12-02 15:19:04_09349176.pdf",
+      "download_selected": true,
+      "download_filter_category": "pleading"
+    },
+    {
+      "date": "2024-12-06 15:49:43",
+      "proceedings": "SUMMONS ON COMPLAINT (TRANSACTION ID # 75161491), PROOF OF SERVICE ONLY, FILED BY PLAINTIFF WANG, ZIAO SERVED DEC-05-2024, PERSONAL SERVICE AS TO DEFENDANT TESLA, INC",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=9960E85FBB154B2E095FEFA0EE8A766254716B41&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09357949%26Timestamp%3D20260508163213%26Digest%3Dbea1c6cd4636ac7a33fc4920a9ca13c5633f1e22",
+      "doc_id": "09357949",
+      "transaction_id": "75161491",
+      "doc_filename": "2024-12-06 15:49:43_09357949.pdf",
+      "download_selected": true,
+      "download_filter_category": "pleading"
+    },
+    {
+      "date": "2024-12-02 15:19:05",
+      "proceedings": "CIVIL CASE COVERSHEET FILED (TRANSACTION ID # 75121456) FILED BY PLAINTIFF WANG, ZIAO",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=9960E85FBB154B2E095FEFA0EE8A766254716B41&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09349177%26Timestamp%3D20260508163213%26Digest%3D277a10102fe7ca893fdc4b7aa7163812cfdcedfa",
+      "doc_id": "09349177",
+      "transaction_id": "75121456",
+      "doc_filename": "2024-12-02 15:19:05_09349177.pdf",
+      "download_selected": false,
+      "download_filter_category": "low_value_admin"
+    }
+  ]
+}

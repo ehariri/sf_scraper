@@ -1,0 +1,225 @@
+{
+  "metadata": {
+    "case_number": "CGC24620196",
+    "case_title": "STATE FARM MUTUAL AUTOMOBILE INSURANCE COMPANY VS. JOSHUA DOLPH GRAVES ET AL",
+    "filing_date": "2024-12-02",
+    "case_url": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=CGC24620196&SessionID=9960E85FBB154B2E095FEFA0EE8A766254716B41",
+    "result_index": 20,
+    "source": {
+      "search_result_title": "STATE FARM MUTUAL AUTOMOBILE INSURANCE COMPANY VS. JOSHUA DOLPH GRAVES ET AL",
+      "search_result_link": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=CGC24620196&SessionID=9960E85FBB154B2E095FEFA0EE8A766254716B41",
+      "source_filing_date": "2024-12-02"
+    },
+    "case_header": {
+      "page_title": "Case Information",
+      "header_text": [],
+      "header_fields": {
+        "Case Number": "CGC24620196",
+        "Title": "STATE FARM MUTUAL AUTOMOBILE INSURANCE COMPANY VS. JOSHUA DOLPH GRAVES ET AL",
+        "Cause of Action": "PERSONAL INJURY/PROPERTY DAMAGE - VEHICLE RELATED",
+        "Generated": "2026-05-08 4:31 pm"
+      }
+    },
+    "parties": [
+      {
+        "name": "DOES 1 TO 10, INCLUSIVE",
+        "role": "Defendant",
+        "raw_text": "DOES 1 TO 10, INCLUSIVE | Defendant | DEC-02-2024 COMPLAINT"
+      },
+      {
+        "name": "GRAVES, JOSHUA DOLPH",
+        "role": "Defendant",
+        "raw_text": "GRAVES, JOSHUA DOLPH | Defendant | DEC-02-2024 COMPLAINT | AUG-05-2025 PROOF OF SERVICE OF SUMMONS AND COMPLAINT | DEC-08-2025 STIPULATION FOR ENTRY OF JUDGMENT"
+      },
+      {
+        "name": "STATE FARM MUTUAL AUTOMOBILE INSURANCE COMPANY",
+        "role": "Plaintiff",
+        "raw_text": "STATE FARM MUTUAL AUTOMOBILE INSURANCE COMPANY | Plaintiff | PLEASANT, JOSEPH M | DEC-02-2024 COMPLAINT | DEC-02-2024 CIVIL CASE COVERSHEET FILED | DEC-02-2024 SUMMONS ISSUED | JUN-30-2025 DECLARATION OF | AUG-05-2025 PROOF OF SERVICE OF SUMMONS AND COMPLAINT | SEP-25-2025 NOTICE OF SETTLEMENT | DEC-08-2025 STIPULATION FOR ENTRY OF JUDGMENT"
+      }
+    ],
+    "attorneys": [
+      {
+        "name": "PLEASANT, JOSEPH M",
+        "bar_number": "179571",
+        "represented_parties": [
+          "STATE FARM MUTUAL AUTOMOBILE INSURANCE COMPANY"
+        ],
+        "represented_role": "",
+        "raw_text": "PLEASANT, JOSEPH M | 179571 | BENSON LEGAL, APC | 8550 BALBOA BOULEVARD | SUITE 290 | NORTHRIDGE, CA 91325 | 818-708-1250 | e-service@bensonlegal.net | STATE FARM MUTUAL AUTOMOBILE INSURANCE COMPANY (PLAINTIFF)"
+      }
+    ],
+    "attorney_party_link": [
+      {
+        "attorney_name": "PLEASANT, JOSEPH M",
+        "party_name": "STATE FARM MUTUAL AUTOMOBILE INSURANCE COMPANY",
+        "party_role": "Plaintiff",
+        "raw_text": "STATE FARM MUTUAL AUTOMOBILE INSURANCE COMPANY (PLAINTIFF)"
+      }
+    ],
+    "plaintiff_has_counsel": true,
+    "defendant_has_counsel": false,
+    "roa_source": "request",
+    "download_profile": "high_value",
+    "total_entries": 13,
+    "total_links": 13,
+    "selected_links": 4,
+    "skipped_links": 9,
+    "scraped_links": 4,
+    "storage": "local",
+    "timing": {
+      "scrape_started_at": "2026-05-08T23:31:44Z",
+      "scrape_finished_at": "2026-05-08T23:31:59Z",
+      "scrape_elapsed_seconds": 14.867,
+      "download_elapsed_seconds": 3.655,
+      "downloaded_bytes": 2331331,
+      "downloaded_docs": 4,
+      "cached_docs": 0,
+      "download_attempts": 4
+    }
+  },
+  "actions": [
+    {
+      "date": "2025-08-22 13:39:01",
+      "proceedings": "ORDER TO SHOW CAUSE SET FOR SEP-16-2025 CONTINUED TO OCT-28-2025 AT 10:30 AM IN DEPARTMENT 610 FOR FAILURE TO OBTAIN AN ANSWER(S) FROM, OR ENTER DEFAULT(S) AGAINST, DEFENDANT(S). NOTICE SENT BY COURT.",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=9960E85FBB154B2E095FEFA0EE8A766254716B41&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09775700%26Timestamp%3D20260508163157%26Digest%3D25609de32ed607fc6203427e88e41fb0583fc78c",
+      "doc_id": "09775700",
+      "transaction_id": null,
+      "doc_filename": "2025-08-22 13:39:01_09775700.pdf",
+      "download_selected": false,
+      "download_filter_category": "low_value_admin"
+    },
+    {
+      "date": "2025-09-25 12:22:48",
+      "proceedings": "NOTICE OF SETTLEMENT (TRANSACTION ID # 77173881) FILED BY PLAINTIFF STATE FARM MUTUAL AUTOMOBILE INSURANCE COMPANY",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=9960E85FBB154B2E095FEFA0EE8A766254716B41&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09830343%26Timestamp%3D20260508163157%26Digest%3D62aabf8a55665e6604b05d4fbf1d2b36383fd10c",
+      "doc_id": "09830343",
+      "transaction_id": "77173881",
+      "doc_filename": "2025-09-25 12:22:48_09830343.pdf",
+      "download_selected": false,
+      "download_filter_category": "metadata_not_selected"
+    },
+    {
+      "date": "2025-12-08 16:50:09",
+      "proceedings": "STIPULATION FOR ENTRY OF JUDGMENT (TRANSACTION ID # 77951304) FILED BY PLAINTIFF STATE FARM MUTUAL AUTOMOBILE INSURANCE COMPANY ALSO FILED BY DEFENDANT GRAVES, JOSHUA DOLPH",
+      "fee": "$225.00",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=9960E85FBB154B2E095FEFA0EE8A766254716B41&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09950642%26Timestamp%3D20260508163157%26Digest%3D68495aaf82abc7036f3325b8992f0c06ce8a36b7",
+      "doc_id": "09950642",
+      "transaction_id": "77951304",
+      "doc_filename": "2025-12-08 16:50:09_09950642.pdf",
+      "download_selected": true,
+      "download_filter_category": "brief_motion"
+    },
+    {
+      "date": "2025-05-07 13:11:43",
+      "proceedings": "ORDER TO SHOW CAUSE SET FOR JUL-15-2025 IN DEPARTMENT 610 AT 10:30 AM FOR FAILURE TO FILE PROOF OF SERVICE ON DEFENDANT(S) AND OBTAIN ANSWER(S), OR ENTER DEFAULT(S). THE JUN-04-2025 CASE MANAGEMENT CONFERENCE IS OFF CALENDAR. NOTICE SENT BY COURT.",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=9960E85FBB154B2E095FEFA0EE8A766254716B41&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09600790%26Timestamp%3D20260508163157%26Digest%3D15d4cec88aa1985b8e0a3f9b51900b65938b3bfc",
+      "doc_id": "09600790",
+      "transaction_id": null,
+      "doc_filename": "2025-05-07 13:11:43_09600790.pdf",
+      "download_selected": false,
+      "download_filter_category": "low_value_admin"
+    },
+    {
+      "date": "2025-07-02 14:19:23",
+      "proceedings": "ORDER TO SHOW CAUSE SET FOR JUL-15-2025 CONTINUED TO SEP-16-2025 AT 10:30 AM IN DEPARTMENT 610 FOR FAILURE TO FILE PROOF OF SERVICE ON DEFENDANT(S) AND OBTAIN ANSWER(S), OR ENTER DEFAULT(S). NOTICE SENT BY COURT.",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=9960E85FBB154B2E095FEFA0EE8A766254716B41&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09692183%26Timestamp%3D20260508163157%26Digest%3D7b88f1075e991bd930beaa764f8f0d75f5adf365",
+      "doc_id": "09692183",
+      "transaction_id": null,
+      "doc_filename": "2025-07-02 14:19:23_09692183.pdf",
+      "download_selected": false,
+      "download_filter_category": "low_value_admin"
+    },
+    {
+      "date": "2024-12-02 15:03:14",
+      "proceedings": "SUMMONS ISSUED (TRANSACTION ID # 75120474) TO PLAINTIFF STATE FARM MUTUAL AUTOMOBILE INSURANCE COMPANY",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=9960E85FBB154B2E095FEFA0EE8A766254716B41&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09348800%26Timestamp%3D20260508163157%26Digest%3Dec8e316efa402e41739191d86b65c72e025feb0a",
+      "doc_id": "09348800",
+      "transaction_id": "75120474",
+      "doc_filename": "2024-12-02 15:03:14_09348800.pdf",
+      "download_selected": false,
+      "download_filter_category": "low_value_admin"
+    },
+    {
+      "date": "2025-06-30 15:48:33",
+      "proceedings": "DECLARATION OF DECLARATION OF JOSEPH M. PLEASANT ADDRESSING ORDER TO SHOW CAUSE RE SERVICE (TRANSACTION ID # 76560537) FILED BY PLAINTIFF STATE FARM MUTUAL AUTOMOBILE INSURANCE COMPANY",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=9960E85FBB154B2E095FEFA0EE8A766254716B41&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09687562%26Timestamp%3D20260508163157%26Digest%3Dc1edbbda770a1cd09520a4849eef0ee281da065b",
+      "doc_id": "09687562",
+      "transaction_id": "76560537",
+      "doc_filename": "2025-06-30 15:48:33_09687562.pdf",
+      "download_selected": true,
+      "download_filter_category": "declaration"
+    },
+    {
+      "date": "2025-08-05 14:00:48",
+      "proceedings": "SUMMONS ON COMPLAINT (TRANSACTION ID # 76807610), PROOF OF SERVICE ONLY, FILED BY PLAINTIFF STATE FARM MUTUAL AUTOMOBILE INSURANCE COMPANY SERVED JUN-03-2025, SUBSTITUTE SERVICE ON NATURAL PERSON, MAILING DATE JUN-03-2025 AS TO DEFENDANT GRAVES, JOSHUA DOLPH",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=9960E85FBB154B2E095FEFA0EE8A766254716B41&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09746388%26Timestamp%3D20260508163157%26Digest%3D9e821db75fcb4db0f7bd79205a197494657c7879",
+      "doc_id": "09746388",
+      "transaction_id": "76807610",
+      "doc_filename": "2025-08-05 14:00:48_09746388.pdf",
+      "download_selected": true,
+      "download_filter_category": "pleading"
+    },
+    {
+      "date": "2024-12-02 13:56:03",
+      "proceedings": "PERSONAL INJURY/PROPERTY DAMAGE - VEHICLE RELATED, COMPLAINT (TRANSACTION ID # 75120474) FILED BY PLAINTIFF STATE FARM MUTUAL AUTOMOBILE INSURANCE COMPANY AS TO DEFENDANT GRAVES, JOSHUA DOLPH DOES 1 TO 10, INCLUSIVE NO SUMMONS ISSUED, JUDICIAL COUNCIL CIVIL CASE COVER SHEET NOT FILED CASE MANAGEMENT CONFERENCE SCHEDULED FOR APR-02-2025 PROOF OF SERVICE DUE ON                  JAN-31-2025 CASE MANAGEMENT STATEMENT DUE ON         MAR-10-2025",
+      "fee": "$225.00",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=9960E85FBB154B2E095FEFA0EE8A766254716B41&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09348798%26Timestamp%3D20260508163157%26Digest%3D3d817c65be92c3a827e68b7f1ebf62b9e72188dc",
+      "doc_id": "09348798",
+      "transaction_id": "75120474",
+      "doc_filename": "2024-12-02 13:56:03_09348798.pdf",
+      "download_selected": true,
+      "download_filter_category": "pleading"
+    },
+    {
+      "date": "2024-12-02 13:57:03",
+      "proceedings": "NOTICE TO PLAINTIFF",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=9960E85FBB154B2E095FEFA0EE8A766254716B41&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09349096%26Timestamp%3D20260508163157%26Digest%3D93e6fe3a1d6c6371001508266656f3bf90ddd4d5",
+      "doc_id": "09349096",
+      "transaction_id": null,
+      "doc_filename": "2024-12-02 13:57:03_09349096.pdf",
+      "download_selected": false,
+      "download_filter_category": "metadata_not_selected"
+    },
+    {
+      "date": "2025-10-23 11:19:49",
+      "proceedings": "ORDER TO SHOW CAUSE RE DISMISSAL PURSUANT TO CRC 3.1385 SET FOR AUG-12-2031 AT 10:30 AM IN DEPARTMENT 610. THE OCT-28-2025 ORDER TO SHOW CAUSE IS OFF CALENDAR. NOTICE SENT BY COURT.",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=9960E85FBB154B2E095FEFA0EE8A766254716B41&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09875761%26Timestamp%3D20260508163157%26Digest%3D4bd91af463d4d9ee7f6aa42f6a5e66e3616f88b0",
+      "doc_id": "09875761",
+      "transaction_id": null,
+      "doc_filename": "2025-10-23 11:19:49_09875761.pdf",
+      "download_selected": false,
+      "download_filter_category": "low_value_admin"
+    },
+    {
+      "date": "2024-12-02 13:56:04",
+      "proceedings": "CIVIL CASE COVERSHEET FILED (TRANSACTION ID # 75120474) FILED BY PLAINTIFF STATE FARM MUTUAL AUTOMOBILE INSURANCE COMPANY",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=9960E85FBB154B2E095FEFA0EE8A766254716B41&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09348799%26Timestamp%3D20260508163157%26Digest%3D34463e6516b6c5d6e0ee80c06bd8bc5c1d8afaeb",
+      "doc_id": "09348799",
+      "transaction_id": "75120474",
+      "doc_filename": "2024-12-02 13:56:04_09348799.pdf",
+      "download_selected": false,
+      "download_filter_category": "low_value_admin"
+    },
+    {
+      "date": "2025-03-05 14:19:51",
+      "proceedings": "CASE MANAGEMENT CONFERENCE OF APR-02-2025 CONTINUED TO JUN-04-2025 AT 10:30 AM IN DEPARTMENT 610. NOTICE SENT BY COURT.",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=9960E85FBB154B2E095FEFA0EE8A766254716B41&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09493547%26Timestamp%3D20260508163157%26Digest%3Df71789f7176788771741a468be9f2cc547324c29",
+      "doc_id": "09493547",
+      "transaction_id": null,
+      "doc_filename": "2025-03-05 14:19:51_09493547.pdf",
+      "download_selected": false,
+      "download_filter_category": "low_value_admin"
+    }
+  ]
+}

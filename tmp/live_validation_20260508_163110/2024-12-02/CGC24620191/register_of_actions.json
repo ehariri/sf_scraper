@@ -1,0 +1,388 @@
+{
+  "metadata": {
+    "case_number": "CGC24620191",
+    "case_title": "TANNER PIKOP VS. SF MULTIFAILY POOLS 2-3 (B) OWNER LLC ET AL",
+    "filing_date": "2024-12-02",
+    "case_url": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=CGC24620191&SessionID=9960E85FBB154B2E095FEFA0EE8A766254716B41",
+    "result_index": 15,
+    "source": {
+      "search_result_title": "TANNER PIKOP VS. SF MULTIFAILY POOLS 2-3 (B) OWNER LLC ET AL",
+      "search_result_link": "https://webapps.sftc.org/ci/CaseInfo.dll?CaseNum=CGC24620191&SessionID=9960E85FBB154B2E095FEFA0EE8A766254716B41",
+      "source_filing_date": "2024-12-02"
+    },
+    "case_header": {
+      "page_title": "Case Information",
+      "header_text": [],
+      "header_fields": {
+        "Case Number": "CGC24620191",
+        "Title": "TANNER PIKOP VS. SF MULTIFAILY POOLS 2-3 (B) OWNER LLC ET AL",
+        "Cause of Action": "QUIET TITLE - REAL PROPERTY",
+        "Generated": "2026-05-08 4:32 pm"
+      }
+    },
+    "parties": [
+      {
+        "name": "BRICK & TIMBER, INC.",
+        "role": "Defendant",
+        "raw_text": "BRICK & TIMBER, INC. | Defendant | NGUYEN, DARRELL V. | MAR-28-2025 GENERIC CIVIL FILING (WITH FEE) | APR-23-2025 GENERIC CIVIL FILING (WITH FEE) | JUN-17-2025 ANSWER | JUL-11-2025 NOTICE OF ENTRY OF ORDER/NOTICE OF RULING FILED | AUG-05-2025 CASE MANAGEMENT STATEMENT"
+      },
+      {
+        "name": "BRICK AND TIMBER, INC. AKA BRICK + TIMBER, INC., A CALIFORNIA CORPORATION",
+        "role": "Defendant",
+        "raw_text": "BRICK AND TIMBER, INC. AKA BRICK + TIMBER, INC., A CALIFORNIA CORPORATION | Defendant | DEC-02-2024 COMPLAINT"
+      },
+      {
+        "name": "DOES 1 THROUGH 50, INCLUSIVE",
+        "role": "Defendant",
+        "raw_text": "DOES 1 THROUGH 50, INCLUSIVE | Defendant | DEC-02-2024 COMPLAINT"
+      },
+      {
+        "name": "MISSION ROCK RESIDENTIAL CALIFORNIA,INC.",
+        "role": "Defendant",
+        "raw_text": "MISSION ROCK RESIDENTIAL CALIFORNIA,INC. | Defendant | HORSEY, JR., WILLIAM F. | DEC-02-2024 COMPLAINT | APR-11-2025 ANSWER | APR-23-2025 JURY FEES | APR-23-2025 CASE MANAGEMENT STATEMENT | AUG-08-2025 CASE MANAGEMENT STATEMENT"
+      },
+      {
+        "name": "PIKOP, TANNER",
+        "role": "Plaintiff",
+        "raw_text": "PIKOP, TANNER | Plaintiff | LIFSCHITZ, ERIC | DEC-02-2024 COMPLAINT | DEC-02-2024 SUMMONS ISSUED | DEC-02-2024 CIVIL CASE COVERSHEET FILED | APR-15-2025 CASE MANAGEMENT STATEMENT | AUG-04-2025 CASE MANAGEMENT STATEMENT"
+      },
+      {
+        "name": "SF MULTIFAILY POOLS 2-3 (B) OWNER LLC",
+        "role": "Defendant",
+        "raw_text": "SF MULTIFAILY POOLS 2-3 (B) OWNER LLC | Defendant | HORSEY, JR., WILLIAM F. | DEC-02-2024 COMPLAINT | APR-11-2025 ANSWER | APR-23-2025 JURY FEES | APR-23-2025 CASE MANAGEMENT STATEMENT | AUG-08-2025 CASE MANAGEMENT STATEMENT"
+      },
+      {
+        "name": "SF MULTIFAMILY III PROPERTY OWNER LLC",
+        "role": "Defendant",
+        "raw_text": "SF MULTIFAMILY III PROPERTY OWNER LLC | Defendant | NGUYEN, DARRELL V. | DEC-02-2024 COMPLAINT | MAR-28-2025 GENERIC CIVIL FILING (WITH FEE) | APR-23-2025 GENERIC CIVIL FILING (WITH FEE) | JUN-17-2025 ANSWER | JUL-11-2025 NOTICE OF ENTRY OF ORDER/NOTICE OF RULING FILED | AUG-05-2025 CASE MANAGEMENT STATEMENT"
+      }
+    ],
+    "attorneys": [
+      {
+        "name": "HORSEY, JR., WILLIAM F.",
+        "bar_number": "136087",
+        "represented_parties": [
+          "MISSION ROCK RESIDENTIAL CALIFORNIA,INC.",
+          "SF MULTIFAILY POOLS 2-3 (B) OWNER LLC"
+        ],
+        "represented_role": "",
+        "raw_text": "HORSEY, JR., WILLIAM F. | 136087 | LEWIS BRISBOIS BISGAARD & SMITH LLP | 45 FREMONT STREET, SUITE 3000 | SAN FRANCISCO, CA 941052256 | 415-362-2580 | william.horsey@lewisbrisbois.com | MISSION ROCK RESIDENTIAL CALIFORNIA,INC. (DEFENDANT) | SF MULTIFAILY POOLS 2-3 (B) OWNER LLC (DEFENDANT)"
+      },
+      {
+        "name": "LIFSCHITZ, ERIC",
+        "bar_number": "215252",
+        "represented_parties": [
+          "PIKOP, TANNER"
+        ],
+        "represented_role": "",
+        "raw_text": "LIFSCHITZ, ERIC | 215252 | LIFSCHITZ LAW | 345 FRANKLIN STREET | SAN FRANCISCO, CA 94102 | 415-553-6055 | info@franklinstreetlaw.com | PIKOP, TANNER (PLAINTIFF)"
+      },
+      {
+        "name": "NGUYEN, DARRELL V.",
+        "bar_number": "228959",
+        "represented_parties": [
+          "BRICK & TIMBER, INC.",
+          "SF MULTIFAMILY III PROPERTY OWNER LLC"
+        ],
+        "represented_role": "",
+        "raw_text": "NGUYEN, DARRELL V. | 228959 | WILSON, ELSER, MOSKOWITZ, EDELMAN & DICKER LLP | 655 MONTGOMERY ST. | STE. 900 | SAN FRANCISCO, CA 94111 | 415-433-0990 | dnguyen@tysonmendes.com | BRICK & TIMBER, INC. (DEFENDANT) | SF MULTIFAMILY III PROPERTY OWNER LLC (DEFENDANT)"
+      }
+    ],
+    "attorney_party_link": [
+      {
+        "attorney_name": "HORSEY, JR., WILLIAM F.",
+        "party_name": "MISSION ROCK RESIDENTIAL CALIFORNIA,INC.",
+        "party_role": "Defendant",
+        "raw_text": "MISSION ROCK RESIDENTIAL CALIFORNIA,INC. (DEFENDANT)"
+      },
+      {
+        "attorney_name": "HORSEY, JR., WILLIAM F.",
+        "party_name": "SF MULTIFAILY POOLS 2-3 (B) OWNER LLC",
+        "party_role": "Defendant",
+        "raw_text": "SF MULTIFAILY POOLS 2-3 (B) OWNER LLC (DEFENDANT)"
+      },
+      {
+        "attorney_name": "LIFSCHITZ, ERIC",
+        "party_name": "PIKOP, TANNER",
+        "party_role": "Plaintiff",
+        "raw_text": "PIKOP, TANNER (PLAINTIFF)"
+      },
+      {
+        "attorney_name": "NGUYEN, DARRELL V.",
+        "party_name": "BRICK & TIMBER, INC.",
+        "party_role": "Defendant",
+        "raw_text": "BRICK & TIMBER, INC. (DEFENDANT)"
+      },
+      {
+        "attorney_name": "NGUYEN, DARRELL V.",
+        "party_name": "SF MULTIFAMILY III PROPERTY OWNER LLC",
+        "party_role": "Defendant",
+        "raw_text": "SF MULTIFAMILY III PROPERTY OWNER LLC (DEFENDANT)"
+      }
+    ],
+    "plaintiff_has_counsel": true,
+    "defendant_has_counsel": true,
+    "roa_source": "request",
+    "download_profile": "high_value",
+    "total_entries": 22,
+    "total_links": 19,
+    "selected_links": 5,
+    "skipped_links": 14,
+    "scraped_links": 5,
+    "storage": "local",
+    "timing": {
+      "scrape_started_at": "2026-05-08T23:32:14Z",
+      "scrape_finished_at": "2026-05-08T23:32:28Z",
+      "scrape_elapsed_seconds": 14.279,
+      "download_elapsed_seconds": 3.946,
+      "downloaded_bytes": 1375237,
+      "downloaded_docs": 5,
+      "cached_docs": 0,
+      "download_attempts": 5
+    }
+  },
+  "actions": [
+    {
+      "date": "2025-04-11 13:39:23",
+      "proceedings": "ANSWER TO COMPLAINT (TRANSACTION ID # 76055651) FILED BY DEFENDANT SF MULTIFAILY POOLS 2-3 (B) OWNER LLC MISSION ROCK RESIDENTIAL CALIFORNIA,INC.",
+      "fee": "$870.00",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=9960E85FBB154B2E095FEFA0EE8A766254716B41&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09557302%26Timestamp%3D20260508163227%26Digest%3Da93182690bd8ed54c16f58e3e023f8ef650f12f1",
+      "doc_id": "09557302",
+      "transaction_id": "76055651",
+      "doc_filename": "2025-04-11 13:39:23_09557302.pdf",
+      "download_selected": true,
+      "download_filter_category": "pleading"
+    },
+    {
+      "date": "2025-06-17 15:19:04",
+      "proceedings": "ANSWER TO COMPLAINT (TRANSACTION ID # 76483563) FILED BY DEFENDANT SF MULTIFAMILY III PROPERTY OWNER LLC BRICK & TIMBER, INC.",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=9960E85FBB154B2E095FEFA0EE8A766254716B41&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09667197%26Timestamp%3D20260508163227%26Digest%3D5fe256196d05d5b4ee0d56b5a6598244c4541791",
+      "doc_id": "09667197",
+      "transaction_id": "76483563",
+      "doc_filename": "2025-06-17 15:19:04_09667197.pdf",
+      "download_selected": true,
+      "download_filter_category": "pleading"
+    },
+    {
+      "date": "2025-07-09 16:44:18",
+      "proceedings": "ORDER - STIPULATION AND ORDER RE DISMISSAL",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=9960E85FBB154B2E095FEFA0EE8A766254716B41&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09702400%26Timestamp%3D20260508163227%26Digest%3D5c8cfd1816aa7f946b643ff93a30e5b122455ade",
+      "doc_id": "09702400",
+      "transaction_id": null,
+      "doc_filename": "2025-07-09 16:44:18_09702400.pdf",
+      "download_selected": true,
+      "download_filter_category": "brief_motion"
+    },
+    {
+      "date": "2025-09-25 18:18:41",
+      "proceedings": "DISMISSAL OF ENTIRE ACTION OF ALL PARTIES AND ALL CAUSES OF ACTION WITH PREJUDICE *EACH PARTY TO BEAR THEIR OWN FEES AND COSTS (TRANSACTION ID # 77177545)",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=9960E85FBB154B2E095FEFA0EE8A766254716B41&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09831575%26Timestamp%3D20260508163227%26Digest%3D45e5bd386469d48b91806c38068b00b0a2993b8c",
+      "doc_id": "09831575",
+      "transaction_id": "77177545",
+      "doc_filename": "2025-09-25 18:18:41_09831575.pdf",
+      "download_selected": false,
+      "download_filter_category": "low_value_admin"
+    },
+    {
+      "date": "2024-12-02 13:45:04",
+      "proceedings": "SUMMONS ISSUED (TRANSACTION ID # 75118611) TO PLAINTIFF PIKOP, TANNER",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=9960E85FBB154B2E095FEFA0EE8A766254716B41&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09348540%26Timestamp%3D20260508163227%26Digest%3Da0bd6cf47df67c167aae6b4f090428f81f818c81",
+      "doc_id": "09348540",
+      "transaction_id": "75118611",
+      "doc_filename": "2024-12-02 13:45:04_09348540.pdf",
+      "download_selected": false,
+      "download_filter_category": "low_value_admin"
+    },
+    {
+      "date": "2025-04-15 14:05:49",
+      "proceedings": "CASE MANAGEMENT STATEMENT (TRANSACTION ID # 76075503) FILED BY PLAINTIFF PIKOP, TANNER JURY DEMANDED, ESTIMATED TIME FOR TRIAL: 7.0 DAYS",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=9960E85FBB154B2E095FEFA0EE8A766254716B41&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09562387%26Timestamp%3D20260508163227%26Digest%3D11756a0279384f86e280179155ce7a6b1e937133",
+      "doc_id": "09562387",
+      "transaction_id": "76075503",
+      "doc_filename": "2025-04-15 14:05:49_09562387.pdf",
+      "download_selected": false,
+      "download_filter_category": "low_value_admin"
+    },
+    {
+      "date": "2025-04-23 09:37:06",
+      "proceedings": "JURY FEES (TRANSACTION ID # 76132404) DEPOSITED BY DEFENDANT SF MULTIFAILY POOLS 2-3 (B) OWNER LLC MISSION ROCK RESIDENTIAL CALIFORNIA,INC.",
+      "fee": "$150.00",
+      "doc_url": null,
+      "doc_id": null,
+      "transaction_id": "76132404",
+      "doc_filename": null,
+      "download_selected": false,
+      "download_filter_category": "no_document"
+    },
+    {
+      "date": "2025-08-07 09:11:15",
+      "proceedings": "NOTICE OF TIME AND PLACE OF TRIAL, JURY TRIAL SET FOR MAR-09-2026 AT 9:30 AM IN DEPT. 206. CASE MANAGEMENT CONFERENCE ON SEP-03-2025 IS OFF CALENDAR. NOTICE SENT BY COURT.",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=9960E85FBB154B2E095FEFA0EE8A766254716B41&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09749779%26Timestamp%3D20260508163227%26Digest%3D1ebcfa35d3b2ce854f057304edfc7a5458ecc4b9",
+      "doc_id": "09749779",
+      "transaction_id": null,
+      "doc_filename": "2025-08-07 09:11:15_09749779.pdf",
+      "download_selected": false,
+      "download_filter_category": "low_value_admin"
+    },
+    {
+      "date": "2025-08-08 14:20:12",
+      "proceedings": "CASE MANAGEMENT STATEMENT (TRANSACTION ID # 76833816) FILED BY DEFENDANT SF MULTIFAILY POOLS 2-3 (B) OWNER LLC MISSION ROCK RESIDENTIAL CALIFORNIA,INC. JURY DEMANDED, ESTIMATED TIME FOR TRIAL: 10.0 DAYS",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=9960E85FBB154B2E095FEFA0EE8A766254716B41&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09752935%26Timestamp%3D20260508163227%26Digest%3D3f5b013c649a22968709534a1dec776843c72efb",
+      "doc_id": "09752935",
+      "transaction_id": "76833816",
+      "doc_filename": "2025-08-08 14:20:12_09752935.pdf",
+      "download_selected": false,
+      "download_filter_category": "low_value_admin"
+    },
+    {
+      "date": "2024-12-02 12:11:42",
+      "proceedings": "QUIET TITLE - REAL PROPERTY, COMPLAINT (TRANSACTION ID # 75118611) FILED BY PLAINTIFF PIKOP, TANNER AS TO DEFENDANT SF MULTIFAILY POOLS 2-3 (B) OWNER LLC SF MULTIFAMILY III PROPERTY OWNER LLC BRICK AND TIMBER, INC. AKA BRICK + TIMBER, INC., A CALIFORNIA CORPORATION MISSION ROCK RESIDENTIAL CALIFORNIA,INC. DOES 1 THROUGH 50, INCLUSIVE NO SUMMONS ISSUED, JUDICIAL COUNCIL CIVIL CASE COVER SHEET NOT FILED CASE MANAGEMENT CONFERENCE SCHEDULED FOR MAY-07-2025 PROOF OF SERVICE DUE ON                  JAN-31-2025 CASE MANAGEMENT STATEMENT DUE ON         APR-14-2025",
+      "fee": "$435.00",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=9960E85FBB154B2E095FEFA0EE8A766254716B41&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09348538%26Timestamp%3D20260508163227%26Digest%3D5b1dc2595a250faec3ccc68a8400d382ca3f43db",
+      "doc_id": "09348538",
+      "transaction_id": "75118611",
+      "doc_filename": "2024-12-02 12:11:42_09348538.pdf",
+      "download_selected": true,
+      "download_filter_category": "pleading"
+    },
+    {
+      "date": "2024-12-02 12:12:42",
+      "proceedings": "NOTICE TO PLAINTIFF",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=9960E85FBB154B2E095FEFA0EE8A766254716B41&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09348741%26Timestamp%3D20260508163227%26Digest%3D562d9b02ce540bdb487e180c02469c27d01a85f3",
+      "doc_id": "09348741",
+      "transaction_id": null,
+      "doc_filename": "2024-12-02 12:12:42_09348741.pdf",
+      "download_selected": false,
+      "download_filter_category": "metadata_not_selected"
+    },
+    {
+      "date": "2024-12-02 14:37:32",
+      "proceedings": "CIVIL CASE COVERSHEET FILED (TRANSACTION ID # 75120947) FILED BY PLAINTIFF PIKOP, TANNER",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=9960E85FBB154B2E095FEFA0EE8A766254716B41&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09348992%26Timestamp%3D20260508163227%26Digest%3D598b157a50f1d890bb45d02374f7748bc203b7a5",
+      "doc_id": "09348992",
+      "transaction_id": "75120947",
+      "doc_filename": "2024-12-02 14:37:32_09348992.pdf",
+      "download_selected": false,
+      "download_filter_category": "low_value_admin"
+    },
+    {
+      "date": "2025-03-28 13:39:12",
+      "proceedings": "DECLARATION OF DEMURRING OR MOVING PARTY IN SUPPORT OF AUTOMATIC EXTENSION (TRANSACTION ID # 75962181) FILED BY DEFENDANT SF MULTIFAMILY III PROPERTY OWNER LLC BRICK & TIMBER, INC.",
+      "fee": "$870.00",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=9960E85FBB154B2E095FEFA0EE8A766254716B41&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09533989%26Timestamp%3D20260508163227%26Digest%3D88c6d10df421e0bc0fac1060780b8515e12fd876",
+      "doc_id": "09533989",
+      "transaction_id": "75962181",
+      "doc_filename": "2025-03-28 13:39:12_09533989.pdf",
+      "download_selected": true,
+      "download_filter_category": "declaration"
+    },
+    {
+      "date": "2025-04-15 14:08:04",
+      "proceedings": "CASE MANAGEMENT CONFERENCE OF MAY-07-2025 CONTINUED TO JUL-09-2025 AT 10:30 AM IN DEPARTMENT 610. NOTICE SENT BY COURT.",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=9960E85FBB154B2E095FEFA0EE8A766254716B41&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09562411%26Timestamp%3D20260508163227%26Digest%3D3c49df752c4f2cfdd012d4ffeb7d038cd928c447",
+      "doc_id": "09562411",
+      "transaction_id": null,
+      "doc_filename": "2025-04-15 14:08:04_09562411.pdf",
+      "download_selected": false,
+      "download_filter_category": "low_value_admin"
+    },
+    {
+      "date": "2025-04-23 09:37:07",
+      "proceedings": "CASE MANAGEMENT STATEMENT (TRANSACTION ID # 76132404) FILED BY DEFENDANT SF MULTIFAILY POOLS 2-3 (B) OWNER LLC MISSION ROCK RESIDENTIAL CALIFORNIA,INC. JURY DEMANDED",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=9960E85FBB154B2E095FEFA0EE8A766254716B41&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09575607%26Timestamp%3D20260508163227%26Digest%3D24ee431282b591462ea23bf53daeb4b3c98ebcd8",
+      "doc_id": "09575607",
+      "transaction_id": "76132404",
+      "doc_filename": "2025-04-23 09:37:07_09575607.pdf",
+      "download_selected": false,
+      "download_filter_category": "low_value_admin"
+    },
+    {
+      "date": "2025-04-23 12:28:02",
+      "proceedings": "FILING FEE PAID FOR STIPULATION AND PROPOSED ORDER RE DISMISSAL (TRANSACTION ID # 76135343) FILED BY DEFENDANT SF MULTIFAMILY III PROPERTY OWNER LLC BRICK & TIMBER, INC.",
+      "fee": "$20.00",
+      "doc_url": null,
+      "doc_id": null,
+      "transaction_id": "76135343",
+      "doc_filename": null,
+      "download_selected": false,
+      "download_filter_category": "no_document"
+    },
+    {
+      "date": "2025-08-05 14:45:18",
+      "proceedings": "CASE MANAGEMENT STATEMENT (TRANSACTION ID # 76808190) FILED BY DEFENDANT SF MULTIFAMILY III PROPERTY OWNER LLC BRICK & TIMBER, INC. JURY DEMANDED, ESTIMATED TIME FOR TRIAL: 7.0 DAYS",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=9960E85FBB154B2E095FEFA0EE8A766254716B41&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09746568%26Timestamp%3D20260508163227%26Digest%3D772ea4c6c01dab48cef748375b014eb4ae182626",
+      "doc_id": "09746568",
+      "transaction_id": "76808190",
+      "doc_filename": "2025-08-05 14:45:18_09746568.pdf",
+      "download_selected": false,
+      "download_filter_category": "low_value_admin"
+    },
+    {
+      "date": "2025-11-21 14:22:33",
+      "proceedings": "MASTER JURY TRIAL CALENDAR SET FOR MAR-09-2026 VACATED. DISMISSAL OF ENTIRE ACTION FILED ON 9/25/25. (206)",
+      "fee": "",
+      "doc_url": null,
+      "doc_id": null,
+      "transaction_id": null,
+      "doc_filename": null,
+      "download_selected": false,
+      "download_filter_category": "no_document"
+    },
+    {
+      "date": "2025-06-12 08:14:12",
+      "proceedings": "ORDER TO SHOW CAUSE SET FOR AUG-12-2025 IN DEPARTMENT 610 AT 10:30 AM FOR FAILURE TO OBTAIN AN ANSWER(S) FROM, OR ENTER DEFAULT(S) AGAINST, DEFENDANTS SF MULTIFAMILY III PROPERTY OWNER LLC, AND BRICK & TIMBER, INC. THE JUL-09-2025 CASE MANAGEMENT CONFERENCE IS OFF CALENDAR. NOTICE SENT BY COURT.",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=9960E85FBB154B2E095FEFA0EE8A766254716B41&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09658367%26Timestamp%3D20260508163227%26Digest%3Dac7924491acadbd49b61143ae56f06787a47de74",
+      "doc_id": "09658367",
+      "transaction_id": null,
+      "doc_filename": "2025-06-12 08:14:12_09658367.pdf",
+      "download_selected": false,
+      "download_filter_category": "low_value_admin"
+    },
+    {
+      "date": "2025-07-11 14:40:20",
+      "proceedings": "NOTICE OF ENTRY OF ORDER/NOTICE OF RULING FILED (TRANSACTION ID # 76634033) FILED BY DEFENDANT SF MULTIFAMILY III PROPERTY OWNER LLC BRICK & TIMBER, INC.",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=9960E85FBB154B2E095FEFA0EE8A766254716B41&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09706580%26Timestamp%3D20260508163227%26Digest%3Dcdbed4333c88bbdadb9abb3c110be40633357caf",
+      "doc_id": "09706580",
+      "transaction_id": "76634033",
+      "doc_filename": "2025-07-11 14:40:20_09706580.pdf",
+      "download_selected": false,
+      "download_filter_category": "low_value_admin"
+    },
+    {
+      "date": "2025-07-17 08:36:06",
+      "proceedings": "CASE MANAGEMENT CONFERENCE SET FOR SEP-03-2025 AT 10:30 AM IN DEPARTMENT 610 FOR THE SUBMISSION OF CASE MANAGEMENT STATEMENTS. THE AUG-12-2025 ORDER TO SHOW CAUSE IS OFF CALENDAR. NOTICE SENT BY COURT.",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=9960E85FBB154B2E095FEFA0EE8A766254716B41&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09715916%26Timestamp%3D20260508163227%26Digest%3Db698bee55d5e60f24da796fecf8acda7cb0b95cc",
+      "doc_id": "09715916",
+      "transaction_id": null,
+      "doc_filename": "2025-07-17 08:36:06_09715916.pdf",
+      "download_selected": false,
+      "download_filter_category": "low_value_admin"
+    },
+    {
+      "date": "2025-08-04 18:22:51",
+      "proceedings": "CASE MANAGEMENT STATEMENT (TRANSACTION ID # 76789626) FILED BY PLAINTIFF PIKOP, TANNER JURY DEMANDED, ESTIMATED TIME FOR TRIAL: 7.0 DAYS",
+      "fee": "",
+      "doc_url": "https://webapps.sftc.org/ci/CaseInfo.dll?SessionID=9960E85FBB154B2E095FEFA0EE8A766254716B41&URL=https%3A%2F%2Fimgquery.sftc.org%2FSha1_newApp%2Fmainpage.aspx%3FWeb_Server%3Dimgquery.sftc.org%26MINDS_Server%3Dhoj-imx-01%26Category%3DC%26DocID%3D09745060%26Timestamp%3D20260508163227%26Digest%3D9a92e537308b0ccf11f2bb66b6962282387a581c",
+      "doc_id": "09745060",
+      "transaction_id": "76789626",
+      "doc_filename": "2025-08-04 18:22:51_09745060.pdf",
+      "download_selected": false,
+      "download_filter_category": "low_value_admin"
+    }
+  ]
+}

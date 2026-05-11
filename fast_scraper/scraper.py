@@ -17,9 +17,19 @@ import re
 import shutil
 import signal
 import subprocess
+import sys
 import time
 from dataclasses import dataclass
 from datetime import datetime, timedelta
+from pathlib import Path as _Path
+
+# Cross-scraper heartbeat helper (lives in <repo>/monitor/).
+_repo_root_str = str(_Path(__file__).resolve().parent.parent.parent)
+if _repo_root_str not in sys.path:
+    sys.path.insert(0, _repo_root_str)
+from monitor.heartbeat import Heartbeat  # noqa: E402
+
+HEARTBEAT: Heartbeat | None = None
 from pathlib import Path
 from typing import Optional
 from urllib.parse import parse_qs, urlencode, urlparse
@@ -2550,6 +2560,12 @@ async def main():
         default=PDF_FILTER_PROFILE,
         help="Download all linked PDFs or only a metadata-selected high-value subset.",
     )
+    parser.add_argument(
+        "--worker-id",
+        type=int,
+        default=None,
+        help="Internal: identifies this worker for the monitor's per-worker heartbeat file.",
+    )
     args = parser.parse_args()
 
     SEARCH_RESULTS_TIMEOUT_MS = args.search_timeout_ms
@@ -2569,6 +2585,19 @@ async def main():
     print("Writing PDFs to disk during scrape: True")
     print(f"PDF download profile: {PDF_FILTER_PROFILE}")
     print(f"Request-based ROA: {USE_REQUEST_ROA}")
+
+    # Start cross-scraper heartbeat so the multi-county monitor can show
+    # this worker as ACTIVE while running.
+    global HEARTBEAT
+    HEARTBEAT = Heartbeat(
+        LOCAL_DATA_ROOT, scraper="sf",
+        args=sys.argv[1:],
+        worker_id=args.worker_id,
+    )
+    HEARTBEAT.update(start_date=args.start_date, end_date=args.end_date,
+                     dates_to_scrape=len(dates),
+                     port=args.port)
+    HEARTBEAT.start()
 
     if args.clear:
         for date_str in dates:
@@ -2606,6 +2635,9 @@ async def main():
         # Step 4: Process each date
         for date_str in dates:
             print(f"\nProcessing date: {date_str}")
+            if HEARTBEAT is not None:
+                HEARTBEAT.update(current_day=date_str, current_case=None,
+                                 current_action="day-start")
             date_started_at = utc_now_iso()
             date_started_perf = time.perf_counter()
 
@@ -2863,7 +2895,18 @@ async def main():
             )
 
         print("\nAll dates processed!")
+        if HEARTBEAT is not None:
+            HEARTBEAT.close(status="exited", finished_reason="completed")
     finally:
+        if HEARTBEAT is not None:
+            # If we didn't reach the clean "completed" close above, write a
+            # terminal record so the monitor doesn't keep showing ACTIVE.
+            try:
+                state = HEARTBEAT._state.get("status") if hasattr(HEARTBEAT, "_state") else None
+            except Exception:
+                state = None
+            if state not in {"exited", "crashed"}:
+                HEARTBEAT.close(status="crashed", finished_reason="aborted")
         if browser is not None:
             await browser.close()
         if p is not None:
