@@ -30,6 +30,17 @@ if _repo_root_str not in sys.path:
 from monitor.heartbeat import Heartbeat  # noqa: E402
 
 HEARTBEAT: Heartbeat | None = None
+
+
+def _probe_public_ip() -> str:
+    try:
+        out = subprocess.run(
+            ["curl", "-s", "--max-time", "5", "https://ipv4.icanhazip.com"],
+            capture_output=True, text=True, check=False, timeout=8,
+        )
+        return out.stdout.strip()
+    except Exception:
+        return ""
 from pathlib import Path
 from typing import Optional
 from urllib.parse import parse_qs, urlencode, urlparse
@@ -2250,6 +2261,11 @@ async def scrape_case(context, case, filing_date):
         with open(json_path, "w") as f:
             json.dump(output_data, f, indent=2)
 
+        if HEARTBEAT is not None:
+            HEARTBEAT.increment("session_cases_scraped")
+            if scraped_links:
+                HEARTBEAT.increment("session_docs_collected", amount=scraped_links)
+
         tqdm.write(
             f"  Case {case_num}: {scraped_links}/{selected_links} selected docs "
             f"({total_links} total links)"
@@ -2594,9 +2610,18 @@ async def main():
         args=sys.argv[1:],
         worker_id=args.worker_id,
     )
-    HEARTBEAT.update(start_date=args.start_date, end_date=args.end_date,
-                     dates_to_scrape=len(dates),
-                     port=args.port)
+    HEARTBEAT.update(
+        start_date=args.start_date, end_date=args.end_date,
+        dates_to_scrape=len(dates),
+        port=args.port,
+        pdf_filter_profile=PDF_FILTER_PROFILE,
+        max_concurrent_cases=args.max_concurrent_cases,
+        max_concurrent_downloads=args.max_concurrent_downloads,
+        rotation_managed=os.environ.get("ROTATE_MANAGED") == "1",
+        current_ip=_probe_public_ip(),
+        session_cases_scraped=0,
+        session_docs_collected=0,
+    )
     HEARTBEAT.start()
 
     if args.clear:
