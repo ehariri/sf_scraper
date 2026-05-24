@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """Fast SF Superior Court scraper — concurrent browser tabs.
 
 Uses Playwright (browser) for everything, but parallelizes the bottleneck:
