@@ -225,6 +225,26 @@ def move_chrome_windows(bounds):
 # --- Chrome Management ---
 
 
+def google_chrome_app_available():
+    """Return True when macOS can resolve Google Chrome.app."""
+    result = subprocess.run(
+        ["open", "-Ra", "Google Chrome"],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        check=False,
+    )
+    return result.returncode == 0
+
+
+def playwright_chromium_executable():
+    """Find Playwright's bundled Chromium binary as a local Chrome fallback."""
+    pattern = "Library/Caches/ms-playwright/chromium-*/chrome-mac/Chromium.app/Contents/MacOS/Chromium"
+    for path in sorted(Path.home().glob(pattern), reverse=True):
+        if path.exists() and os.access(path, os.X_OK):
+            return path
+    return None
+
+
 def debug_port_pids(port):
     """Return PIDs listening on the scraper's Chrome debug port."""
     try:
@@ -260,12 +280,7 @@ def launch_chrome(port, manage_windows=False, reuse_existing=False):
         )
         kill_chrome(port)
 
-    cmd = [
-        "open",
-        "-g",
-        "-na",
-        "Google Chrome",
-        "--args",
+    browser_args = [
         f"--user-data-dir={profile}",
         f"--remote-debugging-port={port}",
         "--no-first-run",
@@ -273,8 +288,20 @@ def launch_chrome(port, manage_windows=False, reuse_existing=False):
         f"--window-size={window_width},{window_height}",
         f"--window-position={window_x},{window_y}",
     ]
-    subprocess.Popen(cmd)
-    print(f"Launched Chrome on port {port}. Waiting 2s for startup...")
+    if google_chrome_app_available():
+        cmd = ["open", "-g", "-na", "Google Chrome", "--args", *browser_args]
+        subprocess.Popen(cmd)
+        print(f"Launched Google Chrome on port {port}. Waiting 2s for startup...")
+    else:
+        chromium = playwright_chromium_executable()
+        if chromium is None:
+            raise RuntimeError(
+                "Could not find Google Chrome.app or Playwright's bundled Chromium. "
+                "Install Chrome or run `python -m playwright install chromium`."
+            )
+        cmd = [str(chromium), *browser_args, "about:blank"]
+        subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        print(f"Launched Playwright Chromium on port {port}. Waiting 2s for startup...")
     time.sleep(2)
     if manage_windows:
         move_chrome_windows((window_x, window_y, window_width, window_height))
