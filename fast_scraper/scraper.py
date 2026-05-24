@@ -238,10 +238,14 @@ def google_chrome_app_available():
 
 def playwright_chromium_executable():
     """Find Playwright's bundled Chromium binary as a local Chrome fallback."""
-    pattern = "Library/Caches/ms-playwright/chromium-*/chrome-mac/Chromium.app/Contents/MacOS/Chromium"
-    for path in sorted(Path.home().glob(pattern), reverse=True):
-        if path.exists() and os.access(path, os.X_OK):
-            return path
+    patterns = (
+        "Library/Caches/ms-playwright/chromium-*/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing",
+        "Library/Caches/ms-playwright/chromium-*/chrome-mac/Chromium.app/Contents/MacOS/Chromium",
+    )
+    for pattern in patterns:
+        for path in sorted(Path.home().glob(pattern), reverse=True):
+            if path.exists() and os.access(path, os.X_OK):
+                return path
     return None
 
 
