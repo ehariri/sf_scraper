@@ -177,32 +177,24 @@ async def get_response_headers(response):
 
 
 def preferred_chrome_window_bounds():
-    """
-    Prefer the first non-primary display so the challenge window stays off the
-    user's main screen when a second monitor is attached.
-    """
+    """Place the challenge browser in the bottom-right half of the screen."""
     try:
-        from Quartz import CGDisplayBounds, CGGetActiveDisplayList, CGMainDisplayID
-
-        err, displays, count = CGGetActiveDisplayList(16, None, None)
-        if err != 0:
-            raise RuntimeError(f"CGGetActiveDisplayList failed: {err}")
-
-        main_display = CGMainDisplayID()
-        target_display = main_display
-        for display_id in displays[:count]:
-            if display_id != main_display:
-                target_display = display_id
-                break
-
-        bounds = CGDisplayBounds(target_display)
-        x = int(bounds.origin.x) + 48
-        y = int(bounds.origin.y) + 40
-        width = max(900, int(bounds.size.width) - 96)
-        height = max(700, int(bounds.size.height) - 80)
-        return x, y, width, height
+        result = subprocess.run(
+            ["osascript", "-e", 'tell application "Finder" to get bounds of window of desktop'],
+            capture_output=True,
+            text=True,
+            timeout=3,
+            check=False,
+        )
+        parts = [int(p.strip()) for p in result.stdout.replace("{", "").replace("}", "").split(",")]
+        if len(parts) == 4:
+            left, top, right, bottom = parts
+            width = max(720, (right - left) // 2)
+            height = max(450, (bottom - top) // 2)
+            return left + width, top + height, width, height
     except Exception:
-        return 0, 0, 800, 600
+        pass
+    return 720, 450, 720, 450
 
 
 def move_chrome_windows(bounds):
@@ -2683,7 +2675,8 @@ async def main():
             print(f"\nProcessing date: {date_str}")
             if HEARTBEAT is not None:
                 HEARTBEAT.update(current_day=date_str, current_case=None,
-                                 current_action="day-start")
+                                 current_action="day-start",
+                                 current_ip=probe_public_ip())
             date_started_at = utc_now_iso()
             date_started_perf = time.perf_counter()
 
