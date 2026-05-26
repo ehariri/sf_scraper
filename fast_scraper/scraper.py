@@ -148,6 +148,62 @@ def case_metadata_is_complete(meta, case_dir=None):
     return meta.get("scraped_links", 0) == required_links
 
 
+def is_restricted_case_number(case_num):
+    """San Francisco unlawful detainer cases are not publicly viewable."""
+    return (case_num or "").upper().startswith("CUD")
+
+
+def build_restricted_case_record(
+    case,
+    case_num,
+    filing_date,
+    link,
+    scrape_started_at,
+    scrape_started_perf,
+    header_metadata=None,
+    participant_metadata=None,
+    roa_source="case_number_prefix",
+    reason="CCP 1161.2",
+):
+    header_metadata = header_metadata or empty_case_header_metadata()
+    participant_metadata = participant_metadata or empty_participant_metadata()
+    return {
+        "metadata": {
+            "case_number": case_num,
+            "case_title": case.get("title", ""),
+            "filing_date": filing_date,
+            "case_url": link,
+            "result_index": case.get("result_index"),
+            "source": {
+                "search_result_title": case.get("title", ""),
+                "search_result_link": link,
+                "source_filing_date": filing_date,
+            },
+            "case_header": header_metadata,
+            "parties": participant_metadata["parties"],
+            "attorneys": participant_metadata["attorneys"],
+            "attorney_party_link": participant_metadata["attorney_party_link"],
+            "plaintiff_has_counsel": participant_metadata["plaintiff_has_counsel"],
+            "defendant_has_counsel": participant_metadata["defendant_has_counsel"],
+            "roa_source": roa_source,
+            "status": "restricted",
+            "reason": reason,
+            "timing": {
+                "scrape_started_at": scrape_started_at,
+                "scrape_finished_at": utc_now_iso(),
+                "scrape_elapsed_seconds": round(
+                    time.perf_counter() - scrape_started_perf, 3
+                ),
+                "download_elapsed_seconds": 0.0,
+                "downloaded_bytes": 0,
+                "downloaded_docs": 0,
+                "cached_docs": 0,
+                "download_attempts": 0,
+            },
+        }
+    }
+
+
 def classify_playwright_error(exc):
     error_text = str(exc)
     if "Execution context was destroyed" in error_text:
@@ -2112,6 +2168,23 @@ async def scrape_case(context, case, filing_date):
         except Exception:
             pass
 
+    if is_restricted_case_number(case_num):
+        with open(json_path, "w") as f:
+            json.dump(
+                build_restricted_case_record(
+                    case,
+                    case_num,
+                    filing_date,
+                    link,
+                    scrape_started_at,
+                    scrape_started_perf,
+                    roa_source="case_number_prefix",
+                ),
+                f,
+                indent=2,
+            )
+        return
+
     try:
         restricted = False
         roa_source = "browser_only"
@@ -2143,43 +2216,22 @@ async def scrape_case(context, case, filing_date):
             )
 
         if restricted:
-            output_data = {
-                "metadata": {
-                    "case_number": case_num,
-                    "case_title": case.get("title", ""),
-                    "filing_date": filing_date,
-                    "case_url": link,
-                    "result_index": case.get("result_index"),
-                    "source": {
-                        "search_result_title": case.get("title", ""),
-                        "search_result_link": link,
-                        "source_filing_date": filing_date,
-                    },
-                    "case_header": header_metadata,
-                    "parties": participant_metadata["parties"],
-                    "attorneys": participant_metadata["attorneys"],
-                    "attorney_party_link": participant_metadata["attorney_party_link"],
-                    "plaintiff_has_counsel": participant_metadata["plaintiff_has_counsel"],
-                    "defendant_has_counsel": participant_metadata["defendant_has_counsel"],
-                    "roa_source": roa_source,
-                    "status": "restricted",
-                    "reason": "CCP 1161.2",
-                    "timing": {
-                        "scrape_started_at": scrape_started_at,
-                        "scrape_finished_at": utc_now_iso(),
-                        "scrape_elapsed_seconds": round(
-                            time.perf_counter() - scrape_started_perf, 3
-                        ),
-                        "download_elapsed_seconds": 0.0,
-                        "downloaded_bytes": 0,
-                        "downloaded_docs": 0,
-                        "cached_docs": 0,
-                        "download_attempts": 0,
-                    },
-                }
-            }
             with open(json_path, "w") as f:
-                json.dump(output_data, f, indent=2)
+                json.dump(
+                    build_restricted_case_record(
+                        case,
+                        case_num,
+                        filing_date,
+                        link,
+                        scrape_started_at,
+                        scrape_started_perf,
+                        header_metadata=header_metadata,
+                        participant_metadata=participant_metadata,
+                        roa_source=roa_source,
+                    ),
+                    f,
+                    indent=2,
+                )
             return
 
         total_links, selected_links = annotate_actions_for_download(actions)
