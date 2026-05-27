@@ -147,7 +147,8 @@ def main():
         time.sleep(1)
 
     print(f"\nAll {len(processes)} Camoufox workers launched.")
-    print("Please solve the Cloudflare challenge in EACH Camoufox window that opens.")
+    print("Each worker will try to clear Cloudflare automatically in its Camoufox window.")
+    print("If a challenge asks for manual input, solve it in that worker's window.")
     print("Waiting for workers to complete...")
 
     try:

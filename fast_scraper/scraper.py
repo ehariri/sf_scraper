@@ -516,19 +516,294 @@ async def wait_for_session(port, max_wait_seconds=None):
                 browser = await p.chromium.connect_over_cdp(cdp)
                 for ctx in browser.contexts:
                     for pg in ctx.pages:
-                        if "SessionID=" in pg.url:
-                            url_parts = urlparse(pg.url)
-                            query = parse_qs(url_parts.query)
-                            session_id = query.get("SessionID", [None])[0]
-                            if session_id:
-                                print(
-                                    f"\nCloudflare passed! SessionID: {session_id}"
-                                )
-                                return session_id
+                        session_id = _session_id_from_url(pg.url)
+                        if session_id:
+                            print(f"\nCloudflare passed! SessionID: {session_id}")
+                            return session_id
         except Exception as e:
             print(f"Waiting for browser... ({e})")
 
         await asyncio.sleep(3)
+
+
+async def _click_visible(scope, selectors, *, timeout_ms=1500, force=False):
+    for selector in selectors:
+        try:
+            locator = scope.locator(selector).first
+            if await locator.count() == 0:
+                continue
+            if not await locator.is_visible(timeout=timeout_ms):
+                continue
+            await locator.click(timeout=timeout_ms, force=force)
+            return selector
+        except Exception:
+            continue
+    return None
+
+
+async def _click_turnstile_checkbox(page):
+    iframe_selectors = [
+        "iframe[src*='turnstile']",
+        "iframe[src*='challenges.cloudflare.com']",
+        "iframe[src*='cloudflare']",
+        "iframe[title*='Widget']",
+        "iframe[title*='widget']",
+        "iframe[title*='challenge']",
+        "iframe[title*='Challenge']",
+        "iframe[allow*='cross-origin-isolated']",
+    ]
+
+    for selector in iframe_selectors:
+        try:
+            iframe = page.locator(selector).first
+            if await iframe.count() == 0:
+                continue
+            frame = page.frame_locator(selector)
+            for inner in [
+                "input[type='checkbox']",
+                "label.ctp-checkbox-label",
+                "label[for*='checkbox']",
+                "#challenge-stage",
+                "[role='checkbox']",
+            ]:
+                try:
+                    el = frame.locator(inner).first
+                    if await el.count() and await el.is_visible(timeout=1000):
+                        await el.click(timeout=1500)
+                        return f"frame:{selector} > {inner}"
+                except Exception:
+                    continue
+        except Exception:
+            continue
+
+    for selector in iframe_selectors:
+        try:
+            iframe = page.locator(selector).first
+            if await iframe.count() == 0:
+                continue
+            box = await iframe.bounding_box()
+            if not box:
+                continue
+            cy = box["y"] + box["height"] / 2
+            for offset in (28, 38, 50, 64, 80):
+                cx = box["x"] + min(offset, max(5, box["width"] - 5))
+                await page.mouse.move(cx, cy, steps=4)
+                await page.mouse.click(cx, cy, delay=75)
+                await asyncio.sleep(0.25)
+                if await _turnstile_response_present(page):
+                    return f"iframe-checkbox-offset:{selector}+{offset}"
+            return f"iframe-checkbox-offset:{selector}"
+        except Exception:
+            continue
+
+    try:
+        iframe_count = await page.locator("iframe").count()
+    except Exception:
+        iframe_count = 0
+    for i in range(iframe_count):
+        try:
+            iframe = page.locator("iframe").nth(i)
+            if not await iframe.is_visible(timeout=500):
+                continue
+            box = await iframe.bounding_box()
+            if not box or box["width"] < 120 or box["height"] < 40:
+                continue
+            cy = box["y"] + box["height"] / 2
+            for offset in (28, 38, 50, 64, 80):
+                cx = box["x"] + min(offset, max(5, box["width"] - 5))
+                await page.mouse.move(cx, cy, steps=4)
+                await page.mouse.click(cx, cy, delay=75)
+                await asyncio.sleep(0.25)
+                if await _turnstile_response_present(page):
+                    return f"iframe-scan:{i}+{offset}"
+            return f"iframe-scan:{i}"
+        except Exception:
+            continue
+
+    widget_selectors = [
+        ".g-recaptcha",
+        "[class*='turnstile']",
+        "[id^='cf-chl-widget']",
+        "#cf-chl-widget",
+    ]
+    for selector in widget_selectors:
+        try:
+            widget = page.locator(selector).first
+            if await widget.count() == 0:
+                continue
+            if not await widget.is_visible(timeout=500):
+                continue
+            box = await widget.bounding_box()
+            if not box:
+                continue
+            cy = box["y"] + box["height"] / 2
+            for offset in (20, 28, 38, 50, 64, 80):
+                cx = box["x"] + min(offset, max(5, box["width"] - 5))
+                await page.mouse.move(cx, cy, steps=4)
+                await page.mouse.click(cx, cy, delay=75)
+                await asyncio.sleep(0.35)
+                if await _turnstile_response_present(page):
+                    return f"widget-offset:{selector}+{offset}"
+            return f"widget-offset:{selector}"
+        except Exception:
+            continue
+
+    selector_hit = await _click_visible(
+        page,
+        [
+            "#challenge-stage",
+            "#cf-turnstile-wrapper",
+            ".cf-turnstile",
+            ".g-recaptcha",
+        ],
+        force=True,
+    )
+    if selector_hit:
+        return selector_hit
+
+    for scope in [page, *page.frames]:
+        selector_hit = await _click_visible(
+            scope,
+            [
+                "input[type='checkbox']",
+                "[role='checkbox']",
+                "label.ctp-checkbox-label",
+                "label[for*='checkbox']",
+                "button[type='button']",
+            ],
+            force=True,
+        )
+        if selector_hit:
+            return selector_hit
+        try:
+            text_locator = scope.get_by_text(
+                re.compile(r"verify you are human|click to verify", re.I)
+            ).first
+            if await text_locator.count() and await text_locator.is_visible(timeout=1500):
+                await text_locator.click(timeout=1500, force=True)
+                return "text:verify-you-are-human"
+        except Exception:
+            continue
+
+    return None
+
+
+async def _submit_challenge_page(page):
+    for scope in [page, *page.frames]:
+        selector_hit = await _click_visible(
+            scope,
+            [
+                "#btnSearch",
+                "[name='btnSearch']",
+                "#btnContinue",
+                "[name='btnContinue']",
+                "button[type='submit']",
+                "input[type='submit']",
+                "a.btn-continue",
+                "button",
+            ],
+            timeout_ms=2000,
+            force=True,
+        )
+        if selector_hit:
+            return selector_hit
+        try:
+            button = scope.get_by_role(
+                "button", name=re.compile(r"submit|continue|search|view|download", re.I)
+            ).first
+            if await button.count() and await button.is_visible(timeout=2000):
+                await button.click(timeout=2000, force=True)
+                return "role:button"
+        except Exception:
+            pass
+        try:
+            link = scope.get_by_role(
+                "link", name=re.compile(r"submit|continue|search|view|download", re.I)
+            ).first
+            if await link.count() and await link.is_visible(timeout=2000):
+                await link.click(timeout=2000, force=True)
+                return "role:link"
+        except Exception:
+            pass
+    return None
+
+
+async def _turnstile_response_present(page):
+    try:
+        return await page.evaluate(
+            """() => {
+                const responses = [
+                    document.querySelector('[name="cf-turnstile-response"]'),
+                    ...document.querySelectorAll(
+                        "input[type='hidden'][id^='cf-chl-widget'][id$='_response'], " +
+                        "input[type='hidden'][id^='cf-chl-widget'][id$='_g_response']"
+                    ),
+                ];
+                return responses.some(
+                    response => response && response.value && response.value.length > 10
+                );
+            }"""
+        )
+    except Exception:
+        return False
+
+
+async def _page_content_or_blank(page):
+    if page.is_closed():
+        return ""
+    try:
+        return await page.content()
+    except Exception:
+        return ""
+
+
+def _session_id_from_url(url):
+    if "SessionID=" not in url:
+        return None
+    url_parts = urlparse(url)
+    query_session_id = parse_qs(url_parts.query).get("SessionID", [None])[0]
+    if query_session_id:
+        return query_session_id
+    match = re.search(r"SessionID=([A-Za-z0-9]+)", url)
+    return match.group(1) if match else None
+
+
+async def _try_clear_cloudflare(page, *, submitted_at):
+    title = await page.title()
+    content = await _page_content_or_blank(page)
+    content_lower = content.lower()
+    is_challenged = (
+        "Turnstile" in title
+        or "Just a moment" in title
+        or "Cloudflare" in title
+        or "challenge-platform" in content
+        or "turnstile" in content_lower
+        or "verify you are human" in content_lower
+    )
+    if not is_challenged:
+        return submitted_at, False
+
+    if not await _turnstile_response_present(page):
+        click_res = await _click_turnstile_checkbox(page)
+        if click_res:
+            print(f">>> Turnstile challenge detected. Clicked {click_res}")
+        else:
+            print(">>> Turnstile challenge detected. Waiting for solve path")
+        return submitted_at, True
+
+    if submitted_at == 0:
+        print("Turnstile solved! Finding submit button...")
+        await asyncio.sleep(0.8)
+        click_res = await _submit_challenge_page(page)
+        if click_res:
+            print(f">>> Submission triggered via {click_res}.")
+            submitted_at = time.monotonic()
+    elif time.monotonic() - submitted_at > 15:
+        print(">>> Challenge navigation hang detected. Reloading page...")
+        await page.reload(wait_until="domcontentloaded")
+        submitted_at = 0
+
+    return submitted_at, True
 
 
 async def wait_for_session_in_context(context, page, max_wait_seconds=None):
@@ -540,9 +815,12 @@ async def wait_for_session_in_context(context, page, max_wait_seconds=None):
     except Exception as e:
         print(f"Navigation error: {e}")
 
-    print(">>> Please solve the Cloudflare challenge in the Camoufox window. <<<")
+    print("Attempting to clear Cloudflare in the Camoufox window...")
+    print(">>> If the challenge asks for manual input, solve it in the Camoufox window. <<<")
     await asyncio.sleep(1)
     started = time.monotonic()
+    submitted_at_by_page = {}
+    last_status_at = 0
 
     while True:
         if (
@@ -553,14 +831,22 @@ async def wait_for_session_in_context(context, page, max_wait_seconds=None):
                 f"Timed out waiting {max_wait_seconds}s for Cloudflare solve"
             )
         for pg in context.pages:
-            if "SessionID=" in pg.url:
-                url_parts = urlparse(pg.url)
-                query = parse_qs(url_parts.query)
-                session_id = query.get("SessionID", [None])[0]
-                if session_id:
-                    print(f"\nCloudflare passed! SessionID: {session_id}")
-                    return session_id, pg
-        await asyncio.sleep(3)
+            session_id = _session_id_from_url(pg.url)
+            if session_id:
+                print(f"\nCloudflare passed! SessionID: {session_id}")
+                return session_id, pg
+            submitted_at = submitted_at_by_page.get(pg, 0)
+            submitted_at, challenged = await _try_clear_cloudflare(
+                pg, submitted_at=submitted_at
+            )
+            submitted_at_by_page[pg] = submitted_at
+            if challenged:
+                break
+        now = time.monotonic()
+        if now - last_status_at >= 5:
+            print("  ... waiting for SF session")
+            last_status_at = now
+        await asyncio.sleep(0.75)
 
 
 async def get_browser_page(port):
