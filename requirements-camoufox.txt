@@ -1,0 +1,8 @@
+-r requirements.txt
+
+# screeninfo pulls PyObjC on macOS. PyObjC 12 is yanked for Python 3.9 and
+# fails to build with current Xcode warnings-as-errors, so keep Camoufox on the
+# latest PyObjC line that still ships Python 3.9 wheels.
+pyobjc-core<12; sys_platform == "darwin"
+pyobjc-framework-Cocoa<12; sys_platform == "darwin"
+camoufox==0.4.11

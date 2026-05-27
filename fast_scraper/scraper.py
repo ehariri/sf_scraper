@@ -44,10 +44,18 @@ from playwright.async_api import TimeoutError as PlaywrightTimeoutError
 from playwright.async_api import async_playwright
 from tqdm.asyncio import tqdm
 
+try:
+    from camoufox.async_api import AsyncCamoufox
+    CAMOUFOX_AVAILABLE = True
+except ImportError:
+    AsyncCamoufox = None
+    CAMOUFOX_AVAILABLE = False
+
 # --- Configuration ---
 BASE_URL = "https://webapps.sftc.org/ci"
 TARGET_URL = f"{BASE_URL}/CaseInfo.dll"
 CHROME_PROFILE_PREFIX = ".sf_manual_profile"
+BROWSER_BACKEND = "chrome"
 SEARCH_RESULTS_TIMEOUT_MS = 30000
 TABLE_IDLE_TIMEOUT_MS = 30000
 CASE_READY_POLL_ATTEMPTS = 20
@@ -268,6 +276,20 @@ def move_chrome_windows(bounds):
     end tell
     """
     subprocess.run(["osascript"], input=script, text=True, capture_output=True)
+
+
+async def place_browser_page(page):
+    x, y, width, height = preferred_chrome_window_bounds()
+    try:
+        await page.evaluate(
+            """bounds => {
+                window.moveTo(bounds.x, bounds.y);
+                window.resizeTo(bounds.width, bounds.height);
+            }""",
+            {"x": x, "y": y, "width": width, "height": height},
+        )
+    except Exception:
+        pass
 
 
 # --- Chrome Management ---
@@ -509,6 +531,38 @@ async def wait_for_session(port, max_wait_seconds=None):
         await asyncio.sleep(3)
 
 
+async def wait_for_session_in_context(context, page, max_wait_seconds=None):
+    """Navigate a live Playwright context until the court issues a SessionID."""
+    try:
+        await page.goto(TARGET_URL, wait_until="domcontentloaded")
+        await place_browser_page(page)
+        print("Navigated to court site. Waiting for Cloudflare to verify...")
+    except Exception as e:
+        print(f"Navigation error: {e}")
+
+    print(">>> Please solve the Cloudflare challenge in the Camoufox window. <<<")
+    await asyncio.sleep(1)
+    started = time.monotonic()
+
+    while True:
+        if (
+            max_wait_seconds is not None
+            and (time.monotonic() - started) >= max_wait_seconds
+        ):
+            raise CloudflareSolveTimeoutError(
+                f"Timed out waiting {max_wait_seconds}s for Cloudflare solve"
+            )
+        for pg in context.pages:
+            if "SessionID=" in pg.url:
+                url_parts = urlparse(pg.url)
+                query = parse_qs(url_parts.query)
+                session_id = query.get("SessionID", [None])[0]
+                if session_id:
+                    print(f"\nCloudflare passed! SessionID: {session_id}")
+                    return session_id, pg
+        await asyncio.sleep(3)
+
+
 async def get_browser_page(port):
     """
     Connect to Chrome and return the page with SessionID.
@@ -712,9 +766,14 @@ async def refresh_session(page, port, session_id_hint=None, max_wait_seconds=90)
     except Exception:
         pass
 
-    session_id = await wait_for_session(port, max_wait_seconds=max_wait_seconds)
+    if BROWSER_BACKEND == "camoufox":
+        session_id, active_page = await wait_for_session_in_context(
+            context, page, max_wait_seconds=max_wait_seconds
+        )
+    else:
+        session_id = await wait_for_session(port, max_wait_seconds=max_wait_seconds)
+        active_page = await get_session_page(context, session_id)
     session_url = f"{TARGET_URL}?&SessionID={session_id}"
-    active_page = await get_session_page(context, session_id)
 
     last_error = None
     for attempt in range(3):
@@ -1768,7 +1827,7 @@ async def close_stale_scraper_tabs(context, keep_pages=None):
         except Exception:
             pass
     if closed:
-        print(f"Closed {closed} stale Chrome tabs.")
+        print(f"Closed {closed} stale browser tabs.")
 
 
 def action_from_roa_row(row):
@@ -2551,6 +2610,7 @@ async def main():
     global LOCAL_DATA_ROOT
     global USE_REQUEST_ROA
     global PDF_FILTER_PROFILE
+    global BROWSER_BACKEND
 
     parser = argparse.ArgumentParser(
         description="Fast SF Court Scraper (concurrent tabs)"
@@ -2566,6 +2626,12 @@ async def main():
     parser.add_argument(
         "--port", type=int, default=9222,
         help="Chrome remote debugging port",
+    )
+    parser.add_argument(
+        "--browser",
+        choices=("chrome", "camoufox"),
+        default=BROWSER_BACKEND,
+        help="Browser backend. Chrome uses CDP; Camoufox uses a native Playwright context.",
     )
     parser.add_argument(
         "--reuse-existing-browser",
@@ -2656,6 +2722,7 @@ async def main():
     LOCAL_DATA_ROOT = args.data_root
     USE_REQUEST_ROA = not args.disable_request_roa
     PDF_FILTER_PROFILE = args.pdf_filter_profile
+    BROWSER_BACKEND = args.browser
 
     DOWNLOAD_SEMAPHORE = asyncio.Semaphore(args.max_concurrent_downloads)
     REQUEST_BOOTSTRAP_LOCK = asyncio.Lock()
@@ -2666,6 +2733,7 @@ async def main():
     print("Writing PDFs to disk during scrape: True")
     print(f"PDF download profile: {PDF_FILTER_PROFILE}")
     print(f"Request-based ROA: {USE_REQUEST_ROA}")
+    print(f"Browser backend: {BROWSER_BACKEND}")
 
     # Start cross-scraper heartbeat so the multi-county monitor can show
     # this worker as ACTIVE while running.
@@ -2679,6 +2747,7 @@ async def main():
         start_date=args.start_date, end_date=args.end_date,
         dates_to_scrape=len(dates),
         port=args.port,
+        browser_backend=BROWSER_BACKEND,
         pdf_filter_profile=PDF_FILTER_PROFILE,
         max_concurrent_cases=args.max_concurrent_cases,
         max_concurrent_downloads=args.max_concurrent_downloads,
@@ -2699,28 +2768,50 @@ async def main():
     p = None
     browser = None
     page = None
+    camoufox_manager = None
     chrome_started = False
     try:
-        # Step 1: Launch Chrome and wait for Cloudflare
-        launch_chrome(
-            args.port,
-            manage_windows=args.manage_chrome_windows,
-            reuse_existing=args.reuse_existing_browser,
-        )
-        chrome_started = True
-        session_id = await wait_for_session(args.port)
-
-        # Step 2: Connect Playwright (persistent connection for the session)
-        p, browser, page = await get_browser_page(args.port)
-        context = page.context
-        await close_stale_scraper_tabs(context, keep_pages=[page])
-
-        # Step 3: Leave Chrome alone by default so unrelated apps/windows are not affected.
-        if args.minimize_chrome_after_session:
-            minimize_chrome()
-            print("Chrome minimized. Tabs will run in background.")
+        if BROWSER_BACKEND == "camoufox":
+            if not CAMOUFOX_AVAILABLE:
+                raise RuntimeError(
+                    "Camoufox is not installed. Install with: pip install -r requirements-camoufox.txt "
+                    "and run: python -m camoufox fetch"
+                )
+            _, _, width, height = preferred_chrome_window_bounds()
+            camoufox_manager = AsyncCamoufox(
+                headless=False,
+                os="macos",
+                humanize=True,
+                window=(width, height),
+            )
+            browser = await camoufox_manager.__aenter__()
+            context = await browser.new_context(accept_downloads=True)
+            page = await context.new_page()
+            await place_browser_page(page)
+            session_id, page = await wait_for_session_in_context(context, page)
+            await close_stale_scraper_tabs(context, keep_pages=[page])
+            print("Camoufox session ready. Tabs will run in background.")
         else:
-            print("Chrome window management disabled. Leaving Chrome windows unchanged.")
+            # Step 1: Launch Chrome and wait for Cloudflare
+            launch_chrome(
+                args.port,
+                manage_windows=args.manage_chrome_windows,
+                reuse_existing=args.reuse_existing_browser,
+            )
+            chrome_started = True
+            session_id = await wait_for_session(args.port)
+
+            # Step 2: Connect Playwright (persistent connection for the session)
+            p, browser, page = await get_browser_page(args.port)
+            context = page.context
+            await close_stale_scraper_tabs(context, keep_pages=[page])
+
+            # Step 3: Leave Chrome alone by default so unrelated apps/windows are not affected.
+            if args.minimize_chrome_after_session:
+                minimize_chrome()
+                print("Chrome minimized. Tabs will run in background.")
+            else:
+                print("Chrome window management disabled. Leaving Chrome windows unchanged.")
 
         # Step 4: Process each date
         for date_str in dates:
@@ -2998,7 +3089,9 @@ async def main():
                 state = None
             if state not in {"exited", "crashed"}:
                 HEARTBEAT.close(status="crashed", finished_reason="aborted")
-        if browser is not None:
+        if camoufox_manager is not None:
+            await camoufox_manager.__aexit__(None, None, None)
+        elif browser is not None:
             await browser.close()
         if p is not None:
             await p.stop()

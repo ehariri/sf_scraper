@@ -35,6 +35,14 @@ python -m playwright install chromium
 Google Chrome must also be installed on the system — the scraper drives a
 real Chrome instance via a remote debug port.
 
+For the Camoufox backend, fetch the Camoufox browser bundle after installing
+the optional Camoufox requirements:
+
+```bash
+pip install -r requirements-camoufox.txt
+python -m camoufox fetch
+```
+
 ## Usage
 
 ### Multi-Process Scraping (Recommended)
@@ -57,6 +65,18 @@ real Chrome instance via a remote debug port.
     *   Multiple Chrome windows will open (one per worker).
     *   **You must manually solve the Cloudflare challenge in EACH window.**
     *   Once solved, the scraper proceeds automatically.
+
+### Camoufox Scraping
+
+Use the separate Camoufox launcher when you want the native Camoufox backend
+instead of Chrome/CDP:
+
+```bash
+python launcher_camoufox.py --start-date 2024-01-02 --end-date 2024-01-31 --num-workers 1
+```
+
+This preserves the same output layout and scraper internals, but each worker
+opens a Camoufox window rather than a Chrome remote-debugging instance.
 
 ### Failed-Only Cleanup
 
