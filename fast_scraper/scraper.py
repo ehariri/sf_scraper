@@ -568,8 +568,8 @@ async def _click_turnstile_checkbox(page):
             ]:
                 try:
                     el = frame.locator(inner).first
-                    if await el.count() and await el.is_visible(timeout=1000):
-                        await el.click(timeout=1500)
+                    if await el.count() and await el.is_visible(timeout=500):
+                        await el.click(timeout=700)
                         return f"frame:{selector} > {inner}"
                 except Exception:
                     continue
@@ -587,9 +587,9 @@ async def _click_turnstile_checkbox(page):
             cy = box["y"] + box["height"] / 2
             for offset in (28, 38, 50, 64, 80):
                 cx = box["x"] + min(offset, max(5, box["width"] - 5))
-                await page.mouse.move(cx, cy, steps=4)
-                await page.mouse.click(cx, cy, delay=75)
-                await asyncio.sleep(0.25)
+                await page.mouse.move(cx, cy, steps=2)
+                await page.mouse.click(cx, cy, delay=25)
+                await asyncio.sleep(0.08)
                 if await _turnstile_response_present(page):
                     return f"iframe-checkbox-offset:{selector}+{offset}"
             return f"iframe-checkbox-offset:{selector}"
@@ -603,7 +603,7 @@ async def _click_turnstile_checkbox(page):
     for i in range(iframe_count):
         try:
             iframe = page.locator("iframe").nth(i)
-            if not await iframe.is_visible(timeout=500):
+            if not await iframe.is_visible(timeout=300):
                 continue
             box = await iframe.bounding_box()
             if not box or box["width"] < 120 or box["height"] < 40:
@@ -611,9 +611,9 @@ async def _click_turnstile_checkbox(page):
             cy = box["y"] + box["height"] / 2
             for offset in (28, 38, 50, 64, 80):
                 cx = box["x"] + min(offset, max(5, box["width"] - 5))
-                await page.mouse.move(cx, cy, steps=4)
-                await page.mouse.click(cx, cy, delay=75)
-                await asyncio.sleep(0.25)
+                await page.mouse.move(cx, cy, steps=2)
+                await page.mouse.click(cx, cy, delay=25)
+                await asyncio.sleep(0.08)
                 if await _turnstile_response_present(page):
                     return f"iframe-scan:{i}+{offset}"
             return f"iframe-scan:{i}"
@@ -631,7 +631,7 @@ async def _click_turnstile_checkbox(page):
             widget = page.locator(selector).first
             if await widget.count() == 0:
                 continue
-            if not await widget.is_visible(timeout=500):
+            if not await widget.is_visible(timeout=300):
                 continue
             box = await widget.bounding_box()
             if not box:
@@ -639,9 +639,9 @@ async def _click_turnstile_checkbox(page):
             cy = box["y"] + box["height"] / 2
             for offset in (20, 28, 38, 50, 64, 80):
                 cx = box["x"] + min(offset, max(5, box["width"] - 5))
-                await page.mouse.move(cx, cy, steps=4)
-                await page.mouse.click(cx, cy, delay=75)
-                await asyncio.sleep(0.35)
+                await page.mouse.move(cx, cy, steps=2)
+                await page.mouse.click(cx, cy, delay=25)
+                await asyncio.sleep(0.12)
                 if await _turnstile_response_present(page):
                     return f"widget-offset:{selector}+{offset}"
             return f"widget-offset:{selector}"
@@ -679,8 +679,8 @@ async def _click_turnstile_checkbox(page):
             text_locator = scope.get_by_text(
                 re.compile(r"verify you are human|click to verify", re.I)
             ).first
-            if await text_locator.count() and await text_locator.is_visible(timeout=1500):
-                await text_locator.click(timeout=1500, force=True)
+            if await text_locator.count() and await text_locator.is_visible(timeout=700):
+                await text_locator.click(timeout=700, force=True)
                 return "text:verify-you-are-human"
         except Exception:
             continue
@@ -702,7 +702,7 @@ async def _submit_challenge_page(page):
                 "a.btn-continue",
                 "button",
             ],
-            timeout_ms=2000,
+            timeout_ms=800,
             force=True,
         )
         if selector_hit:
@@ -711,8 +711,8 @@ async def _submit_challenge_page(page):
             button = scope.get_by_role(
                 "button", name=re.compile(r"submit|continue|search|view|download", re.I)
             ).first
-            if await button.count() and await button.is_visible(timeout=2000):
-                await button.click(timeout=2000, force=True)
+            if await button.count() and await button.is_visible(timeout=800):
+                await button.click(timeout=800, force=True)
                 return "role:button"
         except Exception:
             pass
@@ -720,8 +720,8 @@ async def _submit_challenge_page(page):
             link = scope.get_by_role(
                 "link", name=re.compile(r"submit|continue|search|view|download", re.I)
             ).first
-            if await link.count() and await link.is_visible(timeout=2000):
-                await link.click(timeout=2000, force=True)
+            if await link.count() and await link.is_visible(timeout=800):
+                await link.click(timeout=800, force=True)
                 return "role:link"
         except Exception:
             pass
@@ -793,7 +793,7 @@ async def _try_clear_cloudflare(page, *, submitted_at):
 
     if submitted_at == 0:
         print("Turnstile solved! Finding submit button...")
-        await asyncio.sleep(0.8)
+        await asyncio.sleep(0.2)
         click_res = await _submit_challenge_page(page)
         if click_res:
             print(f">>> Submission triggered via {click_res}.")
@@ -846,7 +846,7 @@ async def wait_for_session_in_context(context, page, max_wait_seconds=None):
         if now - last_status_at >= 5:
             print("  ... waiting for SF session")
             last_status_at = now
-        await asyncio.sleep(0.75)
+        await asyncio.sleep(0.25)
 
 
 async def get_browser_page(port):
