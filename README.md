@@ -6,10 +6,10 @@ data, and downloads linked docket PDFs to disk.
 
 ## Key Features
 
-*   **Cloudflare Handling**: Uses a persistent Chrome profile to bypass Cloudflare checks.
+*   **Autonomous Cloudflare Handling (Camoufox)**: The Camoufox backend clears the Cloudflare/Turnstile gate on its own — no manual clicking. It self-recovers from escalated challenges and per-request gates on the current IP (no VPN/IP rotation needed). See "How the automated gate pass works" below.
 *   **Robust Scraping**: Handles page load timeouts, browser freezes, and restricted cases (e.g., CCP 1161.2).
 *   **Parallel Downloads**: Downloads documents concurrently to speed up the process.
-*   **Multi-Process Support**: Can run multiple Chrome instances in parallel to scrape different date ranges simultaneously.
+*   **Multi-Process Support**: Runs multiple browser instances in parallel to scrape different date ranges simultaneously.
 *   **Resumable**: Tracks progress and can resume from where it left off (including specific cases).
 *   **Local storage**: All scraped data stays on disk; no remote uploads.
 
@@ -25,58 +25,93 @@ data, and downloads linked docket PDFs to disk.
 
 ## Setup
 
+The Camoufox backend is the current, recommended path. Set up the venv and
+fetch the Camoufox browser bundle:
+
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-python -m playwright install chromium
-```
-
-Google Chrome must also be installed on the system — the scraper drives a
-real Chrome instance via a remote debug port.
-
-For the Camoufox backend, fetch the Camoufox browser bundle after installing
-the optional Camoufox requirements:
-
-```bash
 pip install -r requirements-camoufox.txt
 python -m camoufox fetch
 ```
 
+Camoufox is self-contained — no system Chrome install and no Playwright
+Chromium download are needed for the recommended workflow.
+
+> **Legacy Chrome/CDP backend (outdated).** The original path drove a real
+> Google Chrome via a remote debug port (`python -m playwright install chromium`,
+> plus a system Chrome install). It requires a **manual** Cloudflare solve in
+> every window and is subject to per-request gating that the Camoufox backend now
+> handles automatically. It is kept only for fallback; prefer Camoufox.
+
 ## Usage
 
-### Multi-Process Scraping (Recommended)
+### Multi-Process Scraping with Camoufox (Recommended)
 
 1.  **Configure**: Pass arguments to `launcher.py`:
+    *   `--browser camoufox`: Use the autonomous Camoufox backend. This is now the default, so you can omit it; pass `--browser chrome` to fall back to the legacy backend.
     *   `--start-date`: Start date (YYYY-MM-DD)
     *   `--end-date`: End date (YYYY-MM-DD)
-    *   `--num-workers`: Number of parallel Chrome instances (default: 3)
-    *   `--base-port`: Base Chrome debug port for worker windows (default: 9222)
+    *   `--num-workers`: Number of parallel browser instances (default: 3)
     *   `--data-root`: Local output root for this machine or run
     *   `--max-concurrent-cases`: Max concurrent case tabs per worker (default: 5)
     *   `--max-concurrent-downloads`: Max concurrent document downloads per worker (default: 10)
 
-2.  **Run**:
+2.  **Run** (Camoufox is the default backend):
     ```bash
     python launcher.py --start-date 2024-01-02 --end-date 2024-01-31 --num-workers 3
     ```
 
-3.  **Solve Cloudflare**:
-    *   Multiple Chrome windows will open (one per worker).
-    *   **You must manually solve the Cloudflare challenge in EACH window.**
-    *   Once solved, the scraper proceeds automatically.
+3.  **No manual step**: Camoufox windows open and clear the Cloudflare gate on
+    their own. Only step in if a window explicitly asks for manual input — the
+    normal Turnstile challenge is auto-cleared.
 
-### Camoufox Scraping
+`launcher_camoufox.py` is a thin alias for the same backend; the main
+`launcher.py --browser camoufox` is the preferred entry point.
 
-Use the separate Camoufox launcher when you want the native Camoufox backend
-instead of Chrome/CDP:
+### How the automated gate pass works
+
+The Camoufox backend clears the SF portal's Cloudflare gate autonomously on the
+current IP — no manual solve and no VPN/IP rotation. Three mechanisms cooperate
+(all in `fast_scraper/scraper.py`):
+
+*   **Fresh-fingerprint relaunch.** An escalated challenge that an in-place
+    reload can't clear is defeated by relaunching a fresh Camoufox window, which
+    draws a new browser fingerprint. This is bounded (`asyncio.wait_for` + a
+    capped number of attempts) so a stuck gate never hangs the run.
+*   **Rocket Loader bypass for case pages.** Per-case register pages ship every
+    script deferred (Cloudflare Rocket Loader), so a *navigated* tab never
+    renders and would wedge. Instead the scraper reads case metadata and the
+    register of actions via an in-context `fetch()` against the site's datasnap
+    REST layer + skeleton HTML (`fetch_case_metadata_via_request`), with no
+    navigation — decoupling capture from the render trap.
+*   **Deadlock-proof session recovery.** All in-session `page.evaluate` calls and
+    the session-refresh solve are wrapped in hard timeouts, so a Cloudflare-
+    destroyed context turns into a retryable error instead of hanging a worker
+    forever. A challenged metadata fetch routes into an autonomous
+    re-clear (a fresh light search-page solve) and the case is retried.
+
+Optional: `--rotate-on-gate` makes a worker exit with an `IP_RESTRICTED` marker
+on sustained per-day gating so an external VPN-rotating wrapper (`rotate.py`) can
+switch IP and resume. This is a fallback lever and is **not** required — the
+autonomous gate pass above is the primary mechanism and clears the gate on a
+single, non-rotated IP.
+
+### Legacy Chrome/CDP backend (Outdated)
+
+> **Outdated — prefer the Camoufox workflow above.** The original backend drives
+> a real Google Chrome over the CDP remote-debugging protocol (opt in with
+> `--browser chrome`). It opens one Chrome window per worker and **you must
+> manually solve the Cloudflare challenge in EACH window**; it is also
+> vulnerable to the per-request gating that Camoufox now handles automatically.
+> Kept only for fallback.
 
 ```bash
-python launcher_camoufox.py --start-date 2024-01-02 --end-date 2024-01-31 --num-workers 1
+# Legacy manual-solve path — not recommended
+python launcher.py --browser chrome \
+  --start-date 2024-01-02 --end-date 2024-01-31 --num-workers 3
 ```
-
-This preserves the same output layout and scraper internals, but each worker
-opens a Camoufox window rather than a Chrome remote-debugging instance.
 
 ### Failed-Only Cleanup
 
@@ -144,4 +179,4 @@ status legend and config format.
 *   **Restricted Cases**: Cases marked "Per CCP 1161.2" or "Case Is Not Available For Viewing" are skipped, and their status is recorded.
 *   **Rate Limiting**: The worker uses separate semaphores for concurrent case tabs and document downloads.
 *   **Browser Stuck**: If a browser hangs, the script attempts to kill and restart the process automatically.
-*   **Per-worker profiles**: Each launcher worker uses its own Chrome profile, which avoids profile lock contention when multiple browsers run in parallel.
+*   **Per-worker isolation**: Each launcher worker runs its own browser instance (a fresh Camoufox context, or a separate Chrome profile on the legacy backend), which avoids lock contention when multiple browsers run in parallel.

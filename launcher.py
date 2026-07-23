@@ -82,7 +82,7 @@ def main():
     parser.add_argument(
         "--browser",
         choices=("chrome", "camoufox"),
-        default="chrome",
+        default="camoufox",
         help="Browser backend passed to each worker. Camoufox auto-clears the "
              "Cloudflare/Turnstile gate (no manual click); chrome relies on the "
              "passive CDP-disconnect pass and otherwise needs a human.",

@@ -55,7 +55,7 @@ except ImportError:
 BASE_URL = "https://webapps.sftc.org/ci"
 TARGET_URL = f"{BASE_URL}/CaseInfo.dll"
 CHROME_PROFILE_PREFIX = ".sf_manual_profile"
-BROWSER_BACKEND = "chrome"
+BROWSER_BACKEND = "camoufox"
 # Per-attempt cap on clearing the Cloudflare gate when opening/recycling a
 # browser session. A relaunched window draws a fresh fingerprint, so retrying
 # with a new browser clears an escalated challenge far better than letting one
