@@ -56,10 +56,38 @@ BASE_URL = "https://webapps.sftc.org/ci"
 TARGET_URL = f"{BASE_URL}/CaseInfo.dll"
 CHROME_PROFILE_PREFIX = ".sf_manual_profile"
 BROWSER_BACKEND = "chrome"
+# Per-attempt cap on clearing the Cloudflare gate when opening/recycling a
+# browser session. A relaunched window draws a fresh fingerprint, so retrying
+# with a new browser clears an escalated challenge far better than letting one
+# window spin forever (the old no-timeout behavior could hang a worker on a
+# recycle indefinitely).
+SESSION_CLEAR_TIMEOUT_S = 120
+SESSION_OPEN_MAX_ATTEMPTS = 5
 SEARCH_RESULTS_TIMEOUT_MS = 30000
 TABLE_IDLE_TIMEOUT_MS = 30000
 CASE_READY_POLL_ATTEMPTS = 20
+# Per-case register-page navigation timeout. A per-request Cloudflare challenge
+# can hold the navigation open; on timeout we fall through to the active
+# turnstile-clearing loop in wait_for_case_page_state rather than failing the
+# case, so the gate is handled autonomously (no IP rotation needed).
+CASE_GOTO_TIMEOUT_MS = 20000
+# Hard ceiling on an in-session page.evaluate(fetch...) call. Playwright's
+# evaluate has NO default timeout, so if Cloudflare destroys the session page's
+# execution context mid-fetch the JS-level AbortController never runs and the
+# evaluate hangs forever, holding REQUEST_BOOTSTRAP_LOCK and wedging every other
+# case. Bounding it slightly above the in-JS fetch timeout turns a dead context
+# into a retryable failure that frees the lock and routes into session recovery.
+SESSION_EVAL_HARD_TIMEOUT_S = SEARCH_RESULTS_TIMEOUT_MS / 1000 + 15
 CASE_LAUNCH_STAGGER_MS = 0
+# Gate-rotation thresholds. When the exit IP is Cloudflare-throttled, per-case
+# navigations mass-timeout and a day captures almost nothing. Under
+# --rotate-on-gate the worker exits non-zero with an IP_RESTRICTED marker after
+# sustained low capture so an external VPN-rotating wrapper (ok_scraper/rotate.py)
+# can switch exit IP and resume (days are resume-safe via day-summary).
+GATE_MIN_ATTEMPTS = 15   # ignore small days when judging capture
+GATE_FAIL_RATIO = 0.7    # >=70% of attempted cases still missing after the run = gated day
+GATE_MAX_STREAK = 2      # consecutive gated days before requesting an IP rotation
+GATE_HARD_MIN = 20       # a single day attempting >= this with 0 captured trips immediately
 USE_REQUEST_ROA = True
 PDF_FILTER_PROFILE = "all"
 SESSION_TIMEOUT_MARKERS = (
@@ -964,33 +992,48 @@ async def page_has_session_timeout(page):
 
 
 async def wait_for_case_page_state(page):
-    """Poll the current page with cheap browser-side checks."""
+    """Poll the current page with cheap browser-side checks.
+
+    On a Cloudflare challenge, actively drive the turnstile (click the
+    checkbox, submit, reload-on-hang) via _try_clear_cloudflare rather than
+    passively waiting. The per-case register page gets its own per-request
+    challenge that will not clear on its own the way the search page's does;
+    passively sleeping just burns the poll budget and times out.
+    """
+    submitted_at = 0
     for _ in range(CASE_READY_POLL_ATTEMPTS):
-        state = await page.evaluate(
-            """
-            () => {
-                const title = document.title || '';
-                const bodyText = document.body ? document.body.innerText : '';
-                return {
-                    hasChallenge:
-                        title.includes('Just a moment') ||
-                        title.includes('Cloudflare') ||
-                        bodyText.includes('challenge-platform'),
-                    restricted:
-                        bodyText.includes('Per CCP 1161.2') ||
-                        bodyText.includes('Case Is Not Available For Viewing'),
-                    sessionExpired:
-                        bodyText.includes('Your session has timed out') &&
-                        bodyText.includes('Please refresh the page and start again'),
-                    ready: Boolean(document.querySelector('select[name="example_length"]')),
-                };
-            }
-            """
-        )
+        try:
+            state = await page.evaluate(
+                """
+                () => {
+                    const title = document.title || '';
+                    const bodyText = document.body ? document.body.innerText : '';
+                    return {
+                        hasChallenge:
+                            title.includes('Just a moment') ||
+                            title.includes('Cloudflare') ||
+                            bodyText.includes('challenge-platform'),
+                        restricted:
+                            bodyText.includes('Per CCP 1161.2') ||
+                            bodyText.includes('Case Is Not Available For Viewing'),
+                        sessionExpired:
+                            bodyText.includes('Your session has timed out') &&
+                            bodyText.includes('Please refresh the page and start again'),
+                        ready: Boolean(document.querySelector('select[name="example_length"]')),
+                    };
+                }
+                """
+            )
+        except PlaywrightError:
+            # Execution context destroyed mid-challenge navigation; retry.
+            await asyncio.sleep(1)
+            continue
 
         if state["hasChallenge"]:
-            await asyncio.sleep(2)
+            submitted_at, _ = await _try_clear_cloudflare(page, submitted_at=submitted_at)
+            await asyncio.sleep(1)
             continue
+
         if state["restricted"]:
             return "restricted"
         if state["sessionExpired"]:
@@ -1112,9 +1155,25 @@ async def refresh_session(page, port, session_id_hint=None, max_wait_seconds=90)
         pass
 
     if BROWSER_BACKEND == "camoufox":
-        session_id, active_page = await wait_for_session_in_context(
-            context, page, max_wait_seconds=max_wait_seconds
-        )
+        # wait_for_session_in_context only checks max_wait_seconds BETWEEN loop
+        # iterations. An escalated challenge can hang inside a single Playwright
+        # call in _try_clear_cloudflare (page.title/reload/content), where that
+        # check never runs. Here this runs under SESSION_REFRESH_LOCK, so such a
+        # hang wedges every other case. asyncio.wait_for bounds the whole solve
+        # and turns a hang into a CloudflareSolveTimeoutError the callers handle,
+        # mirroring the initial-open path in open_browser_session().
+        try:
+            session_id, active_page = await asyncio.wait_for(
+                wait_for_session_in_context(
+                    context, page, max_wait_seconds=max_wait_seconds
+                ),
+                timeout=max_wait_seconds + 15,
+            )
+        except asyncio.TimeoutError as exc:
+            raise CloudflareSolveTimeoutError(
+                f"Session refresh gate hang: no Cloudflare solve within "
+                f"{max_wait_seconds + 15}s"
+            ) from exc
     else:
         session_id = await wait_for_session(port, max_wait_seconds=max_wait_seconds)
         active_page = await get_session_page(context, session_id)
@@ -1949,6 +2008,24 @@ def empty_case_header_metadata():
     }
 
 
+HTML_TITLE_RE = re.compile(r"<title[^>]*>(.*?)</title>", re.IGNORECASE | re.DOTALL)
+
+
+def parse_case_header_from_html(html):
+    """Best-effort header from the raw (un-rendered) case skeleton HTML.
+
+    The case page renders its header via JS (cslookup.js + datasnap), so the
+    skeleton carries no header table; only the <title> is server-rendered.
+    Header is best-effort (case number/title already come from search results),
+    so an empty header_text/header_fields here is expected and acceptable.
+    """
+    header = empty_case_header_metadata()
+    match = HTML_TITLE_RE.search(html or "")
+    if match:
+        header["page_title"] = normalize_metadata_text(HTML_TAG_RE.sub("", match.group(1)))
+    return header
+
+
 async def extract_case_participant_tab_payload(page):
     """Capture the raw tables rendered under the parties/attorneys tabs."""
     try:
@@ -2038,6 +2115,25 @@ async def extract_case_participant_metadata(page):
     return parse_case_participant_metadata(tab_payload)
 
 
+async def evaluate_in_session(page, script, arg, *, case_num, what):
+    """Bounded page.evaluate for in-session fetches.
+
+    Playwright's evaluate has no default timeout; a Cloudflare-destroyed
+    execution context makes it hang forever while holding
+    REQUEST_BOOTSTRAP_LOCK, deadlocking every other case. wait_for turns that
+    into a retryable failure that frees the lock and lets session recovery run.
+    """
+    try:
+        return await asyncio.wait_for(
+            page.evaluate(script, arg), timeout=SESSION_EVAL_HARD_TIMEOUT_S
+        )
+    except asyncio.TimeoutError as exc:
+        raise RetryableCaseError(
+            f"{what} evaluate hung (dead session context) for {case_num}",
+            failed_case_num=case_num,
+        ) from exc
+
+
 async def fetch_case_participant_metadata_via_request(context, case_num):
     async def fetch_participant_rows(endpoint_name):
         async def run_fetch():
@@ -2047,7 +2143,8 @@ async def fetch_case_participant_metadata_via_request(context, case_num):
                     f"No live session available for {endpoint_name} {case_num}"
                 )
             session_page = await get_session_page(context, live_session_id)
-            response_payload = await session_page.evaluate(
+            response_payload = await evaluate_in_session(
+                session_page,
                 """
                 async ({ url, timeoutMs }) => {
                     const controller = new AbortController();
@@ -2080,6 +2177,8 @@ async def fetch_case_participant_metadata_via_request(context, case_num):
                     "url": f"/ci/CaseInfo.dll/datasnap/rest/TServerMethods1/{endpoint_name}/{case_num}/{live_session_id}/",
                     "timeoutMs": SEARCH_RESULTS_TIMEOUT_MS,
                 },
+                case_num=case_num,
+                what=endpoint_name,
             )
             return response_payload
         if REQUEST_BOOTSTRAP_LOCK is not None:
@@ -2175,6 +2274,52 @@ async def close_stale_scraper_tabs(context, keep_pages=None):
         print(f"Closed {closed} stale browser tabs.")
 
 
+def worker_tree_rss_mb(port=None):
+    """Resident memory (MB) of this worker plus its browser processes.
+
+    Sums RSS over this process's subtree AND any Chrome process tagged with our
+    debug port/profile — the latter matters because Chrome launched via macOS
+    `open` detaches from us and would otherwise be invisible to a subtree walk.
+    """
+    try:
+        out = subprocess.run(
+            ["ps", "-axo", "pid=,ppid=,rss=,command="],
+            capture_output=True, text=True, timeout=10,
+        ).stdout
+    except Exception:
+        return 0.0
+
+    rows = []
+    children: dict[int, list[int]] = {}
+    for line in out.splitlines():
+        parts = line.split(None, 3)
+        if len(parts) < 4:
+            continue
+        try:
+            pid, ppid, rss = int(parts[0]), int(parts[1]), int(parts[2])
+        except ValueError:
+            continue
+        cmd = parts[3]
+        rows.append((pid, rss, cmd))
+        children.setdefault(ppid, []).append(pid)
+
+    keep, stack = set(), [os.getpid()]
+    while stack:
+        cur = stack.pop()
+        if cur in keep:
+            continue
+        keep.add(cur)
+        stack.extend(children.get(cur, []))
+
+    port_tag = f"remote-debugging-port={port}" if port else None
+    profile_tag = f"profile_{port}" if port else None
+    total_kb = 0
+    for pid, rss, cmd in rows:
+        if pid in keep or (port_tag and (port_tag in cmd or profile_tag in cmd)):
+            total_kb += rss
+    return total_kb / 1024.0
+
+
 def action_from_roa_row(row):
     doc_url = row.get("URL") or None
     doc_id_match = DOC_ID_RE.search(doc_url or "")
@@ -2245,7 +2390,8 @@ def parse_case_request_vars(html, fallback_case_num):
 
 async def fetch_case_actions_via_request(context, link, case_num):
     async def fetch_case_html_via_page(page, url):
-        return await page.evaluate(
+        return await evaluate_in_session(
+            page,
             """
             async ({ url, timeoutMs }) => {
                 const controller = new AbortController();
@@ -2275,10 +2421,13 @@ async def fetch_case_actions_via_request(context, link, case_num):
             }
             """,
             {"url": url, "timeoutMs": SEARCH_RESULTS_TIMEOUT_MS},
+            case_num=case_num,
+            what="case bootstrap",
         )
 
     async def fetch_roa_via_page(page, request_case_num, request_sesh_id, access_code):
-        return await page.evaluate(
+        return await evaluate_in_session(
+            page,
             """
             async ({ caseNum, seshID, accessCode, timeoutMs }) => {
                 const roaUrl =
@@ -2316,6 +2465,8 @@ async def fetch_case_actions_via_request(context, link, case_num):
                 "accessCode": access_code,
                 "timeoutMs": SEARCH_RESULTS_TIMEOUT_MS,
             },
+            case_num=case_num,
+            what="GetROA",
         )
 
     last_error = None
@@ -2451,7 +2602,15 @@ async def fetch_case_actions_via_request(context, link, case_num):
 async def scrape_case_actions_via_browser(context, link, case_num):
     page = await context.new_page()
     try:
-        await page.goto(link, wait_until="domcontentloaded")
+        try:
+            await page.goto(
+                link, wait_until="domcontentloaded", timeout=CASE_GOTO_TIMEOUT_MS
+            )
+        except PlaywrightTimeoutError:
+            # A per-request Cloudflare challenge can hold the navigation open
+            # past the timeout; fall through and let wait_for_case_page_state
+            # drive the turnstile to clear it.
+            pass
 
         if await page_has_session_timeout(page):
             raise SessionExpiredError(f"Session expired while opening case {case_num}")
@@ -2521,10 +2680,108 @@ async def scrape_case_actions_via_browser(context, link, case_num):
         await page.close()
 
 
+async def fetch_case_metadata_via_request(context, link, case_num):
+    """Case-level metadata (restricted status + participants) via in-context
+    fetch, with no browser navigation to the case page.
+
+    The case page is served with Cloudflare Rocket Loader, which defers all
+    page scripts so a navigated tab never renders DataTables and the readiness
+    marker never appears (BrowserStuckError). A same-origin fetch() from the
+    already-cleared session page returns the raw skeleton HTML at HTTP 200
+    without triggering that render path, so restricted detection (a
+    server-rendered access decision) and the datasnap participant/ROA requests
+    all succeed on the current IP. This decouples capture from the wedged
+    browser render.
+    """
+    live_session_id = current_session_id_from_context(context)
+    if not live_session_id:
+        raise RequestPathUnavailableError(
+            f"No live session available for case metadata {case_num}"
+        )
+    normalized_link = replace_case_session_id(link, live_session_id)
+    session_page = await get_session_page(context, live_session_id)
+
+    async def run_fetch():
+        return await evaluate_in_session(
+            session_page,
+            """
+            async ({ url, timeoutMs }) => {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+                try {
+                    const response = await fetch(url, {
+                        credentials: 'include',
+                        signal: controller.signal,
+                    });
+                    return { status: response.status, text: await response.text() };
+                } catch (error) {
+                    if (error && error.name === 'AbortError') {
+                        return { timeout: true, error: `Case metadata fetch timed out after ${timeoutMs}ms` };
+                    }
+                    return { error: error ? String(error) : 'Unknown fetch error' };
+                } finally {
+                    clearTimeout(timeoutId);
+                }
+            }
+            """,
+            {"url": normalized_link, "timeoutMs": SEARCH_RESULTS_TIMEOUT_MS},
+            case_num=case_num,
+            what="case metadata",
+        )
+
+    if REQUEST_BOOTSTRAP_LOCK is not None:
+        async with REQUEST_BOOTSTRAP_LOCK:
+            response = await run_fetch()
+    else:
+        response = await run_fetch()
+
+    if response.get("timeout"):
+        raise RetryableCaseError(
+            f"Case metadata fetch timed out for {case_num}", failed_case_num=case_num
+        )
+    if response.get("error"):
+        raise RequestPathUnavailableError(
+            f"Case metadata fetch failed for {case_num}: {response['error']}"
+        )
+    if response.get("status") != 200:
+        raise RequestPathUnavailableError(
+            f"Case metadata returned HTTP {response.get('status')} for {case_num}"
+        )
+
+    html = response.get("text", "")
+    if all(marker in html for marker in SESSION_TIMEOUT_MARKERS):
+        raise SessionExpiredError(
+            f"Session expired while fetching case metadata for {case_num}"
+        )
+    if html_has_cloudflare_challenge(html):
+        raise RetryableCaseError(
+            f"Cloudflare challenge page returned for case metadata {case_num}",
+            failed_case_num=case_num,
+        )
+
+    header_metadata = parse_case_header_from_html(html)
+    restricted = ("Per CCP 1161.2" in html) or ("Case Is Not Available For Viewing" in html)
+    if restricted:
+        return header_metadata, empty_participant_metadata(), True
+
+    participant_metadata = await fetch_case_participant_metadata_via_request(
+        context, case_num
+    )
+    return header_metadata, participant_metadata, False
+
+
 async def fetch_case_metadata_via_browser(context, link, case_num):
     page = await context.new_page()
     try:
-        await page.goto(link, wait_until="domcontentloaded")
+        try:
+            await page.goto(
+                link, wait_until="domcontentloaded", timeout=CASE_GOTO_TIMEOUT_MS
+            )
+        except PlaywrightTimeoutError:
+            # A per-request Cloudflare challenge can hold the navigation open
+            # past the timeout; fall through and let wait_for_case_page_state
+            # drive the turnstile to clear it.
+            pass
 
         if await page_has_session_timeout(page):
             raise SessionExpiredError(f"Session expired while opening case {case_num}")
@@ -2595,9 +2852,17 @@ async def scrape_case(context, case, filing_date):
         header_metadata = empty_case_header_metadata()
         participant_metadata = empty_participant_metadata()
         if USE_REQUEST_ROA:
-            header_metadata, participant_metadata, restricted = await fetch_case_metadata_via_browser(
-                context, link, case_num
-            )
+            try:
+                header_metadata, participant_metadata, restricted = await fetch_case_metadata_via_request(
+                    context, link, case_num
+                )
+            except RequestPathUnavailableError as meta_error:
+                tqdm.write(
+                    f"  Request metadata unavailable for {case_num}; falling back to browser: {meta_error}"
+                )
+                header_metadata, participant_metadata, restricted = await fetch_case_metadata_via_browser(
+                    context, link, case_num
+                )
             if restricted:
                 actions = []
             else:
@@ -3028,6 +3293,12 @@ async def main():
         help="Retry only cases listed in each day's failed_cases.json instead of querying the full filing day",
     )
     parser.add_argument(
+        "--rotate-on-gate",
+        action="store_true",
+        help="Exit with code 2 and an IP_RESTRICTED marker after sustained low per-day "
+             "capture (exit IP Cloudflare-throttled), so a VPN-rotating wrapper can switch IP and resume",
+    )
+    parser.add_argument(
         "--data-root", type=Path, default=LOCAL_DATA_ROOT,
         help="Root directory for scraped case data and day summaries",
     )
@@ -3057,6 +3328,16 @@ async def main():
         type=int,
         default=None,
         help="Internal: identifies this worker for the monitor's per-worker heartbeat file.",
+    )
+    parser.add_argument(
+        "--recycle-every-days",
+        type=int,
+        default=4,
+        help="Tear down and relaunch the browser after this many processed days to "
+             "reclaim the renderer memory that a long-lived Chrome accumulates over "
+             "thousands of case navigations. The persistent profile keeps the "
+             "Cloudflare cookie, so a recycle usually resumes without a fresh solve. "
+             "Set 0 to disable.",
     )
     args = parser.parse_args()
 
@@ -3115,7 +3396,13 @@ async def main():
     page = None
     camoufox_manager = None
     chrome_started = False
-    try:
+
+    async def open_browser_session():
+        """Launch the browser backend and return a session ready to scrape.
+
+        Returns (p, browser, context, page, session_id, camoufox_manager,
+        chrome_started). Used for both the initial launch and each recycle.
+        """
         if BROWSER_BACKEND == "camoufox":
             if not CAMOUFOX_AVAILABLE:
                 raise RuntimeError(
@@ -3123,40 +3410,108 @@ async def main():
                     "and run: python -m camoufox fetch"
                 )
             _, _, width, height = preferred_chrome_window_bounds()
-            camoufox_manager = AsyncCamoufox(
-                headless=False,
-                os="macos",
-                humanize=True,
-                window=(width, height),
+            for attempt in range(1, SESSION_OPEN_MAX_ATTEMPTS + 1):
+                manager = AsyncCamoufox(
+                    headless=False,
+                    os="macos",
+                    humanize=True,
+                    window=(width, height),
+                )
+                new_browser = await manager.__aenter__()
+                try:
+                    new_context = await new_browser.new_context(accept_downloads=True)
+                    new_page = await new_context.new_page()
+                    await place_browser_page(new_page)
+                    # asyncio.wait_for bounds the WHOLE attempt: an escalated
+                    # challenge can hang inside a Playwright call (page.title,
+                    # reload, ...) where a between-iterations check never runs,
+                    # so we cancel the coroutine outright and relaunch.
+                    new_session_id, new_page = await asyncio.wait_for(
+                        wait_for_session_in_context(new_context, new_page),
+                        timeout=SESSION_CLEAR_TIMEOUT_S,
+                    )
+                except (CloudflareSolveTimeoutError, asyncio.TimeoutError):
+                    print(
+                        f"  Gate did not clear in {SESSION_CLEAR_TIMEOUT_S}s "
+                        f"(attempt {attempt}/{SESSION_OPEN_MAX_ATTEMPTS}); "
+                        "relaunching a fresh Camoufox window..."
+                    )
+                    if HEARTBEAT is not None:
+                        HEARTBEAT.update(current_action="gate-retry")
+                    try:
+                        await manager.__aexit__(None, None, None)
+                    except Exception:
+                        pass
+                    continue
+                await close_stale_scraper_tabs(new_context, keep_pages=[new_page])
+                print("Camoufox session ready. Tabs will run in background.")
+                return None, new_browser, new_context, new_page, new_session_id, manager, False
+            raise CloudflareSolveTimeoutError(
+                f"Camoufox gate did not clear after {SESSION_OPEN_MAX_ATTEMPTS} attempts"
             )
-            browser = await camoufox_manager.__aenter__()
-            context = await browser.new_context(accept_downloads=True)
-            page = await context.new_page()
-            await place_browser_page(page)
-            session_id, page = await wait_for_session_in_context(context, page)
-            await close_stale_scraper_tabs(context, keep_pages=[page])
-            print("Camoufox session ready. Tabs will run in background.")
-        else:
-            # Step 1: Launch Chrome and wait for Cloudflare
+
+        # Step 1: Launch Chrome and wait for Cloudflare
+        for attempt in range(1, SESSION_OPEN_MAX_ATTEMPTS + 1):
             launch_chrome(
                 args.port,
                 manage_windows=args.manage_chrome_windows,
                 reuse_existing=args.reuse_existing_browser,
             )
-            chrome_started = True
-            session_id = await wait_for_session(args.port)
+            try:
+                new_session_id = await asyncio.wait_for(
+                    wait_for_session(args.port), timeout=SESSION_CLEAR_TIMEOUT_S
+                )
+            except (CloudflareSolveTimeoutError, asyncio.TimeoutError):
+                print(
+                    f"  Gate did not clear in {SESSION_CLEAR_TIMEOUT_S}s "
+                    f"(attempt {attempt}/{SESSION_OPEN_MAX_ATTEMPTS}); "
+                    "relaunching Chrome..."
+                )
+                if HEARTBEAT is not None:
+                    HEARTBEAT.update(current_action="gate-retry")
+                kill_chrome(args.port)
+                continue
+            break
+        else:
+            raise CloudflareSolveTimeoutError(
+                f"Chrome gate did not clear after {SESSION_OPEN_MAX_ATTEMPTS} attempts"
+            )
+        # Step 2: Connect Playwright (persistent connection for the session)
+        new_p, new_browser, new_page = await get_browser_page(args.port)
+        new_context = new_page.context
+        await close_stale_scraper_tabs(new_context, keep_pages=[new_page])
+        # Step 3: Leave Chrome alone by default so unrelated apps/windows are not affected.
+        if args.minimize_chrome_after_session:
+            minimize_chrome()
+            print("Chrome minimized. Tabs will run in background.")
+        else:
+            print("Chrome window management disabled. Leaving Chrome windows unchanged.")
+        return new_p, new_browser, new_context, new_page, new_session_id, None, True
 
-            # Step 2: Connect Playwright (persistent connection for the session)
-            p, browser, page = await get_browser_page(args.port)
-            context = page.context
-            await close_stale_scraper_tabs(context, keep_pages=[page])
+    async def close_browser_session(p_, browser_, camoufox_manager_, chrome_started_):
+        """Tear down a browser session opened by open_browser_session()."""
+        try:
+            if camoufox_manager_ is not None:
+                await camoufox_manager_.__aexit__(None, None, None)
+            elif browser_ is not None:
+                await browser_.close()
+        except Exception as e:
+            print(f"  Browser close error during recycle: {e}")
+        try:
+            if p_ is not None:
+                await p_.stop()
+        except Exception:
+            pass
+        if chrome_started_:
+            kill_chrome(args.port)
 
-            # Step 3: Leave Chrome alone by default so unrelated apps/windows are not affected.
-            if args.minimize_chrome_after_session:
-                minimize_chrome()
-                print("Chrome minimized. Tabs will run in background.")
-            else:
-                print("Chrome window management disabled. Leaving Chrome windows unchanged.")
+    try:
+        (p, browser, context, page, session_id,
+         camoufox_manager, chrome_started) = await open_browser_session()
+
+        days_since_recycle = 0
+        gated_streak = 0
+        gate_tripped = False
 
         # Step 4: Process each date
         for date_str in dates:
@@ -3176,6 +3531,33 @@ async def main():
                 )
                 continue
 
+            # Recycle the browser before doing this day's work once we've
+            # processed enough days, dropping the renderer heap that Chrome
+            # accumulates across thousands of navigations.
+            if args.recycle_every_days and days_since_recycle >= args.recycle_every_days:
+                rss_before = worker_tree_rss_mb(args.port)
+                print(
+                    f"  Recycling browser before {date_str} after "
+                    f"{days_since_recycle} days (RSS {rss_before:.0f}MB)..."
+                )
+                if HEARTBEAT is not None:
+                    HEARTBEAT.update(current_action="recycling-browser",
+                                     worker_rss_mb=round(rss_before, 1))
+                await close_browser_session(p, browser, camoufox_manager, chrome_started)
+                (p, browser, context, page, session_id,
+                 camoufox_manager, chrome_started) = await open_browser_session()
+                days_since_recycle = 0
+                rss_after = worker_tree_rss_mb(args.port)
+                print(
+                    f"  Browser recycled: RSS {rss_before:.0f}MB -> {rss_after:.0f}MB"
+                )
+                if HEARTBEAT is not None:
+                    HEARTBEAT.update(current_action="recycled-browser",
+                                     worker_rss_mb=round(rss_after, 1),
+                                     last_recycle_rss_before_mb=round(rss_before, 1),
+                                     last_recycle_rss_after_mb=round(rss_after, 1))
+            days_since_recycle += 1
+
             async def recover_shared_session():
                 nonlocal session_id, page
                 async with SESSION_REFRESH_LOCK:
@@ -3189,8 +3571,27 @@ async def main():
                 session_id, page = await prepare_search_page(page, session_id, args.port)
                 await close_stale_scraper_tabs(context, keep_pages=[page])
             except Exception as e:
-                print(f"  Skipping {date_str} after search-page failure: {e}")
-                continue
+                # An escalated Cloudflare gate on the search page cannot be cleared
+                # by an in-place session refresh (refresh_session reloads the SAME
+                # fingerprint). Relaunch a fresh browser session instead — a new
+                # fingerprint clears the gate the same way it does on initial open
+                # (open_browser_session is bounded: asyncio.wait_for + up to N
+                # fresh windows) — then retry the day once before giving up, so a
+                # transient gate stops silently dropping the day's filings.
+                print(f"  Search-page failure for {date_str}: {e}")
+                print(f"  Relaunching a fresh browser to retry {date_str}...")
+                if HEARTBEAT is not None:
+                    HEARTBEAT.update(current_action="search-gate-relaunch")
+                try:
+                    await close_browser_session(p, browser, camoufox_manager, chrome_started)
+                    (p, browser, context, page, session_id,
+                     camoufox_manager, chrome_started) = await open_browser_session()
+                    days_since_recycle = 0
+                    session_id, page = await prepare_search_page(page, session_id, args.port)
+                    await close_stale_scraper_tabs(context, keep_pages=[page])
+                except Exception as e2:
+                    print(f"  Skipping {date_str} after fresh-browser retry failed: {e2}")
+                    continue
 
             # Browser: search and get case list unless retrying failed-only manifests.
             if args.failed_only:
@@ -3335,13 +3736,18 @@ async def main():
                                         failures.append(case)
                                         break
                                 except (BrowserStuckError, RetryableCaseError) as e:
+                                    # Matches both the request-ROA bootstrap and
+                                    # the per-case metadata fetch, whose challenge
+                                    # messages share this prefix. Either means the
+                                    # shared session's Cloudflare clearance lapsed,
+                                    # so re-solve on the light search page and retry.
                                     is_challenge = (
-                                        "Cloudflare challenge page returned for request bootstrap"
+                                        "Cloudflare challenge page returned"
                                         in str(e)
                                     )
                                     if is_challenge and needs_shared_retry:
                                         tqdm.write(
-                                            f"  Cloudflare challenge hit during request bootstrap for {case['case_num']}; refreshing shared session and retrying once"
+                                            f"  Cloudflare challenge hit for {case['case_num']}; refreshing shared session and retrying once"
                                         )
                                         try:
                                             await recover_shared_session()
@@ -3416,14 +3822,49 @@ async def main():
                     "case_launch_stagger_ms": args.case_launch_stagger_ms,
                 },
             )
+            day_rss = worker_tree_rss_mb(args.port)
             print(
                 f"  Date {date_str} done: "
-                f"{summary['scraped_cases']}/{summary['total_cases']} cases"
+                f"{summary['scraped_cases']}/{summary['total_cases']} cases "
+                f"| worker+browser RSS {day_rss:.0f}MB"
             )
+            if HEARTBEAT is not None:
+                HEARTBEAT.update(worker_rss_mb=round(day_rss, 1))
+
+            # Gate detection: measure how many cases we ATTEMPTED this run
+            # (pending_cases) are still missing afterward. A high still-missing
+            # ratio means the exit IP is Cloudflare-throttling per-case
+            # navigations (mass 30s timeouts), so request an IP rotation.
+            if args.rotate_on_gate:
+                attempted = len(pending_cases)
+                still_missing = sum(
+                    1 for c in pending_cases
+                    if not case_is_complete(date_str, c["case_num"])
+                )
+                low_capture_day = (
+                    attempted >= GATE_MIN_ATTEMPTS
+                    and still_missing >= GATE_FAIL_RATIO * attempted
+                )
+                hard_gate = attempted >= GATE_HARD_MIN and still_missing == attempted
+                gated_streak = gated_streak + 1 if low_capture_day else 0
+                if hard_gate or gated_streak >= GATE_MAX_STREAK:
+                    print(
+                        f"IP_RESTRICTED: exit IP appears Cloudflare-gated "
+                        f"({still_missing}/{attempted} attempted cases still missing on "
+                        f"{date_str}; gated-day streak {gated_streak}). Requesting IP rotation."
+                    )
+                    gate_tripped = True
+                    break
+
+        if gate_tripped:
+            if HEARTBEAT is not None:
+                HEARTBEAT.close(status="exited", finished_reason="ip_gated")
+            return 2
 
         print("\nAll dates processed!")
         if HEARTBEAT is not None:
             HEARTBEAT.close(status="exited", finished_reason="completed")
+        return 0
     finally:
         if HEARTBEAT is not None:
             # If we didn't reach the clean "completed" close above, write a
@@ -3446,6 +3887,7 @@ async def main():
 
 if __name__ == "__main__":
     try:
-        asyncio.run(main())
+        _rc = asyncio.run(main())
+        sys.exit(_rc or 0)
     except KeyboardInterrupt:
         print("\nExiting...")

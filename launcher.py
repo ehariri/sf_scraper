@@ -79,6 +79,22 @@ def main():
         action="store_true",
         help="Clear existing data before scraping",
     )
+    parser.add_argument(
+        "--browser",
+        choices=("chrome", "camoufox"),
+        default="chrome",
+        help="Browser backend passed to each worker. Camoufox auto-clears the "
+             "Cloudflare/Turnstile gate (no manual click); chrome relies on the "
+             "passive CDP-disconnect pass and otherwise needs a human.",
+    )
+    parser.add_argument(
+        "--rotate-on-gate",
+        action="store_true",
+        help="Forward to each worker so it exits with code 2 + an IP_RESTRICTED "
+             "marker on sustained per-day Cloudflare gating. When any worker trips, "
+             "the launcher tears down its siblings, prints IP_RESTRICTED, and exits "
+             "2 so a VPN-rotating wrapper (rotate.py) can switch IP and resume.",
+    )
     args = parser.parse_args()
 
     START_DATE = args.start_date
@@ -131,10 +147,15 @@ def main():
             str(MAX_CONCURRENT_DOWNLOADS),
             "--worker-id",
             str(i),
+            "--browser",
+            args.browser,
         ]
 
         if args.clear:
             cmd.append("--clear")
+
+        if args.rotate_on_gate:
+            cmd.append("--rotate-on-gate")
 
         # Launch process
         p = subprocess.Popen(cmd)
@@ -144,28 +165,73 @@ def main():
         time.sleep(1)
 
     print(f"\nAll {len(processes)} workers launched.")
-    print("Please solve the Cloudflare challenge in EACH Chrome window that opens.")
+    if args.browser == "camoufox":
+        print("Camoufox auto-clears the Cloudflare gate; only step in if a window "
+              "asks for manual input.")
+    else:
+        print("Please solve the Cloudflare challenge in EACH Chrome window that opens.")
     print("Waiting for workers to complete...")
 
-    try:
-        for p in processes:
-            rc = p.wait()
-            if rc == 0:
-                print(f"Worker PID {p.pid} finished successfully.")
-                continue
+    def _describe_exit(p, rc):
+        if rc == 0:
+            return f"Worker PID {p.pid} finished successfully."
+        if rc == 2:
+            return f"Worker PID {p.pid} exited with code 2 (IP gate)."
+        if rc < 0:
+            try:
+                sig_name = signal.Signals(-rc).name
+            except Exception:
+                sig_name = f"SIG{-rc}"
+            return f"Worker PID {p.pid} exited due to signal {sig_name} ({rc})."
+        return f"Worker PID {p.pid} exited with code {rc}."
 
-            if rc < 0:
-                try:
-                    sig_name = signal.Signals(-rc).name
-                except Exception:
-                    sig_name = f"SIG{-rc}"
-                print(f"Worker PID {p.pid} exited due to signal {sig_name} ({rc}).")
-            else:
-                print(f"Worker PID {p.pid} exited with code {rc}.")
+    def _teardown(survivors):
+        for p in survivors:
+            if p.poll() is None:
+                p.terminate()
+        # Give them a moment, then hard-kill any stragglers.
+        deadline = time.time() + 15
+        for p in survivors:
+            remaining = max(0, deadline - time.time())
+            try:
+                p.wait(timeout=remaining)
+            except subprocess.TimeoutExpired:
+                p.kill()
+
+    gate_tripped = False
+    try:
+        finished = set()
+        while len(finished) < len(processes):
+            for p in processes:
+                if p.pid in finished:
+                    continue
+                rc = p.poll()
+                if rc is None:
+                    continue
+                finished.add(p.pid)
+                print(_describe_exit(p, rc))
+                if args.rotate_on_gate and rc == 2:
+                    gate_tripped = True
+                    break
+            if gate_tripped:
+                break
+            time.sleep(2)
+
+        if gate_tripped:
+            survivors = [p for p in processes if p.pid not in finished]
+            print(
+                f"IP_RESTRICTED: a worker reported sustained Cloudflare gating; "
+                f"tearing down {len(survivors)} sibling worker(s) and requesting IP rotation."
+            )
+            _teardown(survivors)
     except KeyboardInterrupt:
         print("\nStopping all workers...")
-        for p in processes:
-            p.terminate()
+        _teardown(processes)
+        raise
+
+    if gate_tripped:
+        print("Launcher exiting 2 for IP rotation.")
+        sys.exit(2)
 
     print("All workers finished.")
 
